@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ScaleCheck</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  color-scheme: light;
+  --bg:     #f2f4f7;
+  --card:   #ffffff;
+  --border: #e2e8f0;
+  --text:   #111827;
+  --muted:  #6b7280;
+  --acc:    #ea580c;
+  --acc-lt: #fff4ef;
+  --good:   #059669;
+  --good-lt:#ecfdf5;
+  --warn:   #d97706;
+  --warn-lt:#fffbeb;
+  --bad:    #dc2626;
+  --bad-lt: #fef2f2;
+  --bridge: #7c3aed;
+  --bridge-lt:#f5f3ff;
+  --shadow: 0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+}
+body {
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+#app { max-width: 500px; margin: 0 auto; }
+
+/* BUTTONS */
+.btn {
+  display: block; width: 100%; padding: 15px 20px;
+  border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+  cursor: pointer; text-align: center;
+  transition: filter .15s, transform .1s;
+  -webkit-appearance: none; user-select: none;
+}
+.btn:active { filter: brightness(.92); transform: scale(.98); }
+.btn-primary { background: var(--acc); color: #fff; }
+.btn-outline  { background: var(--card); color: var(--text); border: 1.5px solid var(--border); }
+.btn-ghost    { background: transparent; color: var(--muted); }
+.btn-danger   { background: var(--bad); color: #fff; }
+.btn-sm       { padding: 10px 14px; font-size: 14px; border-radius: 9px; }
+.btn-xs       { padding: 7px 12px; font-size: 13px; border-radius: 8px; }
+
+/* HEADER */
+.hdr {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 16px;
+  background: rgba(242,244,247,.94); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.hdr h1 { font-size: 17px; font-weight: 700; }
+.hdr-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--acc); font-size: 15px; font-weight: 600;
+  padding: 4px 2px; min-width: 60px;
+}
+.hdr-btn.right { text-align: right; }
+.online-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; margin-right: 6px; flex-shrink: 0;
+}
+.online-dot.on  { background: var(--good); box-shadow: 0 0 0 2px var(--good-lt); }
+.online-dot.off { background: var(--bad);  box-shadow: 0 0 0 2px var(--bad-lt);  }
+
+/* CARDS & LAYOUT */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; letter-spacing: .4px;
+}
+.badge-good   { background: var(--good-lt); color: var(--good); }
+.badge-warn   { background: var(--warn-lt); color: var(--warn); }
+.badge-bad    { background: var(--bad-lt);  color: var(--bad); }
+.badge-muted  { background: var(--border);  color: var(--muted); }
+.badge-bridge { background: var(--bridge-lt); color: var(--bridge); }
+
+/* FORM */
+.form-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-size: 12px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.field input, .field select, .field textarea {
+  padding: 13px 14px;
+  background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px;
+  color: var(--text); font-size: 16px; font-family: inherit;
+  outline: none; -webkit-appearance: none; appearance: none;
+  transition: border-color .2s;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--acc); background: #fff; }
+.field textarea { resize: none; min-height: 68px; line-height: 1.5; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field-row3 { display: grid; grid-template-columns: 1fr 1fr 80px; gap: 10px; }
+
+/* HOME */
+.home-hero { text-align: center; padding: 28px 20px 24px; }
+.home-hero .icon { font-size: 52px; display: block; margin-bottom: 10px; line-height: 1; }
+.home-hero h2 { font-size: 22px; font-weight: 800; }
+.home-hero p  { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.home-actions { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }
+.sect-label {
+  padding: 16px 16px 8px;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.job-row {
+  margin: 0 16px 8px; padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; transition: border-color .15s;
+}
+.job-row:active { border-color: var(--acc); }
+.job-row-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+.job-row-info p  { font-size: 13px; color: var(--muted); }
+.job-row-cells { text-align: right; }
+.cells-num { font-size: 22px; font-weight: 800; color: var(--acc); line-height: 1; }
+.cells-lbl { font-size: 11px; color: var(--muted); }
+.empty-state { text-align: center; padding: 44px 24px; color: var(--muted); }
+.empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+
+/* OFFLINE PANEL */
+.sync-panel {
+  margin: 0 16px 12px; padding: 14px 16px; border-radius: 14px;
+  border: 1px solid var(--border); background: var(--card);
+}
+.sync-panel h3 { font-size: 14px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.sync-status { font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+.sync-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.sync-btn {
+  padding: 9px 14px; border-radius: 9px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--text); font-size: 13px; font-weight: 600;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  transition: background .15s, border-color .15s;
+}
+.sync-btn:hover { background: var(--acc-lt); border-color: var(--acc); }
+.sync-btn.danger:hover { background: var(--bad-lt); border-color: var(--bad); }
+
+/* PROGRESS */
+.prog-bar-wrap {
+  padding: 12px 16px 10px; background: var(--card); border-bottom: 1px solid var(--border);
+  position: sticky; top: 54px; z-index: 10;
+}
+.prog-labels { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+.prog-cell { font-size: 14px; font-weight: 700; color: var(--acc); }
+.prog-step { font-size: 12px; color: var(--muted); font-weight: 600; }
+.prog-track { background: var(--border); border-radius: 99px; height: 5px; }
+.prog-fill  { background: var(--acc); border-radius: 99px; height: 5px; transition: width .3s ease; }
+
+/* ENTRY */
+.entry-body { padding: 22px 20px 140px; }
+.entry-rname { font-size: 28px; font-weight: 800; line-height: 1.1; margin-bottom: 4px; }
+.entry-unit  { color: var(--acc); }
+.entry-desc  { font-size: 14px; color: var(--muted); margin-bottom: 22px; line-height: 1.55; }
+.entry-input-wrap { position: relative; margin-bottom: 12px; }
+.entry-input {
+  display: block; width: 100%; padding: 20px 56px 20px 20px;
+  background: var(--card); border: 2px solid var(--border); border-radius: 14px;
+  color: var(--text); font-size: 28px; font-weight: 700;
+  text-align: center; letter-spacing: 1px; outline: none; box-shadow: var(--shadow);
+  -webkit-appearance: none; transition: border-color .2s, box-shadow .2s;
+}
+.entry-input:focus { border-color: var(--acc); box-shadow: 0 0 0 3px rgba(234,88,12,.12); }
+.entry-unit-label {
+  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+  font-size: 13px; font-weight: 700; color: var(--muted); pointer-events: none;
+}
+.badge-row { min-height: 34px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ol-btn {
+  padding: 7px 13px; border-radius: 9px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--text); font-size: 13px; font-weight: 600;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+  transition: background .15s, border-color .15s;
+}
+.ol-btn:active { background: var(--acc-lt); border-color: var(--acc); }
+.copy-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 14px; border-radius: 10px;
+  border: 1.5px dashed var(--border); background: var(--bg);
+  color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
+  width: 100%; margin-bottom: 14px;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.copy-btn:active { background: var(--acc-lt); border-color: var(--acc); color: var(--acc); }
+.entry-btns {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+  background: rgba(242,244,247,.96); backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; gap: 8px; max-width: 500px; margin: 0 auto;
+}
+.entry-btns-row { display: flex; gap: 10px; }
+.entry-btns-row .btn { flex: 1; }
+.entry-nav {
+  display: flex; justify-content: space-between; margin-top: 8px; padding: 0 2px;
+}
+.nav-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 13px; padding: 6px; font-weight: 500;
+}
+.nav-btn:disabled { opacity: .3; cursor: default; }
+
+/* SUMMARY */
+.meta-grid {
+  padding: 14px 16px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.meta-cell { padding: 10px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); }
+.meta-cell label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); display: block; margin-bottom: 2px; }
+.meta-cell span  { font-size: 14px; font-weight: 600; }
+.tbl-scroll { overflow-x: auto; padding: 0 16px 16px; -webkit-overflow-scrolling: touch; }
+.lc-table { border-collapse: collapse; min-width: 900px; width: 100%; font-size: 12px; }
+.lc-table th {
+  background: var(--bg); color: var(--muted);
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+  padding: 8px 8px; border: 1px solid var(--border); text-align: center; white-space: nowrap;
+}
+.lc-table th.sticky-c, .lc-table td.sticky-c { position: sticky; left: 0; z-index: 2; }
+.lc-table th.sticky-c { background: var(--bg); }
+.lc-table th.sticky-c2, .lc-table td.sticky-c2 { position: sticky; left: 46px; z-index: 2; }
+.lc-table th.sticky-c2 { background: var(--bg); }
+.lc-table td {
+  padding: 9px 8px; border: 1px solid var(--border);
+  text-align: center; background: var(--card); white-space: nowrap;
+}
+.lc-table td.sticky-c  { background: var(--card); font-weight: 700; z-index: 1; color: var(--acc); }
+.lc-table td.sticky-c2 { background: var(--card); z-index: 1; }
+.lc-table td.v-bad    { background: var(--bad-lt);    color: var(--bad);    font-weight: 600; }
+.lc-table td.v-warn   { background: var(--warn-lt);   color: var(--warn);   font-weight: 600; }
+.lc-table td.v-bridge { background: var(--bridge-lt); color: var(--bridge); font-weight: 600; }
+.lc-table td.v-calc   { color: var(--muted); font-style: italic; }
+.lc-table td.v-theory { color: var(--good); font-style: italic; font-weight: 600; }
+.lc-table td.v-empty  { color: #ccc; font-style: italic; }
+.edit-cell-btn {
+  padding: 4px 9px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--muted); font-size: 11px; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: all .15s;
+}
+.edit-cell-btn:hover { background: var(--acc-lt); border-color: var(--acc); color: var(--acc); }
+.sum-actions { padding: 8px 16px 16px; display: flex; gap: 10px; }
+
+/* HISTORY */
+.hist-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+/* DIALOG */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  display: flex; align-items: flex-end; z-index: 100;
+  animation: fade-in .15s ease;
+}
+.dlg {
+  width: 100%; max-width: 500px; margin: 0 auto;
+  background: var(--card); border-radius: 20px 20px 0 0;
+  padding: 24px 20px calc(20px + env(safe-area-inset-bottom,0px));
+  border-top: 1px solid var(--border);
+}
+.dlg h3 { font-size: 17px; margin-bottom: 6px; }
+.dlg p  { color: var(--muted); font-size: 14px; margin-bottom: 18px; line-height: 1.5; }
+.dlg-acts { display: flex; flex-direction: column; gap: 10px; }
+
+/* ANIMATIONS */
+@keyframes fade-in   { from { opacity:0; }              to { opacity:1; } }
+@keyframes slide-up  { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.page { animation: slide-up .18s ease; }
+
+/* ─── PRINT ─────────────────────────────────────── */
+@media print {
+  .no-print, .hdr, .prog-bar-wrap, .sum-actions,
+  .entry-btns, .sync-panel, .home-actions { display: none !important; }
+  body, #app { background: white; max-width: 100%; }
+  .meta-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; padding: 8px 0; }
+  .meta-cell { padding: 6px 8px; border-radius: 6px; }
+  .tbl-scroll { overflow: visible; padding: 0; }
+  .lc-table { min-width: unset; font-size: 8.5px; }
+  .lc-table th, .lc-table td { padding: 5px 5px; }
+  .lc-table th.sticky-c, .lc-table td.sticky-c,
+  .lc-table th.sticky-c2, .lc-table td.sticky-c2 { position: static; }
+  .print-header { display: block !important; padding: 0 0 10px; border-bottom: 2px solid #000; margin-bottom: 10px; }
+  .print-header h2 { font-size: 14px; }
+  .print-header p  { font-size: 10px; color: #666; }
+  @page { size: landscape; margin: 1.2cm; }
+}
+.print-header { display: none; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ─── READINGS ────────────────────────────────────────────
+const R = [
+  { k:'excitation', lbl:'Excitation',  unit:'Ω',     desc:'+ Exc → − Exc',                           mode:'decimal', val:'ohm', wires:['plusEX','minusEX'] },
+  { k:'signal',     lbl:'Signal',      unit:'Ω',     desc:'+ Sig → − Sig',                           mode:'decimal', val:'ohm', wires:['plusSIG','minusSIG'] },
+  { k:'pp',         lbl:'+ex / +sig',  unit:'Ω',     desc:'+ Exc → + Sig  (cross-bridge)',           mode:'decimal', val:'ohm', bridge:true, wires:['plusEX','plusSIG'] },
+  { k:'pn',         lbl:'+ex / −sig',  unit:'Ω',     desc:'+ Exc → − Sig  (cross-bridge)',           mode:'decimal', val:'ohm', bridge:true, wires:['plusEX','minusSIG'] },
+  { k:'nn',         lbl:'−ex / −sig',  unit:'Ω',     desc:'− Exc → − Sig  (cross-bridge)',           mode:'decimal', val:'ohm', bridge:true, wires:['minusEX','minusSIG'] },
+  { k:'np',         lbl:'−ex / +sig',  unit:'Ω',     desc:'− Exc → + Sig  (cross-bridge)',           mode:'decimal', val:'ohm', bridge:true, wires:['minusEX','plusSIG'] },
+  { k:'cmp_n',      lbl:'−Comp',       unit:'Ω',     desc:'Both sig wires → − Exc',                  mode:'decimal', val:'ohm', wires:['plusSIG','minusSIG','minusEX'] },
+  { k:'cmp_p',      lbl:'+Comp',       unit:'Ω',     desc:'Both sig wires → + Exc',                  mode:'decimal', val:'ohm', wires:['plusSIG','minusSIG','plusEX'] },
+  { k:'shrt_ohm',   lbl:'Shorts',      unit:'Ω',     desc:'Wire to shield / cell body (OL = PASS)',  mode:'text',    val:'shortsOhm', showOL:true, wires:['plusEX','minusEX','plusSIG','minusSIG','shield'] },
+  { k:'shrt_ns',    lbl:'Shorts',      unit:'nS',    desc:'Insulation test — hit range ×2 first  (>0.5 nS suspect · >1 nS bad)', mode:'decimal', val:'shortsNs', wires:['plusEX','minusEX','plusSIG','minusSIG','shield'] },
+  { k:'zero_load',  lbl:'Zero Load',   unit:'mV DC', desc:'Cell fully unloaded  (0–0.5 mV = OK · negative = FAIL)', mode:'decimal', val:'zeroLoad', wires:['plusSIG','minusSIG'] },
+  { k:'dead_load',  lbl:'Dead Load',   unit:'mV DC', desc:'Deck loaded, no extra weight — reconnect exc/shield first', mode:'decimal', val:'deadLoad', wires:['plusSIG','minusSIG'] },
+  { k:'known_load', lbl:'Known Load',  unit:'mV DC', desc:'Known weight centered over cell',         mode:'decimal', wires:['plusSIG','minusSIG'] },
+];
+const NR = R.length; // 13
+
+// ─── WIRE COLORS ─────────────────────────────────────────
+const WIRE_COLORS_KEY = 'lcl_wire_colors';
+const COLOR_MAP = {
+  red:    {hex:'#ef4444', dark:false},
+  black:  {hex:'#1f2937', dark:true},
+  green:  {hex:'#22c55e', dark:false},
+  white:  {hex:'#f3f4f6', dark:false, border:true},
+  yellow: {hex:'#eab308', dark:false},
+  blue:   {hex:'#3b82f6', dark:true},
+  brown:  {hex:'#92400e', dark:true},
+  orange: {hex:'#f97316', dark:false},
+  purple: {hex:'#7c3aed', dark:true},
+  gray:   {hex:'#9ca3af', dark:false},
+  bare:   {hex:'#d4a76a', dark:false},
+};
+const WIRE_KEYS   = ['plusEX','minusEX','plusSIG','minusSIG','shield'];
+const WIRE_NAMES  = {plusEX:'+EX', minusEX:'−EX', plusSIG:'+SIG', minusSIG:'−SIG', shield:'Shield'};
+
+function getWireProfiles(){ return JSON.parse(store.get(WIRE_COLORS_KEY,'[]')); }
+function saveWireProfile(model, profile){
+  if(!model) return;
+  const profiles = getWireProfiles();
+  const idx = profiles.findIndex(p=>p.model.toLowerCase()===model.toLowerCase());
+  const entry = {model, ...profile};
+  if(idx>=0) profiles[idx]=entry; else profiles.push(entry);
+  store.set(WIRE_COLORS_KEY, JSON.stringify(profiles));
+}
+function getWireProfile(model){
+  if(!model) return null;
+  return getWireProfiles().find(p=>p.model.toLowerCase()===model.toLowerCase())||null;
+}
+function hasAnyWireColor(profile){
+  if(!profile) return false;
+  return WIRE_KEYS.some(k=>profile[k]);
+}
+function wireColorDot(color, label){
+  if(!color) return '';
+  const c = COLOR_MAP[color]; if(!c) return '';
+  const border = c.border ? ';outline:1px solid #ccc' : '';
+  return `<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);margin-right:6px">` +
+         `<span style="width:11px;height:11px;border-radius:50%;background:${c.hex}${border};flex-shrink:0;display:inline-block"></span>` +
+         `<span style="font-weight:600">${label}</span></span>`;
+}
+function wireDotsForReading(r, profile){
+  if(!r.wires||!hasAnyWireColor(profile)) return '';
+  const dots = r.wires.map(wk=>wireColorDot(profile[wk], WIRE_NAMES[wk])).filter(Boolean);
+  if(!dots.length) return '';
+  return `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;padding:6px 8px;background:rgba(0,0,0,.03);border-radius:8px">${dots.join('')}</div>`;
+}
+
+// ─── VALIDATORS ─────────────────────────────────────────
+const V = {
+  shortsOhm(v) {
+    if (!v || v.trim().toUpperCase()==='OL') return { ok:true,  lbl:'PASS',             cls:'good' };
+    if (!isNaN(parseFloat(v)))               return { ok:false, lbl:'FAIL — SHORT',      cls:'bad'  };
+    return null;
+  },
+  shortsNs(v) {
+    const n=parseFloat(v); if(isNaN(n)) return null;
+    if(n>1.0) return { ok:false, lbl:'BAD  (> 1 nS)',       cls:'bad'  };
+    if(n>0.5) return { ok:false, lbl:'SUSPECT (> 0.5 nS)',  cls:'warn' };
+    return { ok:true, lbl:'PASS', cls:'good' };
+  },
+  zeroLoad(v) {
+    const n=parseFloat(v); if(isNaN(n)) return null;
+    if(n<0)   return { ok:false, lbl:'FAIL — NEGATIVE',       cls:'bad'  };
+    return n>0.5
+      ? { ok:false, lbl:'OUT OF RANGE (> 0.5 mV)', cls:'bad'  }
+      : { ok:true,  lbl:'GOOD',                     cls:'good' };
+  },
+  ohm(v) {
+    const n=parseFloat(v); if(isNaN(n)) return null;
+    if(n<0) return { ok:false, lbl:'FAIL — NEGATIVE', cls:'bad' };
+    return null;
+  },
+  deadLoad(v) {
+    const n=parseFloat(v); if(isNaN(n)) return null;
+    if(n<0) return { ok:false, lbl:'FAIL — NEGATIVE', cls:'bad' };
+    return null;
+  },
+};
+function vld(r,v){ return r.val ? V[r.val](v) : null; }
+
+// ─── CROSS-BRIDGE CHECK ──────────────────────────────────
+// Flag if any of the 4 bridge keys deviate >1% from average
+const BRIDGE_KEYS = ['pp','pn','nn','np'];
+function bridgeFlagged(cell) {
+  const vals = BRIDGE_KEYS.map(k=>parseFloat(cell[k])).filter(n=>!isNaN(n));
+  if (vals.length < 4) return false;
+  const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+  return vals.some(v => Math.abs(v-avg)/avg > 0.01);
+}
+
+// ─── CELL STATUS ─────────────────────────────────────────
+// Rates only the readings that were actually entered.
+// Not entering a reading (e.g. zero load) does NOT downgrade the cell —
+// many jobs don't have time for the full mV test set.
+function cellStatus(cell) {
+  let bad=0, warn=0, filled=0;
+  R.forEach(r=>{ const v=cell[r.k]; if(!v&&v!==0)return; filled++; const res=vld(r,v); if(!res)return; if(!res.ok){res.cls==='bad'?bad++:warn++;} });
+  if(filled===0)                        return {lbl:'EMPTY',   cls:'muted', n:0,      tot:NR};
+  if(bad>0)                             return {lbl:'FAIL',    cls:'bad',   n:filled, tot:NR};
+  if(bridgeFlagged(cell)||warn>0)       return {lbl:'REVIEW',  cls:'warn',  n:filled, tot:NR};
+  if(filled<10)                         return {lbl:'PARTIAL', cls:'warn',  n:filled, tot:NR};
+  return                                       {lbl:'PASS',    cls:'good',  n:filled, tot:NR};
+}
+
+// ─── CALCS ───────────────────────────────────────────────
+function calcROC(cell) {
+  const kl=parseFloat(cell.known_load), dl=parseFloat(cell.dead_load);
+  return isNaN(kl)||isNaN(dl) ? '' : (kl-dl).toFixed(4);
+}
+function calcTheoROC(job) {
+  const exc=parseFloat(job.excitation), mvv=parseFloat(job.mvv);
+  const tw=parseFloat(job.testWeight), cap=parseFloat(job.cellCapacity);
+  if([exc,mvv,tw,cap].some(isNaN)) return '';
+  return ((exc*mvv)*(tw/cap)).toFixed(4);
+}
+
+// ─── STORAGE ─────────────────────────────────────────────
+const store = (() => {
+  const mem={};
+  try {
+    localStorage.setItem('_t','1'); localStorage.removeItem('_t');
+    return {
+      get(k,d){ try{ const v=localStorage.getItem(k); return v!=null?JSON.parse(v):d; }catch{ return d; } },
+      set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch{} }
+    };
+  } catch {
+    return { get(k,d){ return k in mem?mem[k]:d; }, set(k,v){ mem[k]=v; } };
+  }
+})();
+
+let jobs   = store.get('lcl_jobs',[]);
+let models = store.get('lcl_models',[]);
+function saveJobs()   { store.set('lcl_jobs',jobs); }
+function saveModels() { store.set('lcl_models',models); }
+function addModel(m)  { if(m&&!models.includes(m)){ models.unshift(m); if(models.length>30)models.pop(); saveModels(); } }
+
+// ─── STATE ───────────────────────────────────────────────
+let VIEW='home', CUR=null, DID=null;
+// CUR = { job, ci, ri, editMode }
+//   editMode: true = editing from summary, return to summary after finishing cell
+
+function newCell(){ const c=Object.fromEntries(R.map(r=>[r.k,''])); c._cellModel=''; c._wireProfile=null; return c; }
+function newJob(m){
+  return {
+    id:Date.now(), customer:m.customer||'', scale:m.scale||'',
+    tech:m.tech||'', date:m.date||'', excitation:m.excitation||'',
+    mvv:m.mvv||'', numCells:+m.numCells||1,
+    cellModel:m.cellModel||'', testWeight:m.testWeight||'',
+    cellCapacity:m.cellCapacity||'', weightUnit:m.weightUnit||'lbs',
+    notes:m.notes||'',
+    cells:Array.from({length:+m.numCells||1},newCell),
+    createdAt:Date.now(), complete:false
+  };
+}
+
+const $app=document.getElementById('app');
+function go(v,p={}){ VIEW=v; if('CUR'in p)CUR=p.CUR; if('DID'in p)DID=p.DID; render(); }
+function render(){
+  const fns={home:rHome,setup:rSetup,entry:rEntry,summary:rSummary,history:rHistory};
+  $app.innerHTML=(fns[VIEW]||rHome)();
+  const bns={home:bHome,setup:bSetup,entry:bEntry,summary:bSummary,history:bHistory};
+  (bns[VIEW]||bHome)();
+}
+
+// ─── ONLINE STATUS ───────────────────────────────────────
+function isOnline(){ return navigator.onLine!==false; }
+function onlineDot(){ return `<span class="online-dot ${isOnline()?'on':'off'}"></span>`; }
+function onlineLabel(){ return isOnline()?'<span style="color:var(--good);font-size:12px;font-weight:600">Online</span>':'<span style="color:var(--bad);font-size:12px;font-weight:600">Offline</span>'; }
+window.addEventListener('online',  ()=>render());
+window.addEventListener('offline', ()=>render());
+
+// ─── STATUS TAG ──────────────────────────────────────────
+function statusTag(j){
+  if(!j.complete) return `<span class="badge badge-warn">⏳ In Progress</span>`;
+  const statuses=j.cells.map(c=>cellStatus(c));
+  if(statuses.some(s=>s.cls==='bad'))  return `<span class="badge badge-bad">⚠ Issues Found</span>`;
+  if(statuses.some(s=>s.cls==='warn')) return `<span class="badge badge-warn">⚠ Review Needed</span>`;
+  if(statuses.every(s=>s.cls==='muted')) return `<span class="badge badge-muted">No Readings</span>`;
+  return `<span class="badge badge-good">✓ All Pass</span>`;
+}
+
+// ─── HOME ────────────────────────────────────────────────
+function rHome(){
+  const rec=[...jobs].reverse().slice(0,3);
+  return `<div class="page">
+  <div class="hdr">
+    <div style="display:flex;align-items:center;gap:6px">${onlineDot()}<h1>ScaleCheck</h1></div>
+    <div style="font-size:12px;color:var(--muted)">${jobs.length} job${jobs.length!==1?'s':''}</div>
+  </div>
+  <div class="home-hero">
+    <span class="icon">⚖️</span>
+    <h2>ScaleCheck</h2>
+    <p>OHM reading tracker</p>
+  </div>
+  <div class="home-actions">
+    <button class="btn btn-primary" id="b-new">+ New Job</button>
+    <button class="btn btn-outline" id="b-hist">📋  All History</button>
+  </div>
+  <div class="sect-label">Backup & Sync</div>
+  <div class="sync-panel no-print">
+    <h3>${onlineDot()}${onlineLabel()} — ${isOnline()?'Connected':'No Signal'}</h3>
+    <div class="sync-status">All data is saved locally on this device. Export a backup to share jobs or move to another device.</div>
+    <div class="sync-btns">
+      <button class="sync-btn" id="b-export">💾 Export Backup</button>
+      <label class="sync-btn" style="cursor:pointer">📂 Import Backup<input id="b-import" type="file" accept=".json" style="display:none"></label>
+      ${jobs.length?`<button class="sync-btn danger" id="b-clearall" style="color:var(--muted)">🗑 Clear All</button>`:''}
+    </div>
+  </div>
+  ${rec.length?`<div class="sect-label">Recent Jobs</div>`:''}
+  ${rec.map(j=>`
+    <div class="card job-row" data-id="${j.id}">
+      <div class="job-row-info">
+        <h3>${esc(j.customer)||'No Customer'}</h3>
+        <p>${esc(j.scale)||'No Scale'} · ${j.date||'—'}${j.cellModel?' · '+esc(j.cellModel):''}</p>
+        <p style="margin-top:4px">${statusTag(j)}</p>
+      </div>
+      <div class="job-row-cells">
+        <div class="cells-num">${j.numCells}</div>
+        <div class="cells-lbl">cell${j.numCells!==1?'s':''}</div>
+      </div>
+    </div>`).join('')}
+  ${!rec.length?`<div class="empty-state"><div class="icon">📋</div><p>No jobs yet.<br>Tap <strong>New Job</strong> to start.</p></div>`:''}
+  </div>`;
+}
+function bHome(){
+  document.getElementById('b-new').onclick=()=>go('setup');
+  document.getElementById('b-hist').onclick=()=>go('history');
+  // Export
+  document.getElementById('b-export').onclick=()=>{
+    const json=JSON.stringify({version:1,exported:new Date().toISOString(),jobs},null,2);
+    const blob=new Blob([json],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=`loadcell-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  // Import
+  document.getElementById('b-import').onchange=e=>{
+    const file=e.target.files[0]; if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try {
+        const data=JSON.parse(ev.target.result);
+        if(data.type==='loadcell-share'){
+          // Single-job share from another tech
+          const job=data.job;
+          const existIdx=jobs.findIndex(j=>j.id===job.id);
+          const isNew=existIdx<0;
+          showDlg({
+            title:(isNew?'Import job?':'Update existing job?'),
+            msg:isNew
+              ?'Add "'+esc(job.customer||'Job')+' — '+(job.scale||'')+(job.date?' ('+job.date+')':'')+'\" to your history?'
+              :'This job already exists. Replace it with the shared version?',
+            acts:[
+              {lbl:isNew?'Import':'Replace',cls:'btn-primary',fn:()=>{
+                if(existIdx>=0) jobs[existIdx]=job; else jobs.push(job);
+                saveJobs(); hideDlg(); go('home');
+              }},
+              {lbl:'Cancel',cls:'btn-outline',fn:hideDlg}
+            ]
+          });
+        } else {
+          // Full backup
+          const imported=Array.isArray(data)?data:(data.jobs||[]);
+          if(!imported.length){alert('No jobs found in backup.');return;}
+          showDlg({
+            title:`Import ${imported.length} job${imported.length!==1?'s':''}?`,
+            msg:'Jobs from the backup will be added to your existing history.',
+            acts:[
+              {lbl:'Import',cls:'btn-primary',fn:()=>{
+                const existIds=new Set(jobs.map(j=>j.id));
+                const toAdd=imported.filter(j=>!existIds.has(j.id));
+                jobs=[...jobs,...toAdd]; saveJobs(); hideDlg(); go('home');
+              }},
+              {lbl:'Cancel',cls:'btn-outline',fn:hideDlg}
+            ]
+          });
+        }
+      } catch{ alert('Invalid file. Expected a job share or backup file.'); }
+    };
+    reader.readAsText(file);
+  };
+  // Clear all
+  const clrBtn=document.getElementById('b-clearall');
+  if(clrBtn) clrBtn.onclick=()=>{
+    showDlg({
+      title:'Delete all jobs?',
+      msg:'This will permanently remove all saved jobs and cannot be undone. Export a backup first.',
+      acts:[
+        {lbl:'Delete All',cls:'btn-danger',fn:()=>{ jobs=[]; saveJobs(); hideDlg(); go('home'); }},
+        {lbl:'Cancel',cls:'btn-outline',fn:hideDlg}
+      ]
+    });
+  };
+  // Job rows
+  document.querySelectorAll('.job-row').forEach(el=>{
+    el.onclick=()=>{
+      const j=jobs.find(x=>x.id==el.dataset.id); if(!j)return;
+      j.complete?go('summary',{CUR:null,DID:j.id}):go('entry',{CUR:{job:j,ci:0,ri:0,editMode:false}});
+    };
+  });
+}
+
+// ─── SETUP ───────────────────────────────────────────────
+function rSetup(){
+  const today=new Date().toISOString().split('T')[0];
+  const lastTech=store.get('lcl_tech','');
+  const dlOpts=models.map(m=>`<option value="${esc(m)}">`).join('');
+  return `<div class="page">
+  <div class="hdr">
+    <button class="hdr-btn no-print" id="b-back">← Back</button>
+    <h1>New Job</h1>
+    <div style="width:60px"></div>
+  </div>
+  <form id="setup-form" class="form-body">
+    <div class="field">
+      <label>Customer</label>
+      <input id="f-cust" type="text" placeholder="Company / customer name" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Scale / Location</label>
+      <input id="f-scale" type="text" placeholder="Scale ID or description" autocomplete="off">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Technician</label>
+        <input id="f-tech" type="text" value="${esc(lastTech)}" placeholder="Your name" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input id="f-date" type="date" value="${today}">
+      </div>
+    </div>
+    <div class="field">
+      <label>Load Cell Model</label>
+      <input id="f-model" type="text" list="model-list" placeholder="e.g. Mettler Toledo SB-100" autocomplete="off">
+      <datalist id="model-list">${dlOpts}</datalist>
+    </div>
+    <div style="padding:10px 0 2px;border-top:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">
+          Wire Colors <span style="font-weight:400;font-style:italic;color:#aaa">(optional — saves per model)</span>
+        </span>
+        <button type="button" id="b-wire-toggle" style="font-size:12px;color:var(--acc);background:none;border:none;cursor:pointer;padding:2px 6px">▶ Show</button>
+      </div>
+      <div id="wire-color-inputs" style="display:none">
+        <div id="wire-suggest-banner" style="display:none;padding:7px 10px;background:var(--acc-lt);border-radius:8px;font-size:12px;color:var(--acc);margin-bottom:10px;font-weight:600">
+          ✦ Saved profile loaded — verify and adjust if needed
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          ${WIRE_KEYS.map(wk=>`
+          <div class="field" style="margin:0">
+            <label style="font-size:12px">${WIRE_NAMES[wk]}</label>
+            <select id="f-wire-${wk}" style="font-size:14px">
+              <option value="">— not set —</option>
+              ${Object.keys(COLOR_MAP).map(c=>`<option value="${c}">${c.charAt(0).toUpperCase()+c.slice(1)}</option>`).join('')}
+            </select>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Excitation (V)</label>
+        <input id="f-exc" type="text" inputmode="decimal" placeholder="e.g. 5.0">
+      </div>
+      <div class="field">
+        <label>mV/V Rating</label>
+        <input id="f-mvv" type="text" inputmode="decimal" placeholder="e.g. 2.0">
+      </div>
+    </div>
+    <div class="field">
+      <label>Number of Load Cells</label>
+      <select id="f-nc">
+        ${Array.from({length:16},(_,i)=>`<option value="${i+1}"${i===3?' selected':''}>${i+1}</option>`).join('')}
+      </select>
+    </div>
+
+    <div style="padding:12px 0 2px;border-top:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
+        Theoretical ROC  <span style="font-weight:400;font-style:italic;color:#aaa">(optional — auto-calculates expected ROC)</span>
+      </div>
+      <div class="field-row3">
+        <div class="field">
+          <label>Test Weight</label>
+          <input id="f-tw" type="text" inputmode="decimal" placeholder="e.g. 500">
+        </div>
+        <div class="field">
+          <label>Cell Capacity</label>
+          <input id="f-cap" type="text" inputmode="decimal" placeholder="e.g. 5000">
+        </div>
+        <div class="field">
+          <label>Units</label>
+          <select id="f-wu"><option value="lbs">lbs</option><option value="kg">kg</option></select>
+        </div>
+      </div>
+      <div id="theo-preview" style="font-size:13px;color:var(--muted);margin-top:8px;min-height:18px"></div>
+    </div>
+
+    <div class="field">
+      <label>Job Notes (optional)</label>
+      <textarea id="f-notes" placeholder="Observations, reference info, unusual findings…"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary" style="margin-top:4px">Start Job →</button>
+  </form>
+  </div>`;
+}
+function bSetup(){
+  document.getElementById('b-back').onclick=()=>go('home');
+
+  // Wire color toggle
+  const wireToggle=document.getElementById('b-wire-toggle');
+  const wireInputs=document.getElementById('wire-color-inputs');
+  wireToggle.onclick=()=>{
+    const open=wireInputs.style.display!=='none';
+    wireInputs.style.display=open?'none':'block';
+    wireToggle.textContent=open?'▶ Show':'▼ Hide';
+  };
+
+  // Auto-load wire profile when model changes
+  function loadWireProfile(){
+    const model=document.getElementById('f-model').value.trim();
+    const profile=getWireProfile(model);
+    const banner=document.getElementById('wire-suggest-banner');
+    if(profile&&hasAnyWireColor(profile)){
+      WIRE_KEYS.forEach(wk=>{
+        const sel=document.getElementById('f-wire-'+wk);
+        if(sel) sel.value=profile[wk]||'';
+      });
+      banner.style.display='block';
+      wireInputs.style.display='block';
+      wireToggle.textContent='▼ Hide';
+    } else {
+      banner.style.display='none';
+    }
+  }
+  const modelInput=document.getElementById('f-model');
+  modelInput.addEventListener('change', loadWireProfile);
+  modelInput.addEventListener('blur', loadWireProfile);
+
+  // Live theoretical ROC preview
+  function updateTheoPreview(){
+    const exc=parseFloat(document.getElementById('f-exc').value);
+    const mvv=parseFloat(document.getElementById('f-mvv').value);
+    const tw =parseFloat(document.getElementById('f-tw').value);
+    const cap=parseFloat(document.getElementById('f-cap').value);
+    const wu =document.getElementById('f-wu').value;
+    const prev=document.getElementById('theo-preview');
+    if([exc,mvv,tw,cap].some(isNaN)){prev.textContent='';return;}
+    const t=((exc*mvv)*(tw/cap)).toFixed(4);
+    prev.innerHTML=`<span style="color:var(--good);font-weight:600">Theoretical ROC ≈ ${t} mV</span> for ${tw} ${wu} on a ${cap} ${wu} cell`;
+  }
+  ['f-exc','f-mvv','f-tw','f-cap','f-wu'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('input',updateTheoPreview);
+  });
+
+  document.getElementById('setup-form').onsubmit=e=>{
+    e.preventDefault();
+    const tech=document.getElementById('f-tech').value.trim();
+    if(tech) store.set('lcl_tech',tech);
+    const model=document.getElementById('f-model').value.trim();
+    addModel(model);
+    // Save wire color profile if any wires were set
+    const wireProfile={};
+    WIRE_KEYS.forEach(wk=>{
+      const sel=document.getElementById('f-wire-'+wk);
+      wireProfile[wk]=sel?sel.value:'';
+    });
+    if(hasAnyWireColor(wireProfile)) saveWireProfile(model, wireProfile);
+    const job=newJob({
+      customer: document.getElementById('f-cust').value.trim(),
+      scale:    document.getElementById('f-scale').value.trim(),
+      tech, date: document.getElementById('f-date').value,
+      excitation: document.getElementById('f-exc').value.trim(),
+      mvv:        document.getElementById('f-mvv').value.trim(),
+      numCells:   document.getElementById('f-nc').value,
+      cellModel:  model,
+      wireProfile: hasAnyWireColor(wireProfile)?wireProfile:null,
+      testWeight: document.getElementById('f-tw').value.trim(),
+      cellCapacity:document.getElementById('f-cap').value.trim(),
+      weightUnit: document.getElementById('f-wu').value,
+      notes:      document.getElementById('f-notes').value.trim(),
+    });
+    jobs.push(job); saveJobs();
+    go('entry',{CUR:{job,ci:0,ri:0,editMode:false}});
+  };
+}
+
+// ─── ENTRY ───────────────────────────────────────────────
+function rEntry(){
+  if(!CUR){go('home');return'';}
+  const {job,ci,ri,editMode}=CUR;
+  const r=R[ri], val=job.cells[ci][r.k];
+  const total=job.numCells*NR, done=ci*NR+ri;
+  const pct=Math.round(done/total*100);
+  const vRes=r.val&&val?V[r.val](val):null;
+  const lastInCell=ri===NR-1;
+  const lastOverall=ci===job.numCells-1&&lastInCell;
+  const canCopy=ci>0;
+  // Wire color dots — per-cell override > job profile > stored profile
+  const cell=job.cells[ci];
+  const effectiveModel=cell._cellModel||job.cellModel||'';
+  const wireProfile=cell._wireProfile||job.wireProfile||getWireProfile(effectiveModel)||null;
+  const isOverride=!!cell._cellModel;
+  const cell1HasData=job.cells[0]&&R.some(r=>job.cells[0][r.k]);
+
+  return `<div class="page">
+  <div class="hdr no-print">
+    <button class="hdr-btn" id="b-quit">${editMode?'← Summary':'✕ Exit'}</button>
+    <h1>${esc(job.customer)||'New Job'}</h1>
+    <button class="hdr-btn right" id="b-sum" style="font-size:13px">${isOnline()?onlineDot():''} Summary</button>
+  </div>
+  <div class="prog-bar-wrap">
+    <div class="prog-labels">
+      <span class="prog-cell">Cell ${ci+1} of ${job.numCells}${editMode?' <span style="font-size:11px;color:var(--muted)">(editing)</span>':''}</span>
+      <span class="prog-step">Reading ${ri+1} / ${NR}</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+    <div style="text-align:right;font-size:11px;color:var(--muted);margin-top:5px">${pct}% complete</div>
+  </div>
+  <div class="entry-body">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:9px 13px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--muted)">Cell model:</span>
+      <span style="font-size:13px;font-weight:600;flex:1">${esc(effectiveModel)||'<span style="color:var(--muted);font-weight:400">Not set</span>'}</span>
+      ${isOverride?`<span style="font-size:10px;padding:2px 7px;background:var(--acc-lt);color:var(--acc);border-radius:6px;font-weight:700">Override</span>`:''}
+      <button id="b-change-model" style="font-size:12px;color:var(--acc);background:none;border:none;cursor:pointer;padding:2px 6px;font-weight:600;flex-shrink:0">Change ▾</button>
+    </div>
+    ${canCopy&&cell1HasData?`
+      <button class="copy-btn" id="b-copy">📋 Copy all readings from Cell 1</button>`:''}
+    <div class="entry-rname">${r.lbl} <span class="entry-unit">${r.unit}</span></div>
+    <div class="entry-desc">${r.desc}</div>
+    ${wireDotsForReading(r, wireProfile)}
+    <div class="entry-input-wrap">
+      <input id="ri" class="entry-input" type="text" inputmode="${r.mode}"
+        value="${esc(val)}" placeholder="${r.showOL?'OL or value':'0.000'}"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        enterkeyhint="${(lastInCell||lastOverall)?'done':'next'}">
+      <span class="entry-unit-label">${r.unit}</span>
+    </div>
+    <div class="badge-row" id="badge-row">
+      ${vRes?`<span class="badge badge-${vRes.cls}">${vRes.lbl}</span>`:''}
+      ${r.showOL?`<button class="ol-btn" id="b-ol">✓ OL  (Open Loop)</button>`:''}
+      ${r.mode==='decimal'?`<button class="ol-btn" id="b-neg">± Neg</button>`:''}
+    </div>
+    <div class="entry-nav">
+      <button class="nav-btn" id="b-prev" ${done===0?'disabled':''}>← Prev</button>
+      <span style="font-size:11px;color:var(--muted)">${done} of ${total} entered</span>
+      <button class="nav-btn" id="b-skip">Skip →</button>
+    </div>
+  </div>
+  <div class="entry-btns no-print">
+    <div class="entry-btns-row">
+      <button class="btn btn-outline" id="b-prev2" ${done===0?'disabled':''}>← Back</button>
+      <button class="btn btn-primary" id="b-next">
+        ${editMode&&lastInCell?'✓ Done Editing':lastOverall?'✓ Complete Job':'Next →'}
+      </button>
+    </div>
+  </div>
+  </div>`;
+}
+
+function saveVal(v){
+  if(!CUR)return;
+  CUR.job.cells[CUR.ci][R[CUR.ri].k]=v;
+  const idx=jobs.findIndex(j=>j.id===CUR.job.id);
+  if(idx>=0)jobs[idx]=CUR.job;
+  saveJobs();
+}
+
+function advance(skip){
+  const inp=document.getElementById('ri');
+  if(!skip) saveVal(inp?inp.value.trim():'');
+  const {job,editMode}=CUR; let {ci,ri}=CUR;
+  ri++;
+  if(ri>=NR){
+    if(editMode){ // Done editing this cell — return to summary
+      CUR=null; go('summary',{CUR:null,DID:job.id}); return;
+    }
+    ri=0; ci++;
+  }
+  if(ci>=job.numCells){ // All cells done
+    job.complete=true;
+    const idx=jobs.findIndex(j=>j.id===job.id);
+    if(idx>=0)jobs[idx]=job;
+    saveJobs(); CUR=null; DID=job.id; go('summary',{CUR:null,DID:job.id}); return;
+  }
+  CUR={job,ci,ri,editMode}; render();
+}
+
+function goBack(){
+  const inp=document.getElementById('ri');
+  saveVal(inp?inp.value.trim():'');
+  const {job,editMode}=CUR; let {ci,ri}=CUR;
+  ri--;
+  if(ri<0){
+    if(editMode){ CUR=null; go('summary',{CUR:null,DID:job.id}); return; }
+    if(ci===0){ CUR={job,ci:0,ri:0,editMode:false}; go('summary',{CUR,DID:job.id}); return; }
+    ri=NR-1; ci--;
+  }
+  CUR={job,ci,ri,editMode}; render();
+}
+
+function bEntry(){
+  const inp=document.getElementById('ri');
+  if(inp){
+    inp.addEventListener('input',()=>{
+      const r=R[CUR.ri]; if(!r.val)return;
+      const v=inp.value.trim(), res=v?V[r.val](v):null;
+      const br=document.getElementById('badge-row'); if(!br)return;
+      const olPart=r.showOL?`<button class="ol-btn" id="b-ol">✓ OL  (Open Loop)</button>`:'';
+      const negPart=r.mode==='decimal'?`<button class="ol-btn" id="b-neg">± Neg</button>`:'';
+      br.innerHTML=(res?`<span class="badge badge-${res.cls}">${res.lbl}</span>`:'')+olPart+negPart;
+      wireOLBtn();
+      wireNegBtn();
+    });
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();advance(false);} });
+    setTimeout(()=>{inp.focus();try{inp.select();}catch{}},80);
+  }
+
+  function wireOLBtn(){
+    const b=document.getElementById('b-ol');
+    if(b) b.onclick=()=>{ const i=document.getElementById('ri'); if(i){i.value='OL';i.dispatchEvent(new Event('input'));} };
+  }
+  function wireNegBtn(){
+    const b=document.getElementById('b-neg');
+    if(b) b.onclick=()=>{ const i=document.getElementById('ri'); if(!i)return; const v=i.value.trim(); i.value=v.startsWith('-')?v.slice(1):'-'+(v||'0'); i.dispatchEvent(new Event('input')); };
+  }
+  wireOLBtn();
+  wireNegBtn();
+
+  const copyBtn=document.getElementById('b-copy');
+  if(copyBtn) copyBtn.onclick=()=>{
+    const {job,ci}=CUR;
+    const already=Object.values(job.cells[ci]).some(v=>v);
+    const doIt=()=>{
+      R.forEach(r=>{ job.cells[ci][r.k]=job.cells[0][r.k]; });
+      const idx=jobs.findIndex(j=>j.id===job.id); if(idx>=0)jobs[idx]=job; saveJobs();
+      // Jump to first reading to let user review
+      CUR={...CUR,ri:0}; render();
+    };
+    if(already){
+      showDlg({
+        title:`Overwrite Cell ${ci+1}?`,
+        msg:'Cell 1 readings will replace the current entries for this cell.',
+        acts:[
+          {lbl:'Copy & Overwrite',cls:'btn-primary',fn:()=>{hideDlg();doIt();}},
+          {lbl:'Cancel',cls:'btn-outline',fn:hideDlg}
+        ]
+      });
+    } else { doIt(); }
+  };
+
+  document.getElementById('b-next').onclick=()=>advance(false);
+  document.getElementById('b-skip').onclick=()=>advance(true);
+  const changeModelBtn=document.getElementById('b-change-model');
+  if(changeModelBtn) changeModelBtn.onclick=()=>{ const inp=document.getElementById('ri'); if(inp&&!CUR.job.cells[CUR.ci]._wireProfile) {} showCellModelSheet(CUR.ci); };
+  const p1=document.getElementById('b-prev'), p2=document.getElementById('b-prev2');
+  if(p1)p1.onclick=goBack; if(p2)p2.onclick=goBack;
+
+  const quitBtn=document.getElementById('b-quit');
+  if(quitBtn) quitBtn.onclick=()=>{
+    if(CUR&&CUR.editMode){ const inp=document.getElementById('ri'); const jobId=CUR.job.id; saveVal(inp?inp.value.trim():''); CUR=null; go('summary',{CUR:null,DID:jobId}); return; }
+    showDlg({
+      title:'Exit job?',
+      msg:'Your progress is saved. Resume from the home screen any time.',
+      acts:[
+        {lbl:'Exit',cls:'btn-outline',fn:()=>{hideDlg();go('home');}},
+        {lbl:'Keep going',cls:'btn-primary',fn:hideDlg}
+      ]
+    });
+  };
+
+  document.getElementById('b-sum').onclick=()=>{
+    const inp=document.getElementById('ri'); saveVal(inp?inp.value.trim():'');
+    const j=CUR.job; DID=j.id;
+    go('summary',{CUR,DID:j.id});
+  };
+}
+
+// ─── SUMMARY ─────────────────────────────────────────────
+function rSummary(){
+  const job=CUR?CUR.job:(jobs.find(j=>j.id===DID)||jobs.slice(-1)[0]);
+  if(!job){go('home');return'';}
+  const theoROC=calcTheoROC(job);
+  const flagBridge=job.cells.some(c=>bridgeFlagged(c));
+
+  return `<div class="page">
+  <!-- Print header -->
+  <div class="print-header">
+    <h2>Load Cell Worksheet — ${esc(job.customer)||'—'}</h2>
+    <p>${esc(job.scale)||'—'}  ·  Tech: ${esc(job.tech)||'—'}  ·  Date: ${job.date||'—'}  ·  Printed: ${new Date().toLocaleString()}</p>
+  </div>
+
+  <div class="hdr no-print">
+    <button class="hdr-btn" id="b-back">${CUR?'← Entry':'⌂ Home'}</button>
+    <h1>Summary</h1>
+    <button class="hdr-btn right" id="b-print" style="color:var(--acc)">⎙ PDF</button>
+  </div>
+
+  <div class="meta-grid">
+    <div class="meta-cell"><label>Customer</label><span>${esc(job.customer)||'—'}</span></div>
+    <div class="meta-cell"><label>Scale</label><span>${esc(job.scale)||'—'}</span></div>
+    <div class="meta-cell"><label>Tech</label><span>${esc(job.tech)||'—'}</span></div>
+    <div class="meta-cell"><label>Date</label><span>${job.date||'—'}</span></div>
+    <div class="meta-cell"><label>Excitation</label><span>${job.excitation?job.excitation+' V':'—'}</span></div>
+    <div class="meta-cell"><label>mV/V</label><span>${job.mvv||'—'}</span></div>
+    ${job.cellModel?`<div class="meta-cell" style="grid-column:span 2"><label>Cell Model</label><span>${esc(job.cellModel)}</span></div>`:''}
+    ${theoROC?`<div class="meta-cell" style="grid-column:span 2"><label>Theoretical ROC</label><span style="color:var(--good)">${theoROC} mV  <span style="font-size:12px;color:var(--muted);font-weight:400">(${job.testWeight} ${job.weightUnit} on ${job.cellCapacity} ${job.weightUnit} cell)</span></span></div>`:''}
+  </div>
+
+  ${job.notes?`<div style="padding:0 16px 12px"><div style="background:var(--warn-lt);border:1px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:13px;color:#92400e"><strong>Notes:</strong> ${esc(job.notes)}</div></div>`:''}
+
+  ${flagBridge?`<div style="padding:0 16px 10px"><div class="badge badge-bridge" style="font-size:12px;padding:6px 12px">⚠ Cross-bridge deviation detected on one or more cells — see highlighted columns</div></div>`:''}
+
+  <div class="tbl-scroll">
+    <table class="lc-table">
+      <thead>
+        <tr>
+          <th class="sticky-c">#</th>
+          <th class="sticky-c2">Status</th>
+          ${R.map(r=>`<th${r.bridge?' style="color:var(--bridge)"':''}>${r.lbl}<br><span style="font-weight:400;font-size:9px">${r.unit}</span></th>`).join('')}
+          <th>ROC<br><span style="font-weight:400;font-size:9px">mV (meas.)</span></th>
+          ${theoROC?`<th style="color:var(--good)">ROC<br><span style="font-weight:400;font-size:9px">mV (theo.)</span></th>`:''}
+          <th class="no-print"></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${job.cells.map((cell,i)=>{
+          const st=cellStatus(cell), roc=calcROC(cell);
+          const isBridgeBad=bridgeFlagged(cell);
+          return `<tr>
+            <td class="sticky-c">${i+1}</td>
+            <td class="sticky-c2"><span class="badge badge-${st.cls}" style="font-size:10px">${st.lbl}${st.n>0?' ('+st.n+'/'+st.tot+')':''}</span></td>
+            ${R.map(r=>{
+              const v=cell[r.k], res=r.val&&v?V[r.val](v):null;
+              let cls=!v?'v-empty':'';
+              if(res&&!res.ok) cls=res.cls==='bad'?'v-bad':'v-warn';
+              if(r.bridge&&isBridgeBad&&v) cls='v-bridge';
+              return `<td class="${cls}">${v||'—'}</td>`;
+            }).join('')}
+            <td class="${roc?'v-calc':'v-empty'}">${roc||'—'}</td>
+            ${theoROC?`<td class="${roc?'v-theory':'v-empty'}">${roc?theoROC:'—'}</td>`:''}
+            <td class="no-print"><button class="edit-cell-btn" data-ci="${i}">✏ Edit</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  ${CUR?`
+  <div class="sum-actions no-print">
+    <button class="btn btn-outline" id="b-cont">← Continue Entry</button>
+    <button class="btn btn-primary" id="b-done">✓ Finish Job</button>
+  </div>`:`
+  <div class="sum-actions no-print">
+    <button class="btn btn-outline" id="b-del" style="color:var(--bad);border-color:var(--bad-lt)">🗑 Delete</button>
+    <button class="btn btn-primary" id="b-home">← Home</button>
+  </div>
+  <div style="padding:0 16px 4px;display:flex;gap:10px;" class="no-print">
+    <button class="btn" id="b-report" style="background:#1a3c5e;color:#fff;flex:1">📄 Customer Report</button>
+    <button class="btn btn-outline" id="b-share" style="flex:1">📤 Share Job</button>
+  </div>
+  <div style="padding:0 16px 8px;" class="no-print">
+    <button class="btn btn-outline" id="b-editinfo" style="font-size:14px">✏ Edit Job Info</button>
+  </div>
+  <div style="padding:4px 16px 20px;font-size:12px;color:var(--muted);text-align:center" class="no-print">Share sends a .json file — other techs import it to their app</div>`}
+  </div>`;
+}
+function bSummary(){
+  const job=CUR?CUR.job:jobs.find(j=>j.id===DID);
+  const backBtn=document.getElementById('b-back');
+  if(backBtn) backBtn.onclick=()=>{ if(CUR)go('entry'); else go('home'); };
+  document.getElementById('b-print').onclick=()=>window.print();
+
+  // Edit cell buttons — jump to that cell's entry, returning to summary after
+  document.querySelectorAll('.edit-cell-btn').forEach(btn=>{
+    btn.onclick=()=>{
+      const ci=parseInt(btn.dataset.ci);
+      CUR={job,ci,ri:0,editMode:true}; go('entry');
+    };
+  });
+
+  if(CUR){
+    document.getElementById('b-cont').onclick=()=>go('entry');
+    document.getElementById('b-done').onclick=()=>{
+      if(job){job.complete=true;const i=jobs.findIndex(j=>j.id===job.id);if(i>=0)jobs[i]=job;saveJobs();}
+      CUR=null; go('home');
+    };
+  } else {
+    document.getElementById('b-home').onclick=()=>go('home');
+    const rptBtn=document.getElementById('b-report');
+    if(rptBtn) rptBtn.onclick=()=>{
+      const sig=confirm('Include signature / sign-off block?');
+      printCustomerReport(DID,sig);
+    };
+    const shareBtn=document.getElementById('b-share');
+    if(shareBtn) shareBtn.onclick=()=>exportJob(DID);
+    const editInfoBtn=document.getElementById('b-editinfo');
+    if(editInfoBtn) editInfoBtn.onclick=()=>showEditJobInfoSheet(job);
+    document.getElementById('b-del').onclick=()=>{
+      showDlg({
+        title:'Delete this job?',
+        msg:'This cannot be undone. Export a backup first if you need to keep the data.',
+        acts:[
+          {lbl:'Delete',cls:'btn-danger',fn:()=>{jobs=jobs.filter(j=>j.id!==DID);saveJobs();hideDlg();go('history');}},
+          {lbl:'Cancel',cls:'btn-outline',fn:hideDlg}
+        ]
+      });
+    };
+  }
+}
+
+// ─── HISTORY ─────────────────────────────────────────────
+function rHistory(){
+  const list=[...jobs].reverse();
+  return `<div class="page">
+  <div class="hdr">
+    <button class="hdr-btn" id="b-back">← Back</button>
+    <h1>All Jobs (${jobs.length})</h1>
+    <div style="width:60px"></div>
+  </div>
+  ${list.length?`
+  <div class="hist-list">
+    ${list.map(j=>`
+      <div class="card job-row" data-id="${j.id}">
+        <div class="job-row-info">
+          <h3>${esc(j.customer)||'No Customer'}</h3>
+          <p>${esc(j.scale)||'—'} · ${j.date||'—'} · ${esc(j.tech)||'—'}</p>
+          ${j.cellModel?`<p style="font-size:12px;color:var(--muted);margin-top:1px">${esc(j.cellModel)}</p>`:''}
+          <p style="margin-top:4px">${statusTag(j)}</p>
+        </div>
+        <div class="job-row-cells">
+          <div class="cells-num">${j.numCells}</div>
+          <div class="cells-lbl">cell${j.numCells!==1?'s':''}</div>
+        </div>
+      </div>`).join('')}
+  </div>`:`<div class="empty-state"><div class="icon">📋</div><p>No jobs saved yet.</p></div>`}
+  </div>`;
+}
+function bHistory(){
+  document.getElementById('b-back').onclick=()=>go('home');
+  document.querySelectorAll('.job-row').forEach(el=>{
+    el.onclick=()=>{
+      const j=jobs.find(x=>x.id==el.dataset.id); if(!j)return;
+      j.complete?go('summary',{CUR:null,DID:j.id}):go('entry',{CUR:{job:j,ci:0,ri:0,editMode:false}});
+    };
+  });
+}
+
+// ─── DIALOG ──────────────────────────────────────────────
+let dlgEl=null;
+function showDlg({title,msg,acts}){
+  hideDlg();
+  const ov=document.createElement('div'); ov.className='overlay';
+  ov.innerHTML=`<div class="dlg"><h3>${title}</h3><p>${msg}</p><div class="dlg-acts">${acts.map((a,i)=>`<button class="btn ${a.cls}" id="dlg-${i}">${a.lbl}</button>`).join('')}</div></div>`;
+  document.body.appendChild(ov); dlgEl=ov;
+  acts.forEach((a,i)=>{ const b=document.getElementById(`dlg-${i}`); if(b)b.onclick=a.fn; });
+}
+function hideDlg(){ if(dlgEl){dlgEl.remove();dlgEl=null;} render(); }
+
+// ─── UTILS ───────────────────────────────────────────────
+function esc(s){ if(!s&&s!==0)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── SHARE JOB ───────────────────────────────────────────────────
+function exportJob(jobId) {
+  const job=jobs.find(j=>j.id===jobId); if(!job)return;
+  const shareData={type:'loadcell-share',version:1,sharedAt:new Date().toISOString(),job:job};
+  const blob=new Blob([JSON.stringify(shareData,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const name=(job.customer||'Job').replace(/[^a-zA-Z0-9]/g,'_')+'_'+(job.scale||'').replace(/[^a-zA-Z0-9]/g,'_')+'_'+(job.date||new Date().toISOString().slice(0,10));
+  a.href=url; a.download='LoadCell_'+name+'.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── CUSTOMER REPORT PDF ─────────────────────────────────────────
+function printCustomerReport(jobId, includeSig) {
+  const job = jobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  const allStatuses = job.cells.map(c => cellStatus(c));
+  // Only include cells that aren't EMPTY
+  const activeCells = job.cells.map((c,i)=>({c,i,st:allStatuses[i]})).filter(x=>x.st.lbl!=='EMPTY');
+
+  const anyFail   = activeCells.some(x => x.st.cls === 'bad');
+  const anyReview = activeCells.some(x => x.st.cls === 'warn');
+  const oCls = anyFail ? 'bad' : anyReview ? 'warn' : 'good';
+  const oLbl = anyFail ? 'ISSUES DETECTED' : anyReview ? 'REVIEW REQUIRED' : 'ALL CELLS PASS';
+  const oIcon = anyFail ? '&#x2717;' : anyReview ? '~' : '&#x2713;';
+  const scol = {bad:'#7f1d1d', warn:'#713f12', good:'#14532d'}[oCls];
+  const sbg  = {bad:'#fee2e2', warn:'#fefce8', good:'#dcfce7'}[oCls];
+  const sbd  = {bad:'#dc2626', warn:'#ca8a04', good:'#16a34a'}[oCls];
+
+  const passCount    = activeCells.filter(x => x.st.lbl === 'PASS').length;
+  const reviewCount  = activeCells.filter(x => x.st.lbl === 'REVIEW').length;
+  const failCount    = activeCells.filter(x => x.st.lbl === 'FAIL').length;
+  const partialCount = activeCells.filter(x => x.st.lbl === 'PARTIAL').length;
+  const theoROC = calcTheoROC(job);
+
+  const qrData = encodeURIComponent(
+    'LOAD CELL INSPECTION | Customer: ' + (job.customer||'') +
+    ' | Scale: ' + (job.scale||'') + ' | Tech: ' + (job.tech||'') +
+    ' | Date: ' + (job.date||'') + ' | Result: ' + oLbl +
+    ' | Cells: ' + activeCells.length
+  );
+  const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=70x70&color=1a3c5e&bgcolor=ffffff&data=' + qrData;
+
+  // ── Helpers ──
+  function sh(title, colspan) {
+    return '<tr><td colspan="'+(colspan||'2')+'" style="background:#1a3c5e;color:white;padding:4px 8px;font-size:9.5px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;">' + title + '</td></tr>';
+  }
+  function lv(label, val, extra) {
+    extra = extra || '';
+    return '<tr>' +
+      '<td style="padding:3px 8px;border:1px solid #d1d5db;font-size:10px;color:#6b7280;width:46%;">' + label + '</td>' +
+      '<td style="padding:3px 8px;border:1px solid #d1d5db;font-size:10px;' + extra + '">' + (val != null && val !== '' ? val : '&mdash;') + '</td>' +
+    '</tr>';
+  }
+
+  // ── Per-cell computed values for transposed table ──
+  const cellData = activeCells.map(function(x) {
+    var cell = x.c, ci = x.i;
+    var bvals = BRIDGE_KEYS.map(function(k){ return parseFloat(cell[k]); }).filter(function(n){ return !isNaN(n); });
+    var bavg  = bvals.length === 4 ? bvals.reduce(function(a,b){return a+b;},0)/4 : null;
+    var bmaxDev = bavg ? Math.max.apply(null, bvals.map(function(v){ return Math.abs(v-bavg)/bavg*100; })) : 0;
+    var bflagged = bmaxDev > 1;
+    var roc = calcROC(cell);
+    var rocDev = '';
+    if (roc && theoROC) {
+      var d = Math.abs(parseFloat(roc)-parseFloat(theoROC))/parseFloat(theoROC)*100;
+      var c = d>5?'#dc2626':d>2?'#ca8a04':'#16a34a';
+      rocDev = ' <span style="font-size:8.5px;color:'+c+';">(±'+d.toFixed(1)+'%)</span>';
+    }
+    return { cell:cell, ci:ci, st:x.st, bavg:bavg, bmaxDev:bmaxDev, bflagged:bflagged, roc:roc, rocDev:rocDev };
+  });
+
+  var nc = cellData.length; // number of active cells
+  var labelW = nc <= 3 ? '130px' : nc <= 5 ? '110px' : '90px';
+  var stBdColor = function(cls){ return {good:'#16a34a',warn:'#ca8a04',bad:'#dc2626',muted:'#9ca3af'}[cls]||'#9ca3af'; };
+
+  // ── Column header row (Cell 1, Cell 2 ...) with status badge ──
+  var colHeaders = '<tr>' +
+    '<th style="padding:4px 8px;border:1px solid #d1d5db;background:#f9fafb;font-size:9.5px;color:#374151;width:'+labelW+';text-align:left;">Reading</th>' +
+    cellData.map(function(d){
+      var bd = stBdColor(d.st.cls);
+      return '<th style="padding:4px 6px;border:1px solid #d1d5db;background:#f9fafb;font-size:9.5px;color:#374151;text-align:center;">' +
+        'Cell '+(d.ci+1)+'<br><span style="background:'+bd+';color:white;font-size:8.5px;font-weight:700;padding:1px 6px;border-radius:8px;display:inline-block;margin-top:2px;">'+d.st.lbl+'</span>' +
+        '</th>';
+    }).join('') +
+    '</tr>';
+
+  // ── Helper: render one transposed row — returns '' if all cells empty ──
+  function trow(label, valFn, styleFn) {
+    var vals = cellData.map(function(d){ return valFn(d); });
+    if (vals.every(function(v){ return !v || v===''; })) return ''; // skip empty rows
+    var styles = styleFn ? cellData.map(function(d){ return styleFn(d); }) : cellData.map(function(){ return ''; });
+    return '<tr>' +
+      '<td style="padding:3px 8px;border:1px solid #d1d5db;font-size:9.5px;color:#6b7280;background:#fafafa;">'+label+'</td>' +
+      vals.map(function(v,i){
+        return '<td style="padding:3px 8px;border:1px solid #d1d5db;font-size:9.5px;text-align:center;'+styles[i]+'">'+(v||'&mdash;')+'</td>';
+      }).join('') +
+    '</tr>';
+  }
+
+  // ── Section header spanning all columns ──
+  function tsec(title) {
+    return '<tr><td colspan="'+(nc+1)+'" style="background:#1a3c5e;color:white;padding:3px 8px;font-size:9px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;">'+title+'</td></tr>';
+  }
+
+  // ── Build transposed readings table ──
+  var tableRows = colHeaders;
+
+  // RESISTANCE section
+  tableRows += tsec('Resistance (&#x2126;)');
+  tableRows += trow('Excitation', function(d){ return d.cell.excitation ? d.cell.excitation+' &#x2126;' : ''; });
+  tableRows += trow('Signal',     function(d){ return d.cell.signal     ? d.cell.signal    +' &#x2126;' : ''; });
+  tableRows += trow('&minus;Comp',function(d){ return d.cell.cmp_n      ? d.cell.cmp_n     +' &#x2126;' : ''; });
+  tableRows += trow('+Comp',      function(d){ return d.cell.cmp_p      ? d.cell.cmp_p     +' &#x2126;' : ''; });
+
+  // CROSS-BRIDGE section
+  var hasBridge = cellData.some(function(d){ return BRIDGE_KEYS.some(function(k){ return d.cell[k]; }); });
+  if (hasBridge) {
+    tableRows += tsec('Cross-Bridge (&#x2126;)');
+    BRIDGE_KEYS.forEach(function(k) {
+      var rdef = R.find(function(r){ return r.k===k; });
+      tableRows += trow(rdef?rdef.lbl:k, function(d){
+        var v = d.cell[k]; if(!v) return '';
+        var bv = d.bavg, dev = bv ? Math.abs(parseFloat(v)-bv)/bv*100 : 0;
+        var flag = dev>1;
+        return v+' &#x2126;'+(flag?'<span style="font-size:8px;color:#5b21b6;"> (+'+dev.toFixed(1)+'%)</span>':'');
+      }, function(d){
+        var v=d.cell[k]; if(!v)return'';
+        var bv=d.bavg, dev=bv?Math.abs(parseFloat(v)-bv)/bv*100:0;
+        return dev>1?'background:#f5f3ff;color:#5b21b6;font-weight:700;':'';
+      });
+    });
+    tableRows += trow('Bridge Deviation', function(d){
+      if(!d.bavg) return '';
+      var c = d.bflagged?'#5b21b6':'#16a34a';
+      return '<span style="color:'+c+';font-weight:'+(d.bflagged?'700':'400')+';">'+d.bmaxDev.toFixed(2)+'%'+(d.bflagged?' ⚠':'')+'</span>';
+    });
+  }
+
+  // INSULATION section
+  tableRows += tsec('Insulation');
+  tableRows += trow('Shorts (&#x2126;)', function(d){
+    var v=d.cell.shrt_ohm; if(!v) return '';
+    var res=V.shortsOhm(v); var c=res&&!res.ok?'#dc2626':'#16a34a';
+    return '<span style="color:'+c+';">'+v+'&#x2126; — '+(res?res.lbl:'')+'</span>';
+  });
+  tableRows += trow('Insulation (nS)', function(d){
+    var v=d.cell.shrt_ns; if(!v) return '';
+    var res=V.shortsNs(v); var c=res?(res.cls==='bad'?'#dc2626':res.cls==='warn'?'#ca8a04':'#16a34a'):'#111';
+    return '<span style="color:'+c+';">'+v+' nS — '+(res?res.lbl:'')+'</span>';
+  });
+
+  // mV / ROC section
+  tableRows += tsec('mV Readings &amp; ROC');
+  tableRows += trow('Zero Load (mV DC)', function(d){
+    var v=d.cell.zero_load; if(!v) return '';
+    var res=V.zeroLoad(v); var c=res&&res.cls==='bad'?'#dc2626':'#16a34a';
+    return '<span style="color:'+c+';">'+v+' mV DC</span>';
+  });
+  tableRows += trow('Dead Load (mV DC)',  function(d){ return d.cell.dead_load  ? d.cell.dead_load +' mV DC':''; });
+  tableRows += trow('Known Load (mV DC)', function(d){ return d.cell.known_load ? d.cell.known_load+' mV DC':''; });
+  tableRows += trow('Calc ROC (mV)', function(d){
+    if(!d.roc) return '';
+    return '<strong>'+d.roc+' mV</strong>'+d.rocDev;
+  });
+
+  var readingsTable = '<table style="border-collapse:collapse;width:100%;margin-bottom:10px;">'+tableRows+'</table>';
+
+  // ── Summary parts ──
+  var summaryParts = [];
+  if (passCount)    summaryParts.push('<strong>'+passCount+'</strong> cell'+(passCount!==1?'s':'')+' pass');
+  if (reviewCount)  summaryParts.push('<strong>'+reviewCount+'</strong> require'+(reviewCount===1?'s':'')+' review');
+  if (failCount)    summaryParts.push('<strong>'+failCount+'</strong> failed');
+  if (partialCount) summaryParts.push('<strong>'+partialCount+'</strong> incomplete');
+  if (allStatuses.length > activeCells.length) {
+    summaryParts.push((allStatuses.length-activeCells.length)+' cell'+(allStatuses.length-activeCells.length>1?'s':'')+' not tested');
+  }
+
+  var notesBlock = job.notes ?
+    '<table style="border-collapse:collapse;width:100%;margin-bottom:10px;">'+
+      sh('Notes &amp; Observations', 1)+
+      '<tr><td style="padding:6px 8px;border:1px solid #d1d5db;font-size:10px;line-height:1.5;">'+esc(job.notes)+'</td></tr>'+
+    '</table>' : '';
+
+  var html =
+    '<!DOCTYPE html><html><head><meta charset="UTF-8">'+
+    '<title>Load Cell Inspection Report &mdash; '+esc(job.customer||'')+'</title>'+
+    '<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,"Helvetica Neue",sans-serif;color:#111;background:white;padding:11mm 13mm;font-size:10.5px;}@page{size:letter;margin:0;}table{border-collapse:collapse;width:100%;}</style>'+
+    '</head><body>'+
+
+    // HEADER
+    '<div style="display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:8px;border-bottom:3px solid #1a3c5e;margin-bottom:10px;">'+
+      '<div>'+
+        '<div style="font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#9ca3af;margin-bottom:3px;">Inspection Service Report</div>'+
+        '<div style="font-size:16px;font-weight:700;color:#1a3c5e;line-height:1.15;">Load Cell Inspection &amp; Diagnostic Report</div>'+
+        '<div style="font-size:10.5px;color:#374151;margin-top:4px;">'+esc(job.customer||'')+(job.scale?' &nbsp;&middot;&nbsp; '+esc(job.scale):'')+'</div>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">'+
+        '<img src="'+qrUrl+'" width="70" height="70" alt="Scan to verify" style="border:1.5px solid #e5e7eb;border-radius:3px;display:block;" onerror="this.style.display=\'none\'">'+
+        '<div style="font-size:7px;color:#9ca3af;letter-spacing:0.3px;">Scan to verify</div>'+
+        '<div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Inspection Date</div>'+
+        '<div style="font-size:11px;font-weight:600;">'+(job.date||'&mdash;')+'</div>'+
+      '</div>'+
+    '</div>'+
+
+    // OVERALL STATUS BANNER
+    '<div style="background:'+sbg+';border:2px solid '+sbd+';border-radius:5px;padding:8px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">'+
+      '<div style="width:36px;height:36px;background:'+sbd+';border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+
+        '<span style="color:white;font-size:20px;font-weight:900;line-height:1;">'+oIcon+'</span>'+
+      '</div>'+
+      '<div style="flex:1;">'+
+        '<div style="font-size:13px;font-weight:800;color:'+scol+';letter-spacing:0.3px;">'+oLbl+'</div>'+
+        '<div style="font-size:9.5px;color:'+scol+';margin-top:2px;opacity:0.85;">'+summaryParts.join(' &nbsp;&middot;&nbsp; ')+'</div>'+
+      '</div>'+
+      '<div style="text-align:right;flex-shrink:0;">'+
+        '<div style="font-size:8.5px;color:'+scol+';text-transform:uppercase;letter-spacing:0.5px;opacity:0.7;">Cells Tested</div>'+
+        '<div style="font-size:20px;font-weight:800;color:'+scol+';line-height:1;">'+activeCells.length+'</div>'+
+      '</div>'+
+    '</div>'+
+
+    // JOB INFO (2-column)
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">'+
+      '<table style="border-collapse:collapse;width:100%;">'+
+        sh('Job Information')+
+        lv('Customer', esc(job.customer||''))+
+        lv('Scale / Location', esc(job.scale||''))+
+        lv('Technician', esc(job.tech||''))+
+        lv('Date', job.date||'')+
+        (job.cellModel ? lv('Load Cell Model', esc(job.cellModel)) : '')+
+      '</table>'+
+      '<table style="border-collapse:collapse;width:100%;">'+
+        sh('Instrument Setup')+
+        lv('Excitation Voltage', job.excitation?job.excitation+' V':'')+
+        lv('mV/V Rating', job.mvv||'')+
+        (job.testWeight  ? lv('Test Weight',   job.testWeight+' '+(job.weightUnit||'lbs'))  : '')+
+        (job.cellCapacity? lv('Cell Capacity', job.cellCapacity+' '+(job.weightUnit||'lbs')): '')+
+        (theoROC ? lv('Theoretical ROC','<span style="color:#16a34a;font-weight:700;">'+theoROC+' mV</span>') : '')+
+      '</table>'+
+    '</div>'+
+
+    // TRANSPOSED READINGS TABLE
+    readingsTable + notesBlock +
+
+    // SIGNATURE BLOCK (optional)
+    (includeSig ?
+    '<div style="margin-top:12px;page-break-inside:avoid;">'+
+      '<table style="border-collapse:collapse;width:100%;">'+
+        sh('Authorization')+
+        lv('Technician', esc(job.tech||''))+
+        lv('Customer Representative','&nbsp;')+
+      '</table>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:20px;padding:0 10px;">'+
+        '<div><div style="border-bottom:1.5px solid #374151;margin-bottom:4px;height:28px;"></div><div style="font-size:9px;color:#6b7280;">Technician Signature &amp; Date</div></div>'+
+        '<div><div style="border-bottom:1.5px solid #374151;margin-bottom:4px;height:28px;"></div><div style="font-size:9px;color:#6b7280;">Customer Representative Signature &amp; Date</div></div>'+
+      '</div>'+
+    '</div>' : '')+
+
+    '<div style="margin-top:12px;padding-top:8px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:8px;color:#9ca3af;">'+
+      '<span>Generated by ScaleCheck &nbsp;&middot;&nbsp; '+new Date().toLocaleString()+'</span>'+
+      '<span>Confidential &mdash; For authorized use only</span>'+
+    '</div>'+
+
+    '<script>window.onload=function(){window.print();}<\/script>'+
+    '</body></html>';
+
+  var _blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  var _url=URL.createObjectURL(_blob);
+  var w=window.open(_url,'_blank','width=900,height=700');
+  if(w){setTimeout(function(){URL.revokeObjectURL(_url);},60000);}
+}
+
+// ─── CELL MODEL SHEET ────────────────────────────────────────────
+function showCellModelSheet(ci){
+  if(!CUR)return;
+  const job=CUR.job, cell=job.cells[ci];
+  const curModel=cell._cellModel||'';
+  const curProfile=cell._wireProfile||{};
+  const dlOpts=models.map(m=>`<option value="${esc(m)}">`).join('');
+  const hasOverride=!!(curModel||hasAnyWireColor(curProfile));
+  const ov=document.createElement('div'); ov.className='overlay';
+  ov.innerHTML=`<div class="dlg" style="max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch">
+    <h3>Cell ${ci+1} — Model Override</h3>
+    <p>Override the model and wire colors for this cell only. Leave blank to use the job default (${esc(job.cellModel||'not set')}).</p>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
+      <div class="field">
+        <label>Load Cell Model</label>
+        <input id="cms-model" type="text" list="cms-ml" value="${esc(curModel)}" placeholder="${esc(job.cellModel||'e.g. Mettler Toledo SB-100')}" autocomplete="off" style="padding:13px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%;transition:border-color .2s">
+        <datalist id="cms-ml">${dlOpts}</datalist>
+      </div>
+      <div id="cms-wire-suggest" style="display:none;padding:7px 10px;background:var(--acc-lt);border-radius:8px;font-size:12px;color:var(--acc);font-weight:600">✦ Saved profile loaded — verify colors</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${WIRE_KEYS.map(wk=>`
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">${WIRE_NAMES[wk]}</label>
+          <select id="cms-wire-${wk}" style="padding:11px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%">
+            <option value="">— not set —</option>
+            ${Object.keys(COLOR_MAP).map(c=>`<option value="${c}"${curProfile[wk]===c?' selected':''}>${c.charAt(0).toUpperCase()+c.slice(1)}</option>`).join('')}
+          </select>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="dlg-acts" style="margin-top:16px">
+      <button class="btn btn-primary" id="cms-save">Save for Cell ${ci+1}</button>
+      ${hasOverride?`<button class="btn btn-outline" id="cms-clear" style="color:var(--muted)">✕ Clear Override (use job default)</button>`:''}
+      <button class="btn btn-ghost" id="cms-cancel">Cancel</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov); dlgEl=ov;
+
+  function loadCmsProfile(){
+    const m=document.getElementById('cms-model').value.trim();
+    const p=getWireProfile(m);
+    const banner=document.getElementById('cms-wire-suggest');
+    if(p&&hasAnyWireColor(p)){
+      WIRE_KEYS.forEach(wk=>{ const s=document.getElementById('cms-wire-'+wk); if(s) s.value=p[wk]||''; });
+      banner.style.display='block';
+    } else { banner.style.display='none'; }
+  }
+  const mi=document.getElementById('cms-model');
+  mi.addEventListener('change',loadCmsProfile);
+  mi.addEventListener('blur',loadCmsProfile);
+
+  document.getElementById('cms-save').onclick=()=>{
+    const m=document.getElementById('cms-model').value.trim();
+    const wp={};
+    WIRE_KEYS.forEach(wk=>{ wp[wk]=document.getElementById('cms-wire-'+wk).value; });
+    cell._cellModel=m;
+    cell._wireProfile=hasAnyWireColor(wp)?wp:null;
+    if(m&&hasAnyWireColor(wp)) saveWireProfile(m,wp);
+    const idx=jobs.findIndex(j=>j.id===job.id); if(idx>=0)jobs[idx]=job;
+    saveJobs(); ov.remove(); dlgEl=null; render();
+  };
+  const clrBtn=document.getElementById('cms-clear');
+  if(clrBtn) clrBtn.onclick=()=>{
+    cell._cellModel=''; cell._wireProfile=null;
+    const idx=jobs.findIndex(j=>j.id===job.id); if(idx>=0)jobs[idx]=job;
+    saveJobs(); ov.remove(); dlgEl=null; render();
+  };
+  document.getElementById('cms-cancel').onclick=()=>{ ov.remove(); dlgEl=null; };
+}
+
+// ─── EDIT JOB INFO SHEET ─────────────────────────────────────────
+function showEditJobInfoSheet(job){
+  const dlOpts=models.map(m=>`<option value="${esc(m)}">`).join('');
+  const wp=job.wireProfile||{};
+  const inp=s=>`style="padding:13px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%;transition:border-color .2s" ${s}`;
+  const ov=document.createElement('div'); ov.className='overlay';
+  ov.innerHTML=`<div class="dlg" style="max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch">
+    <h3>Edit Job Info</h3>
+    <p>Update job details. Cell readings are not affected.</p>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
+      <div class="field">
+        <label>Customer</label>
+        <input id="eji-cust" type="text" value="${esc(job.customer||'')}" placeholder="Company / customer name" autocomplete="off" ${inp('')}>
+      </div>
+      <div class="field">
+        <label>Scale / Location</label>
+        <input id="eji-scale" type="text" value="${esc(job.scale||'')}" placeholder="Scale ID or description" autocomplete="off" ${inp('')}>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field">
+          <label>Technician</label>
+          <input id="eji-tech" type="text" value="${esc(job.tech||'')}" placeholder="Your name" autocomplete="off" ${inp('')}>
+        </div>
+        <div class="field">
+          <label>Date</label>
+          <input id="eji-date" type="date" value="${job.date||''}" ${inp('')}>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field">
+          <label>Number of Load Cells</label>
+          <select id="eji-nc" style="padding:13px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%">
+            ${Array.from({length:16},(_,i)=>`<option value="${i+1}"${(job.numCells||1)===(i+1)?' selected':''}>${i+1}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>Load Cell Model</label>
+          <input id="eji-model" type="text" list="eji-ml" value="${esc(job.cellModel||'')}" placeholder="e.g. Mettler Toledo SB-100" autocomplete="off" ${inp('')}>
+          <datalist id="eji-ml">${dlOpts}</datalist>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Wire Colors (default)</span>
+          <span id="eji-wire-suggest" style="display:none;font-size:11px;color:var(--acc);font-weight:600">✦ Profile loaded</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          ${WIRE_KEYS.map(wk=>`
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">${WIRE_NAMES[wk]}</label>
+            <select id="eji-wire-${wk}" style="padding:11px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%">
+              <option value="">— not set —</option>
+              ${Object.keys(COLOR_MAP).map(c=>`<option value="${c}"${wp[wk]===c?' selected':''}>${c.charAt(0).toUpperCase()+c.slice(1)}</option>`).join('')}
+            </select>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field">
+          <label>Excitation (V)</label>
+          <input id="eji-exc" type="text" inputmode="decimal" value="${esc(job.excitation||'')}" placeholder="e.g. 5.0" ${inp('')}>
+        </div>
+        <div class="field">
+          <label>mV/V Rating</label>
+          <input id="eji-mvv" type="text" inputmode="decimal" value="${esc(job.mvv||'')}" placeholder="e.g. 2.0" ${inp('')}>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 70px;gap:10px">
+        <div class="field">
+          <label>Test Weight</label>
+          <input id="eji-tw" type="text" inputmode="decimal" value="${esc(job.testWeight||'')}" placeholder="e.g. 500" ${inp('')}>
+        </div>
+        <div class="field">
+          <label>Cell Capacity</label>
+          <input id="eji-cap" type="text" inputmode="decimal" value="${esc(job.cellCapacity||'')}" placeholder="e.g. 5000" ${inp('')}>
+        </div>
+        <div class="field">
+          <label>Units</label>
+          <select id="eji-wu" style="padding:13px 10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%">
+            <option value="lbs"${(job.weightUnit||'lbs')==='lbs'?' selected':''}>lbs</option>
+            <option value="kg"${job.weightUnit==='kg'?' selected':''}>kg</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Job Notes</label>
+        <textarea id="eji-notes" placeholder="Observations, reference info…" style="padding:13px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%;min-height:68px;line-height:1.5;resize:none">${esc(job.notes||'')}</textarea>
+      </div>
+    </div>
+    <div class="dlg-acts" style="margin-top:16px">
+      <button class="btn btn-primary" id="eji-save">Save Changes</button>
+      <button class="btn btn-outline" id="eji-cancel">Cancel</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov); dlgEl=ov;
+
+  function loadEjiProfile(){
+    const m=document.getElementById('eji-model').value.trim();
+    const p=getWireProfile(m);
+    const banner=document.getElementById('eji-wire-suggest');
+    if(p&&hasAnyWireColor(p)){
+      WIRE_KEYS.forEach(wk=>{ const s=document.getElementById('eji-wire-'+wk); if(s) s.value=p[wk]||''; });
+      banner.style.display='block';
+    } else { banner.style.display='none'; }
+  }
+  const mi=document.getElementById('eji-model');
+  mi.addEventListener('change',loadEjiProfile);
+  mi.addEventListener('blur',loadEjiProfile);
+
+  document.getElementById('eji-save').onclick=()=>{
+    const model=document.getElementById('eji-model').value.trim();
+    const newWp={};
+    WIRE_KEYS.forEach(wk=>{ newWp[wk]=document.getElementById('eji-wire-'+wk).value; });
+
+    // Handle cell count change
+    const newNC=parseInt(document.getElementById('eji-nc').value)||job.numCells;
+    if(newNC!==job.numCells){
+      if(newNC<job.numCells){
+        const losing=job.numCells-newNC;
+        const hasData=job.cells.slice(newNC).some(c=>Object.entries(c).some(([k,v])=>!k.startsWith('_')&&v));
+        if(hasData&&!confirm(`Reduce from ${job.numCells} to ${newNC} cells?\nData for the last ${losing} cell(s) will be deleted.`)) return;
+        job.cells=job.cells.slice(0,newNC);
+      } else {
+        while(job.cells.length<newNC) job.cells.push(newCell());
+      }
+      job.numCells=newNC;
+    }
+
+    job.customer=document.getElementById('eji-cust').value.trim();
+    job.scale=document.getElementById('eji-scale').value.trim();
+    job.tech=document.getElementById('eji-tech').value.trim();
+    job.date=document.getElementById('eji-date').value;
+    job.cellModel=model;
+    job.wireProfile=hasAnyWireColor(newWp)?newWp:null;
+    job.excitation=document.getElementById('eji-exc').value.trim();
+    job.mvv=document.getElementById('eji-mvv').value.trim();
+    job.testWeight=document.getElementById('eji-tw').value.trim();
+    job.cellCapacity=document.getElementById('eji-cap').value.trim();
+    job.weightUnit=document.getElementById('eji-wu').value;
+    job.notes=document.getElementById('eji-notes').value.trim();
+    if(model) addModel(model);
+    if(model&&hasAnyWireColor(newWp)) saveWireProfile(model,newWp);
+    if(job.tech) store.set('lcl_tech',job.tech);
+    const idx=jobs.findIndex(j=>j.id===job.id); if(idx>=0)jobs[idx]=job;
+    saveJobs(); ov.remove(); dlgEl=null; render();
+  };
+  document.getElementById('eji-cancel').onclick=()=>{ ov.remove(); dlgEl=null; };
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
