@@ -973,6 +973,11 @@ function addRound(){
   const spanFoundOverride=spanFoundEl?parseFloat(spanFoundEl.value):NaN;
   let spanBefore=lastRound?(lastRound.spanAfter||lastRound.spanBefore):((!isNaN(spanFoundOverride)&&spanFoundOverride>0)?spanFoundOverride:d.spanAsFound);
 
+  // Persist As Found span on first round so reports/summaries show the correct value
+  if(d.testRounds.length===0&&!isNaN(spanFoundOverride)&&spanFoundOverride>0){
+    d.spanAsFound=spanFoundOverride;
+  }
+
   // If there's a new span input (adjustment round), use it
   let spanAfter=spanBefore;
   const newSpanEl=document.getElementById('s3-new-span');
