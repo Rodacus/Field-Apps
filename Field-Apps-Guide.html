@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TRAC Field Apps — User Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#235AA7; --green:#029F49; --yellow:#F5DA02;
+    --navy:#0f2347; --orange:#d97706;
+    --pass:#029F49; --warn:#d97706; --fail:#dc2626;
+    --bg:#f8fafc; --card:#fff; --border:#e2e8f0;
+    --text:#1e293b; --muted:#64748b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Libre Franklin',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;}
+
+  /* HEADER */
+  .guide-header{background:var(--navy);color:#fff;padding:20px 20px 16px;text-align:center;}
+  .guide-header .logo-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px;}
+  .guide-header svg{flex-shrink:0;}
+  .guide-header .brand{font-size:22px;font-weight:800;letter-spacing:1px;}
+  .guide-header .brand span{color:var(--yellow);}
+  .guide-header .subtitle{font-size:13px;opacity:.75;letter-spacing:.5px;text-transform:uppercase;}
+
+  /* NAV TABS */
+  .tab-bar{display:flex;background:var(--blue);position:sticky;top:0;z-index:100;}
+  .tab{flex:1;padding:13px 6px;text-align:center;font-weight:700;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;border-bottom:3px solid transparent;transition:.15s;text-transform:uppercase;letter-spacing:.5px;}
+  .tab.active{color:#fff;border-bottom-color:var(--yellow);}
+  .tab:hover{color:#fff;}
+
+  /* PAGE SECTIONS */
+  .page{display:none;max-width:680px;margin:0 auto;padding:20px 16px 48px;}
+  .page.active{display:block;}
+
+  /* APP QUICK LAUNCH */
+  .launch-row{display:flex;gap:10px;margin-bottom:24px;}
+  .launch-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 10px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;color:#fff;border:none;cursor:pointer;}
+  .launch-belt{background:var(--blue);}
+  .launch-cell{background:var(--navy);}
+
+  /* SECTION HEADERS */
+  .section-title{font-size:19px;font-weight:800;color:var(--navy);margin:24px 0 12px;display:flex;align-items:center;gap:8px;}
+  .section-title .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+  /* STEP FLOW DIAGRAM */
+  .step-flow{display:flex;flex-direction:column;gap:0;margin:12px 0 20px;}
+  .step-item{display:flex;align-items:flex-start;gap:12px;position:relative;}
+  .step-item:not(:last-child)::after{content:'';position:absolute;left:17px;top:36px;bottom:-2px;width:2px;background:var(--border);}
+  .step-num{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;flex-shrink:0;background:var(--blue);z-index:1;}
+  .step-body{padding:4px 0 18px;flex:1;}
+  .step-body strong{display:block;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:3px;}
+  .step-body p{font-size:13.5px;color:var(--muted);margin:0;}
+  .step-body .step-tip{display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;padding:5px 9px;font-size:12.5px;color:#92400e;font-weight:600;}
+  .step-body .step-warn{display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;padding:5px 9px;font-size:12.5px;color:#991b1b;font-weight:600;}
+  .step-body .step-note{display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 9px;font-size:12.5px;color:#1e40af;font-weight:600;}
+
+  /* STATUS BADGE */
+  .status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 20px;}
+  .status-card{border-radius:10px;padding:12px 14px;border:2px solid;}
+  .status-card.pass{background:#f0fdf4;border-color:var(--pass);}
+  .status-card.warn{background:#fffbeb;border-color:var(--warn);}
+  .status-card.fail{background:#fef2f2;border-color:var(--fail);}
+  .status-card.review{background:#f5f3ff;border-color:#7c3aed;}
+  .status-label{font-weight:800;font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+  .status-card.pass .status-label{color:var(--pass);}
+  .status-card.warn .status-label{color:var(--warn);}
+  .status-card.fail .status-label{color:var(--fail);}
+  .status-card.review .status-label{color:#7c3aed;}
+  .status-card p{font-size:12.5px;color:var(--muted);}
+  .status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .pass-dot{background:var(--pass);}
+  .warn-dot{background:var(--warn);}
+  .fail-dot{background:var(--fail);}
+  .review-dot{background:#7c3aed;}
+
+  /* FEATURE CARDS */
+  .feature-list{display:flex;flex-direction:column;gap:8px;margin:10px 0 20px;}
+  .feature-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;}
+  .feature-icon{font-size:20px;flex-shrink:0;line-height:1;}
+  .feature-body strong{display:block;font-size:14px;font-weight:700;color:var(--navy);}
+  .feature-body p{font-size:13px;color:var(--muted);margin-top:2px;}
+
+  /* PDF SECTION */
+  .pdf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 20px;}
+  .pdf-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+  .pdf-card .pdf-icon{font-size:28px;margin-bottom:6px;}
+  .pdf-card strong{display:block;font-size:14px;font-weight:700;color:var(--navy);}
+  .pdf-card p{font-size:12px;color:var(--muted);margin-top:4px;}
+
+  /* INFO BOX */
+  .info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:13px 14px;margin:10px 0 18px;font-size:13.5px;color:#1e40af;}
+  .info-box strong{display:block;font-weight:700;margin-bottom:3px;}
+  .warn-box{background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:13px 14px;margin:10px 0 18px;font-size:13.5px;color:#92400e;}
+  .warn-box strong{display:block;font-weight:700;margin-bottom:3px;}
+
+  /* DIVIDER */
+  hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
+
+  /* FOOTER */
+  .guide-footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="guide-header">
+  <div class="logo-row">
+    <svg viewBox="0 0 34 34" width="30" height="30" aria-hidden="true">
+      <rect x="3" y="5" width="6" height="24" rx="1.5" fill="#fff"/>
+      <rect x="25" y="5" width="6" height="24" rx="1.5" fill="#fff"/>
+      <polygon points="9,5 17,15 25,5 25,11 17,21 9,11" fill="#fff"/>
+    </svg>
+    <div class="brand">TRAC <span>Field Apps</span></div>
+  </div>
+  <div class="subtitle">User Guide · Michelli Weighing &amp; Measurement</div>
+</div>
+
+<!-- NAV TABS -->
+<div class="tab-bar">
+  <div class="tab active" onclick="showPage('belt')">🏭 TRAC Belt</div>
+  <div class="tab" onclick="showPage('cell')">⚡ TRAC Cell</div>
+  <div class="tab" onclick="showPage('data')">💾 Data &amp; Backup</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  TRAC BELT PAGE                                           -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-belt">
+
+  <div style="margin-top:20px;">
+    <a class="launch-btn launch-belt" href="https://rodacus.github.io/Field-Apps/BeltScaleLogger.html" target="_blank">
+      🏭 Open TRAC Belt
+    </a>
+  </div>
+
+  <p style="font-size:13.5px;color:var(--muted);margin:10px 0 20px;">Belt conveyor scale calibration. Records test rounds, auto-calculates % error, and generates professional PDF reports for customers and plant managers.</p>
+
+  <!-- STATUS REFERENCE -->
+  <div class="section-title"><div class="dot" style="background:var(--blue)"></div>Result Status Reference</div>
+  <div class="status-grid">
+    <div class="status-card pass">
+      <div class="status-label"><span class="status-dot pass-dot"></span>PASS</div>
+      <p>% Error &lt; 0.5%<br>Scale is within spec.</p>
+    </div>
+    <div class="status-card warn">
+      <div class="status-label"><span class="status-dot warn-dot"></span>MARGINAL</div>
+      <p>% Error 0.5–1.0%<br>Adjusted but watch it.</p>
+    </div>
+    <div class="status-card fail" style="grid-column:1/-1;">
+      <div class="status-label"><span class="status-dot fail-dot"></span>FAIL</div>
+      <p>% Error ≥ 1.0% — Scale is out of spec. Adjustment required. Document and notify plant manager.</p>
+    </div>
+  </div>
+
+  <!-- 7-STEP WORKFLOW -->
+  <div class="section-title"><div class="dot" style="background:var(--blue)"></div>7-Step Calibration Walkthrough</div>
+
+  <div class="step-flow">
+
+    <div class="step-item">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Visit Info</strong>
+        <p>Select the scale from your library (or add a new one). Enter tech name, date, and any pre-visit notes.</p>
+        <span class="step-note">💡 Scale library saves all your sites — you won't re-enter customer info each visit.</span>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Belt Speed</strong>
+        <p>Enter the belt speed in FPM and idler spacing in inches. The app calculates TWPF (test weight per foot) automatically.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Zero As Found</strong>
+        <p>Record the zero reading before any adjustment. Use the <strong>± Neg</strong> button if the reading is negative — do not type a minus sign.</p>
+        <span class="step-note">💡 First round: set the Cal Span As Found here. The field is editable before any rounds are recorded.</span>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Test Rounds</strong>
+        <p>Enter start totalizer, run the belt, record end totalizer. Tap <strong>▶ Start Timer</strong> to run the 5-minute countdown.</p>
+        <span class="step-warn">⚠️ Keep this screen open while the timer runs — leaving the page pauses the timer. The app will alert you if you navigate away.</span>
+        <br><span class="step-tip">💡 Record As Found first, then make adjustments and add rounds to confirm As Left.</span>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Zero As Left</strong>
+        <p>Record the zero reading after adjustment. Use <strong>± Neg</strong> if negative.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Maintenance &amp; Photos</strong>
+        <p>Complete the maintenance checklist. Tap <strong>📷 Add Photo</strong> to capture equipment photos — these embed directly in the Customer Report PDF.</p>
+        <span class="step-tip">💡 Photos work from your camera or existing gallery. No internet needed — stored on-device.</span>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <strong>Review &amp; Save</strong>
+        <p>Review the full calibration summary. All rounds, % errors, and PASS/FAIL status display here. Save the visit, then generate your PDFs.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PDF OUTPUTS -->
+  <div class="section-title"><div class="dot" style="background:var(--green)"></div>PDF Reports</div>
+  <div class="pdf-row">
+    <div class="pdf-card">
+      <div class="pdf-icon">📄</div>
+      <strong>Customer Report</strong>
+      <p>Full calibration certificate. Includes QR code, PASS/FAIL banner, test rounds table, and any photos taken. Give this to the customer.</p>
+    </div>
+    <div class="pdf-card">
+      <div class="pdf-icon">🏗️</div>
+      <strong>Site Summary</strong>
+      <p>Plant manager one-pager. All scales tested in one visit, scorecard, pass/fail totals, and signature lines.</p>
+    </div>
+  </div>
+  <div class="info-box">
+    <strong>Generating PDFs</strong>
+    From the visit summary screen, tap <strong>📄 Customer Report</strong> or <strong>🏗️ Site Summary</strong>. Your phone's share sheet will open — save as PDF or send directly via email or text.
+  </div>
+
+  <!-- CALIBRATION REMINDERS -->
+  <div class="section-title"><div class="dot" style="background:var(--yellow)"></div>Calibration Reminders</div>
+  <p style="font-size:13.5px;color:var(--muted);margin-bottom:10px;">The home screen shows reminder cards for scales with upcoming or overdue calibration dates. Tap <strong>Draft Reminder Email</strong> on any site to generate a pre-written email covering all due scales at that location.</p>
+
+</div><!-- end belt page -->
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  TRAC CELL PAGE                                           -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-cell">
+
+  <div style="margin-top:20px;">
+    <a class="launch-btn launch-cell" href="https://rodacus.github.io/Field-Apps/LoadCellLogger.html" target="_blank">
+      ⚡ Open TRAC Cell
+    </a>
+  </div>
+
+  <p style="font-size:13.5px;color:var(--muted);margin:10px 0 20px;">Load cell OHM testing. Records 13 readings per cell, flags cross-bridge deviations, calculates ROC, and generates a professional Customer Report PDF.</p>
+
+  <!-- STATUS REFERENCE -->
+  <div class="section-title"><div class="dot" style="background:var(--navy)"></div>Cell Status Reference</div>
+  <div class="status-grid">
+    <div class="status-card pass">
+      <div class="status-label"><span class="status-dot pass-dot"></span>PASS</div>
+      <p>All readings within spec. 10+ readings complete.</p>
+    </div>
+    <div class="status-card review">
+      <div class="status-label"><span class="status-dot review-dot"></span>REVIEW</div>
+      <p>Cross-bridge deviation &gt;1% from average. Flag for closer look.</p>
+    </div>
+    <div class="status-card fail">
+      <div class="status-label"><span class="status-dot fail-dot"></span>FAIL</div>
+      <p>Negative resistance or mV reading detected — physically invalid.</p>
+    </div>
+    <div class="status-card warn" style="background:#f8fafc;border-color:var(--border);">
+      <div class="status-label" style="color:var(--muted)"><span class="status-dot" style="background:var(--muted)"></span>PARTIAL</div>
+      <p>Fewer than 10 readings entered for this cell.</p>
+    </div>
+  </div>
+
+  <!-- JOB SETUP -->
+  <div class="section-title"><div class="dot" style="background:var(--navy)"></div>Job Setup</div>
+  <div class="feature-list">
+    <div class="feature-item">
+      <div class="feature-icon">🏭</div>
+      <div class="feature-body">
+        <strong>Customer &amp; Scale Info</strong>
+        <p>Enter customer name, scale ID, tech name, date, excitation voltage, mV/V rating, test weight, and cell capacity.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🎨</div>
+      <div class="feature-body">
+        <strong>Wire Color Profiles</strong>
+        <p>Set wire colors (+EX, −EX, +SIG, −SIG, Shield) for the load cell model. The app saves this profile — it auto-loads next time you test the same model.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🔄</div>
+      <div class="feature-body">
+        <strong>Per-Cell Model Override</strong>
+        <p>On mixed-manufacturer scales (e.g. 7 Mettler + 1 Rice Lake), tap <strong>Change ▾</strong> on any cell to set a different model and wire colors for that cell only.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- READING FLOW -->
+  <div class="section-title"><div class="dot" style="background:var(--navy)"></div>13-Reading Entry Flow</div>
+
+  <div class="info-box">
+    <strong>How it works</strong>
+    Each cell has 13 sequential readings. Enter a value and tap <strong>Enter</strong> (or Next) to auto-advance. The app validates each reading in real time and shows a PASS/FAIL/SUSPECT badge instantly.
+  </div>
+
+  <div class="step-flow">
+    <div class="step-item">
+      <div class="step-num" style="background:var(--navy);">1</div>
+      <div class="step-body">
+        <strong>Excitation Resistance (Ω)</strong>
+        <p>Resistance across excitation wires. Must be positive — negative auto-fails.</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num" style="background:var(--navy);">2</div>
+      <div class="step-body">
+        <strong>Signal Resistance (Ω)</strong>
+        <p>Resistance across signal wires. Must be positive.</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num" style="background:var(--navy);">3–6</div>
+      <div class="step-body">
+        <strong>Cross-Bridge Readings (pp / pn / nn / np)</strong>
+        <p>Four bridge readings. If any deviate &gt;1% from their average, all four are flagged purple — cell status becomes REVIEW.</p>
+        <span class="step-tip">💡 Purple flag = cross-bridge imbalance. Not a hard fail, but document it.</span>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num" style="background:var(--navy);">7–8</div>
+      <div class="step-body">
+        <strong>−Comp / +Comp (Ω)</strong>
+        <p>Compensation resistor readings. Must be positive.</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num" style="background:var(--navy);">9–10</div>
+      <div class="step-body">
+        <strong>Shorts — Ω and nS</strong>
+        <p>Insulation check. Shorts Ω: any numeric value = FAIL (OL = PASS). Shorts nS: &lt;0.5 = PASS, 0.5–1.0 = SUSPECT, &gt;1.0 = BAD.</p>
+        <span class="step-note">💡 Can't type "OL" on a number pad — use the <strong>OL</strong> button.</span>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num" style="background:var(--navy);">11</div>
+      <div class="step-body">
+        <strong>Zero Load (mV DC)</strong>
+        <p>Must be between 0 and +0.5 mV. Negative = FAIL.</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num" style="background:var(--navy);">12</div>
+      <div class="step-body">
+        <strong>Dead Load (mV DC)</strong>
+        <p>Must be positive. Negative = FAIL.</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num" style="background:var(--navy);">13</div>
+      <div class="step-body">
+        <strong>Known Load (mV DC)</strong>
+        <p>ROC is auto-calculated: Known Load − Dead Load. Displayed in summary alongside the theoretical ROC from job setup.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHORTCUTS -->
+  <div class="section-title"><div class="dot" style="background:var(--navy)"></div>Useful Shortcuts</div>
+  <div class="feature-list">
+    <div class="feature-item">
+      <div class="feature-icon">📋</div>
+      <div class="feature-body">
+        <strong>Copy Cell 1</strong>
+        <p>On any cell other than Cell 1, tap <strong>Copy Cell 1</strong> to paste all readings from the first cell. Useful on uniform junction boxes — confirm overwrite when prompted.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">✏️</div>
+      <div class="feature-body">
+        <strong>Edit from Summary</strong>
+        <p>After completing a cell, tap the ✏ button on the summary row to go back and edit any reading. Returns you to summary when done — no data loss.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">± </div>
+      <div class="feature-body">
+        <strong>± Neg Button</strong>
+        <p>Appears on decimal readings. Toggles a minus sign prefix. Use this instead of typing "−" — the phone keyboard won't let you type a negative on a number pad.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF -->
+  <div class="section-title"><div class="dot" style="background:var(--green)"></div>Customer Report PDF</div>
+  <div class="info-box">
+    <strong>Generating the report</strong>
+    From the job summary screen, tap <strong>📄 Customer Report</strong>. You'll be asked whether to include a signature block. The report includes a QR code, PASS/FAIL/REVIEW banner, all cells in a compact table with bridge deviation callouts, and ROC comparison.
+  </div>
+
+</div><!-- end cell page -->
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  DATA & BACKUP PAGE                                       -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-data">
+  <div style="height:20px;"></div>
+
+  <div class="warn-box">
+    <strong>Important — Your data lives on your device</strong>
+    Both apps store all data in your phone's local browser storage. If you clear your browser data or switch phones, you'll lose your history unless you've made a backup.
+  </div>
+
+  <div class="section-title"><div class="dot" style="background:var(--blue)"></div>Backup &amp; Restore</div>
+  <div class="feature-list">
+    <div class="feature-item">
+      <div class="feature-icon">📤</div>
+      <div class="feature-body">
+        <strong>Export Backup</strong>
+        <p>Tap the menu (≡) → <strong>Export Backup</strong>. Downloads a .json file with all your data. Save it to Files, iCloud, or email it to yourself. Do this regularly.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">📥</div>
+      <div class="feature-body">
+        <strong>Import / Restore</strong>
+        <p>Tap <strong>Import Backup</strong> and select your .json file. The app merges the data — importing the same file twice is safe, no duplicates.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title"><div class="dot" style="background:var(--navy)"></div>Sharing with Other Techs</div>
+  <div class="feature-list">
+    <div class="feature-item">
+      <div class="feature-icon">📤</div>
+      <div class="feature-body">
+        <strong>TRAC Belt — Share a Scale</strong>
+        <p>On the scale detail screen, tap <strong>📤 Share Scale</strong>. Sends a .json file with the scale info and all visit history. The receiving tech imports it and it appears in their library.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">📤</div>
+      <div class="feature-body">
+        <strong>TRAC Cell — Share a Job</strong>
+        <p>From the job summary screen, tap <strong>📤 Share Job</strong>. Exports the full job with all cell readings. The receiving tech imports and it appears in their history.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title"><div class="dot" style="background:var(--green)"></div>Getting the Apps on Your Phone</div>
+  <div class="info-box">
+    <strong>Add to Home Screen (iPhone)</strong>
+    1. Open the app link in <strong>Safari</strong> (not Chrome).<br>
+    2. Tap the Share icon (box with arrow).<br>
+    3. Tap <strong>Add to Home Screen</strong>.<br>
+    4. The app icon appears on your home screen — works offline once added.
+  </div>
+
+  <div class="feature-list">
+    <div class="feature-item">
+      <div class="feature-icon">🏭</div>
+      <div class="feature-body">
+        <strong>TRAC Belt</strong>
+        <p style="word-break:break-all;">rodacus.github.io/Field-Apps/BeltScaleLogger.html</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-body">
+        <strong>TRAC Cell</strong>
+        <p style="word-break:break-all;">rodacus.github.io/Field-Apps/LoadCellLogger.html</p>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+  <div class="info-box">
+    <strong>Office / Field Mode</strong>
+    Both apps have a mode toggle in the header. <strong>Office mode</strong> = light theme for indoor use. <strong>Field mode</strong> = dark navy high-contrast theme for reading in direct sunlight. Your preference is saved per device.
+  </div>
+
+</div><!-- end data page -->
+
+<div class="guide-footer">
+  TRAC Field Apps · Michelli Weighing &amp; Measurement · Internal Use Only
+</div>
+
+<script>
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const tabs={'belt':0,'cell':1,'data':2};
+  document.querySelectorAll('.tab')[tabs[id]].classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+
+</body>
+</html>
