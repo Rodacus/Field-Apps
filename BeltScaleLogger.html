@@ -321,6 +321,9 @@
       <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="editCurrentScale()">✏️ Edit Scale Info</button>
       <button class="btn btn-ghost btn-sm" style="flex:1;color:#235aa7;border-color:#235aa7;font-weight:700;" onclick="exportScale(state.currentScaleId)">📤 Share Scale</button>
     </div>
+    <div style="margin-top:8px;">
+      <button class="btn btn-ghost btn-sm btn-full" style="color:#dc2626;border-color:#dc2626;" onclick="deleteCurrentScale()">🗑️ Delete Scale</button>
+    </div>
   </div>
 </div>
 
@@ -434,6 +437,18 @@ function showView(id){
 function showHome(){ renderHome(); showView('home'); }
 function showNewScale(){ clearSF(); state.editScaleId=null; showView('scale-form'); }
 function editCurrentScale(){ const s=getScale(state.currentScaleId); if(s){fillSF(s);state.editScaleId=s.id;showView('scale-form');} }
+function deleteCurrentScale(){
+  const sc=getScale(state.currentScaleId); if(!sc)return;
+  const visits=getVisitsForScale(state.currentScaleId);
+  const visitTxt=visits.length>0?` and ${visits.length} visit record${visits.length!==1?'s':''}` : '';
+  if(!confirm(`Delete "${sc.scaleId}"${visitTxt}? This cannot be undone.`))return;
+  const data=loadData();
+  data.scales=data.scales.filter(s=>s.id!==state.currentScaleId);
+  data.visits=data.visits.filter(v=>v.scaleId!==state.currentScaleId);
+  saveData(data);
+  state.currentScaleId=null;
+  showHome();
+}
 function showScaleDetail(id){ state.currentScaleId=id; renderSD(id); showView('scale-detail'); }
 function showBackup(){ showView('backup'); }
 function showSummary(visitId){
