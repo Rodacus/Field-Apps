@@ -62,8 +62,9 @@ body {
   min-height: 100dvh;
   -webkit-tap-highlight-color: transparent;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  overflow-x: hidden;
 }
-#app { max-width: 500px; margin: 0 auto; }
+#app { max-width: 500px; margin: 0 auto; overflow-x: hidden; }
 
 /* BUTTONS */
 .btn {
@@ -329,6 +330,7 @@ body {
 <script>
 // ─── READINGS ────────────────────────────────────────────
 const R = [
+  { k:'dead_load',  lbl:'Dead Load',   unit:'mV DC', desc:'Deck loaded, no test weight — read first while wires still connected', mode:'decimal', val:'deadLoad', wires:['plusSIG','minusSIG'] },
   { k:'excitation', lbl:'Excitation',  unit:'Ω',     desc:'+ Exc → − Exc',                           mode:'decimal', val:'ohm', wires:['plusEX','minusEX'] },
   { k:'signal',     lbl:'Signal',      unit:'Ω',     desc:'+ Sig → − Sig',                           mode:'decimal', val:'ohm', wires:['plusSIG','minusSIG'] },
   { k:'pp',         lbl:'+ex / +sig',  unit:'Ω',     desc:'+ Exc → + Sig  (cross-bridge)',           mode:'decimal', val:'ohm', bridge:true, wires:['plusEX','plusSIG'] },
@@ -340,7 +342,6 @@ const R = [
   { k:'shrt_ohm',   lbl:'Shorts',      unit:'Ω',     desc:'Wire to shield / cell body (OL = PASS)',  mode:'text',    val:'shortsOhm', showOL:true, wires:['plusEX','minusEX','plusSIG','minusSIG','shield'] },
   { k:'shrt_ns',    lbl:'Shorts',      unit:'nS',    desc:'Insulation test — hit range ×2 first  (>0.5 nS suspect · >1 nS bad)', mode:'decimal', val:'shortsNs', wires:['plusEX','minusEX','plusSIG','minusSIG','shield'] },
   { k:'zero_load',  lbl:'Zero Load',   unit:'mV DC', desc:'Cell fully unloaded  (0–0.5 mV = OK · negative = FAIL)', mode:'decimal', val:'zeroLoad', wires:['plusSIG','minusSIG'] },
-  { k:'dead_load',  lbl:'Dead Load',   unit:'mV DC', desc:'Deck loaded, no extra weight — reconnect exc/shield first', mode:'decimal', val:'deadLoad', wires:['plusSIG','minusSIG'] },
   { k:'known_load', lbl:'Known Load',  unit:'mV DC', desc:'Known weight centered over cell',         mode:'decimal', wires:['plusSIG','minusSIG'] },
 ];
 const NR = R.length; // 13
@@ -716,26 +717,23 @@ function rSetup(){
       <datalist id="model-list">${dlOpts}</datalist>
     </div>
     <div style="padding:10px 0 2px;border-top:1px solid var(--border)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="margin-bottom:10px">
         <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">
           Wire Colors <span style="font-weight:400;font-style:italic;color:#aaa">(optional — saves per model)</span>
         </span>
-        <button type="button" id="b-wire-toggle" style="font-size:12px;color:var(--acc);background:none;border:none;cursor:pointer;padding:2px 6px">▶ Show</button>
       </div>
-      <div id="wire-color-inputs" style="display:none">
-        <div id="wire-suggest-banner" style="display:none;padding:7px 10px;background:var(--acc-lt);border-radius:8px;font-size:12px;color:var(--acc);margin-bottom:10px;font-weight:600">
-          ✦ Saved profile loaded — verify and adjust if needed
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          ${WIRE_KEYS.map(wk=>`
-          <div class="field" style="margin:0">
-            <label style="font-size:12px">${WIRE_NAMES[wk]}</label>
-            <select id="f-wire-${wk}" style="font-size:14px">
-              <option value="">— not set —</option>
-              ${Object.keys(COLOR_MAP).map(c=>`<option value="${c}">${c.charAt(0).toUpperCase()+c.slice(1)}</option>`).join('')}
-            </select>
-          </div>`).join('')}
-        </div>
+      <div id="wire-suggest-banner" style="display:none;padding:7px 10px;background:var(--acc-lt);border-radius:8px;font-size:12px;color:var(--acc);margin-bottom:10px;font-weight:600">
+        ✦ Saved profile loaded — verify and adjust if needed
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${WIRE_KEYS.map(wk=>`
+        <div class="field" style="margin:0">
+          <label style="font-size:12px">${WIRE_NAMES[wk]}</label>
+          <select id="f-wire-${wk}" style="font-size:14px">
+            <option value="">— not set —</option>
+            ${Object.keys(COLOR_MAP).map(c=>`<option value="${c}">${c.charAt(0).toUpperCase()+c.slice(1)}</option>`).join('')}
+          </select>
+        </div>`).join('')}
       </div>
     </div>
     <div class="field-row">
@@ -787,15 +785,6 @@ function rSetup(){
 function bSetup(){
   document.getElementById('b-back').onclick=()=>go('home');
 
-  // Wire color toggle
-  const wireToggle=document.getElementById('b-wire-toggle');
-  const wireInputs=document.getElementById('wire-color-inputs');
-  wireToggle.onclick=()=>{
-    const open=wireInputs.style.display!=='none';
-    wireInputs.style.display=open?'none':'block';
-    wireToggle.textContent=open?'▶ Show':'▼ Hide';
-  };
-
   // Auto-load wire profile when model changes
   function loadWireProfile(){
     const model=document.getElementById('f-model').value.trim();
@@ -807,8 +796,6 @@ function bSetup(){
         if(sel) sel.value=profile[wk]||'';
       });
       banner.style.display='block';
-      wireInputs.style.display='block';
-      wireToggle.textContent='▼ Hide';
     } else {
       banner.style.display='none';
     }
@@ -892,7 +879,9 @@ function rEntry(){
   </div>
   <div class="prog-bar-wrap">
     <div class="prog-labels">
-      <span class="prog-cell">Cell ${ci+1} of ${job.numCells}${editMode?' <span style="font-size:11px;color:var(--muted)">(editing)</span>':''}</span>
+      ${job.numCells>1
+        ?`<button id="b-cellpick" style="background:none;border:none;cursor:pointer;font-size:14px;font-weight:700;color:var(--acc);padding:2px 0;text-align:left;-webkit-appearance:none;line-height:1.3">Cell ${ci+1} of ${job.numCells} ▾${editMode?' <span style="font-size:11px;color:var(--muted);font-weight:400">(editing)</span>':''}</button>`
+        :`<span class="prog-cell">Cell ${ci+1} of ${job.numCells}${editMode?' <span style="font-size:11px;color:var(--muted)">(editing)</span>':''}</span>`}
       <span class="prog-step">Reading ${ri+1} / ${NR}</span>
     </div>
     <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
@@ -1034,6 +1023,13 @@ function bEntry(){
   document.getElementById('b-skip').onclick=()=>advance(true);
   const changeModelBtn=document.getElementById('b-change-model');
   if(changeModelBtn) changeModelBtn.onclick=()=>{ const inp=document.getElementById('ri'); if(inp&&!CUR.job.cells[CUR.ci]._wireProfile) {} showCellModelSheet(CUR.ci); };
+
+  const cellPickBtn=document.getElementById('b-cellpick');
+  if(cellPickBtn) cellPickBtn.onclick=()=>{
+    const inp=document.getElementById('ri'); if(inp) saveVal(inp.value.trim());
+    showCellPickerSheet(CUR.job, CUR.ci);
+  };
+
   const p1=document.getElementById('b-prev'), p2=document.getElementById('b-prev2');
   if(p1)p1.onclick=goBack; if(p2)p2.onclick=goBack;
 
@@ -1511,6 +1507,35 @@ function printCustomerReport(jobId, includeSig) {
   var _url=URL.createObjectURL(_blob);
   var w=window.open(_url,'_blank','width=900,height=700');
   if(w){setTimeout(function(){URL.revokeObjectURL(_url);},60000);}
+}
+
+// ─── CELL PICKER SHEET ───────────────────────────────────────────
+function showCellPickerSheet(job, currentCi){
+  const stColors={good:'var(--good)',warn:'var(--warn)',bad:'var(--bad)',empty:'var(--muted)',partial:'var(--muted)'};
+  const btns=Array.from({length:job.numCells},(_,i)=>{
+    const st=cellStatus(job.cells[i]);
+    const dot=`<span style="width:8px;height:8px;border-radius:50%;background:${stColors[st.cls]||'var(--muted)'};display:inline-block;flex-shrink:0"></span>`;
+    const isCur=i===currentCi;
+    return `<button class="btn ${isCur?'btn-primary':'btn-outline'} btn-sm" data-ci="${i}" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:10px 6px;font-size:13px">${dot}Cell ${i+1}</button>`;
+  }).join('');
+  const ov=document.createElement('div'); ov.className='overlay';
+  ov.innerHTML=`<div class="dlg">
+    <h3>Jump to Cell</h3>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:14px">Select which load cell to check next. Dots show current status.</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">${btns}</div>
+    <div class="dlg-acts" style="margin-top:16px">
+      <button class="btn btn-ghost" id="cps-cancel">Cancel</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov); dlgEl=ov;
+  ov.querySelectorAll('[data-ci]').forEach(btn=>{
+    btn.onclick=()=>{
+      const newCi=parseInt(btn.dataset.ci);
+      CUR={...CUR,ci:newCi,ri:0};
+      ov.remove(); dlgEl=null; render();
+    };
+  });
+  document.getElementById('cps-cancel').onclick=()=>{ ov.remove(); dlgEl=null; };
 }
 
 // ─── CELL MODEL SHEET ────────────────────────────────────────────
