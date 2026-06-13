@@ -63,6 +63,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   overflow-x: hidden;
+  touch-action: manipulation;
 }
 #app { max-width: 500px; margin: 0 auto; overflow-x: hidden; }
 
@@ -201,6 +202,7 @@ body {
   color: var(--text); font-size: 28px; font-weight: 700;
   text-align: center; letter-spacing: 1px; outline: none; box-shadow: var(--shadow);
   -webkit-appearance: none; transition: border-color .2s, box-shadow .2s;
+  touch-action: manipulation;
 }
 .entry-input:focus { border-color: var(--acc); box-shadow: 0 0 0 3px rgba(var(--accrgb),.18); }
 .entry-unit-label {
@@ -505,8 +507,20 @@ function newJob(m){
 }
 
 const $app=document.getElementById('app');
+
+// Prevent iOS from carrying a zoomed-in viewport state between SPA screens.
+// iOS 10+ ignores user-scalable=no; toggling the meta briefly forces a scale reset.
+function resetViewportZoom(){
+  const m=document.querySelector('meta[name=viewport]');
+  if(!m)return;
+  const c='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+  m.content=c;
+}
+
 function go(v,p={}){ VIEW=v; if('CUR'in p)CUR=p.CUR; if('DID'in p)DID=p.DID; render(); }
 function render(){
+  resetViewportZoom();
+  window.scrollTo(0,0);
   const fns={home:rHome,setup:rSetup,entry:rEntry,summary:rSummary,history:rHistory};
   $app.innerHTML=(fns[VIEW]||rHome)();
   const bns={home:bHome,setup:bSetup,entry:bEntry,summary:bSummary,history:bHistory};
