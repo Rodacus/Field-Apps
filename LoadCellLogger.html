@@ -519,7 +519,6 @@ function resetViewportZoom(){
 
 function go(v,p={}){ VIEW=v; if('CUR'in p)CUR=p.CUR; if('DID'in p)DID=p.DID; render(); }
 function render(){
-  resetViewportZoom();
   window.scrollTo(0,0);
   const fns={home:rHome,setup:rSetup,entry:rEntry,summary:rSummary,history:rHistory};
   $app.innerHTML=(fns[VIEW]||rHome)();
