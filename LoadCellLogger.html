@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>TRAC Cell — Michelli</title>
@@ -508,17 +508,15 @@ function newJob(m){
 
 const $app=document.getElementById('app');
 
-// Prevent iOS from carrying a zoomed-in viewport state between SPA screens.
-// iOS 10+ ignores user-scalable=no; toggling the meta briefly forces a scale reset.
-function resetViewportZoom(){
-  const m=document.querySelector('meta[name=viewport]');
-  if(!m)return;
-  const c='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-  m.content=c;
-}
-
 function go(v,p={}){ VIEW=v; if('CUR'in p)CUR=p.CUR; if('DID'in p)DID=p.DID; render(); }
 function render(){
+  // Blur any focused input BEFORE swapping the DOM. On iOS, destroying a focused
+  // input while the keyboard is up corrupts the visual viewport (page shrinks and
+  // stays small). Blurring first lets the keyboard dismiss cleanly so the scale
+  // never gets stuck. bEntry() re-focuses the new input after the swap.
+  if(document.activeElement && typeof document.activeElement.blur==='function'){
+    document.activeElement.blur();
+  }
   window.scrollTo(0,0);
   const fns={home:rHome,setup:rSetup,entry:rEntry,summary:rSummary,history:rHistory};
   $app.innerHTML=(fns[VIEW]||rHome)();
@@ -742,7 +740,7 @@ function rSetup(){
         ${WIRE_KEYS.map(wk=>`
         <div class="field" style="margin:0">
           <label style="font-size:12px">${WIRE_NAMES[wk]}</label>
-          <select id="f-wire-${wk}" style="font-size:14px">
+          <select id="f-wire-${wk}" style="font-size:16px">
             <option value="">— not set —</option>
             ${Object.keys(COLOR_MAP).map(c=>`<option value="${c}">${c.charAt(0).toUpperCase()+c.slice(1)}</option>`).join('')}
           </select>
@@ -1574,7 +1572,7 @@ function showCellModelSheet(ci){
         ${WIRE_KEYS.map(wk=>`
         <div style="display:flex;flex-direction:column;gap:5px">
           <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">${WIRE_NAMES[wk]}</label>
-          <select id="cms-wire-${wk}" style="padding:11px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%">
+          <select id="cms-wire-${wk}" style="padding:11px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%">
             <option value="">— not set —</option>
             ${Object.keys(COLOR_MAP).map(c=>`<option value="${c}"${curProfile[wk]===c?' selected':''}>${c.charAt(0).toUpperCase()+c.slice(1)}</option>`).join('')}
           </select>
@@ -1671,7 +1669,7 @@ function showEditJobInfoSheet(job){
           ${WIRE_KEYS.map(wk=>`
           <div style="display:flex;flex-direction:column;gap:5px">
             <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">${WIRE_NAMES[wk]}</label>
-            <select id="eji-wire-${wk}" style="padding:11px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%">
+            <select id="eji-wire-${wk}" style="padding:11px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%">
               <option value="">— not set —</option>
               ${Object.keys(COLOR_MAP).map(c=>`<option value="${c}"${wp[wk]===c?' selected':''}>${c.charAt(0).toUpperCase()+c.slice(1)}</option>`).join('')}
             </select>
@@ -1699,7 +1697,7 @@ function showEditJobInfoSheet(job){
         </div>
         <div class="field">
           <label>Units</label>
-          <select id="eji-wu" style="padding:13px 10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%">
+          <select id="eji-wu" style="padding:13px 10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;font-family:inherit;outline:none;-webkit-appearance:none;width:100%">
             <option value="lbs"${(job.weightUnit||'lbs')==='lbs'?' selected':''}>lbs</option>
             <option value="kg"${job.weightUnit==='kg'?' selected':''}>kg</option>
           </select>
