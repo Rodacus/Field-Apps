@@ -1609,14 +1609,18 @@ function renderCertCanvas(jobId){
   if(untested>0) sumParts.push(untested+' not tested');
 
   var rows=active.map(function(x){
-    var roc=calcROC(x.c), dev='';
+    var dev='';
     var bvals=BRIDGE_KEYS.map(function(k){return parseFloat(x.c[k]);}).filter(function(n){return !isNaN(n);});
     if(bvals.length===4){
       var avg=bvals.reduce(function(a,b){return a+b;},0)/4;
       var md=Math.max.apply(null,bvals.map(function(v){return Math.abs(v-avg)/avg*100;}));
       dev=md.toFixed(2)+'%';
     }
-    return {n:x.i+1,lbl:x.st.lbl,cls:x.st.cls,roc:roc?roc+' mV':'—',dev:dev||'—'};
+    return {n:x.i+1,lbl:x.st.lbl,cls:x.st.cls,
+      dead:x.c.dead_load?x.c.dead_load+' mV':'—',
+      shorts:x.c.shrt_ohm?(isNaN(parseFloat(x.c.shrt_ohm))?x.c.shrt_ohm:x.c.shrt_ohm+' Ω'):'—',
+      ns:x.c.shrt_ns?x.c.shrt_ns:'—',
+      dev:dev||'—'};
   });
 
   var infoL=[['Customer',job.customer||''],['Scale / Location',job.scale||''],['Technician',job.tech||''],['Date',job.date||'']];
@@ -1689,21 +1693,27 @@ function renderCertCanvas(jobId){
   ctx.fillStyle='#235aa7'; ctx.fillRect(PAD,y,CW,tblTitleH);
   T('CELL RESULTS',PAD+9,y+16,9.5,'700','#ffffff','left');
   y+=tblTitleH;
-  var c1=PAD, w1=70, c2=PAD+w1, w2=190, c3=PAD+w1+w2, w3=(CW-w1-w2)/2, c4=c3+w3, w4=CW-w1-w2-w3;
+  var w1=54, w2=112, wRest=(CW-w1-w2)/4;
+  var c1=PAD, c2=c1+w1, c3=c2+w2, c4=c3+wRest, c5=c4+wRest, c6=c5+wRest;
+  var w3=wRest, w4=wRest, w5=wRest, w6=CW-w1-w2-wRest*3;
   ctx.fillStyle='#f3f4f6'; ctx.fillRect(PAD,y,CW,tblHdrH);
-  T('CELL',c1+12,y+19,9.5,'700','#374151','left');
-  T('STATUS',c2+w2/2,y+19,9.5,'700','#374151','center');
-  T('ROC (mV)',c3+w3/2,y+19,9.5,'700','#374151','center');
-  T('BRIDGE DEV',c4+w4/2,y+19,9.5,'700','#374151','center');
+  T('CELL',c1+10,y+19,8.5,'700','#374151','left');
+  T('STATUS',c2+w2/2,y+19,8.5,'700','#374151','center');
+  T('DEAD LOAD',c3+w3/2,y+19,8.5,'700','#374151','center');
+  T('SHORTS (Ω)',c4+w4/2,y+19,8.5,'700','#374151','center');
+  T('INSUL (nS)',c5+w5/2,y+19,8.5,'700','#374151','center');
+  T('BRIDGE DEV',c6+w6/2,y+19,8.5,'700','#374151','center');
   var ry=y+tblHdrH;
   rows.forEach(function(r,i){
     if(i%2===1){ ctx.fillStyle='#fafafa'; ctx.fillRect(PAD,ry,CW,tblRowH); }
-    T('Cell '+r.n,c1+12,ry+18,11,'600','#111827','left');
-    var chipW=Math.min(w2-20, Math.max(64, ctx.measureText(r.lbl).width+26)), chipX=c2+(w2-chipW)/2, chipY=ry+(tblRowH-17)/2;
-    _rrect(ctx,chipX,chipY,chipW,17,8.5); ctx.fillStyle=stCol(r.cls); ctx.fill();
-    T(r.lbl,c2+w2/2,ry+18,9.5,'700','#ffffff','center');
-    T(r.roc,c3+w3/2,ry+18,10.5,'600','#111827','center');
-    T(r.dev,c4+w4/2,ry+18,10.5,'400','#374151','center');
+    T('Cell '+r.n,c1+10,ry+18,10,'600','#111827','left');
+    var chipW=Math.min(w2-12, Math.max(54, ctx.measureText(r.lbl).width+22)), chipX=c2+(w2-chipW)/2, chipY=ry+(tblRowH-16)/2;
+    _rrect(ctx,chipX,chipY,chipW,16,8); ctx.fillStyle=stCol(r.cls); ctx.fill();
+    T(r.lbl,c2+w2/2,ry+18,9,'700','#ffffff','center');
+    T(r.dead,c3+w3/2,ry+18,9.5,'600','#111827','center');
+    T(r.shorts,c4+w4/2,ry+18,9.5,'600','#111827','center');
+    T(r.ns,c5+w5/2,ry+18,9.5,'600','#111827','center');
+    T(r.dev,c6+w6/2,ry+18,9.5,'400','#374151','center');
     ry+=tblRowH;
   });
   ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.strokeRect(PAD+0.5,(y-tblHdrH)+0.5,CW-1,tblHdrH+rows.length*tblRowH);
