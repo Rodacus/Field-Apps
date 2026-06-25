@@ -6,6 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>TRAC Cell — Michelli</title>
+<meta name="theme-color" content="#235AA7">
+<meta name="apple-mobile-web-app-title" content="TRAC Cell">
+<link rel="manifest" href="manifest-cell.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -167,6 +172,8 @@ body {
 .job-del { background: none; border: none; color: var(--muted); font-size: 17px; line-height: 1; padding: 9px; margin: -6px -6px -6px 0; cursor: pointer; border-radius: 9px; flex-shrink: 0; -webkit-tap-highlight-color: transparent; transition: color .15s, background .15s; }
 .job-del:hover { color: var(--bad); }
 .job-del:active { color: var(--bad); background: var(--bad-lt); }
+.toast { position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(8px); background: var(--text); color: var(--card); padding: 9px 16px; border-radius: 22px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.28); z-index: 9999; opacity: 0; transition: opacity .18s ease, transform .18s ease; pointer-events: none; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.toast.show { opacity: .96; transform: translateX(-50%) translateY(0); }
 .cells-num { font-size: 22px; font-weight: 800; color: var(--acc); line-height: 1; }
 .cells-lbl { font-size: 11px; color: var(--muted); }
 .empty-state { text-align: center; padding: 44px 24px; color: var(--muted); }
@@ -567,12 +574,12 @@ function toggleTheme(){
 
 // ─── STATUS TAG ──────────────────────────────────────────
 function statusTag(j){
-  if(!j.complete) return `<span class="badge badge-warn">⏳ In Progress</span>`;
+  if(!j.complete) return `<span class="badge badge-warn">In Progress</span>`;
   const statuses=j.cells.map(c=>cellStatus(c));
-  if(statuses.some(s=>s.cls==='bad'))  return `<span class="badge badge-bad">⚠ Issues Found</span>`;
-  if(statuses.some(s=>s.cls==='warn')) return `<span class="badge badge-warn">⚠ Review Needed</span>`;
+  if(statuses.some(s=>s.cls==='bad'))  return `<span class="badge badge-bad">Issues Found</span>`;
+  if(statuses.some(s=>s.cls==='warn')) return `<span class="badge badge-warn">Review Needed</span>`;
   if(statuses.every(s=>s.cls==='muted')) return `<span class="badge badge-muted">No Readings</span>`;
-  return `<span class="badge badge-good">✓ All Pass</span>`;
+  return `<span class="badge badge-good">All Pass</span>`;
 }
 
 // ─── HOME ────────────────────────────────────────────────
@@ -582,6 +589,7 @@ function rHome(){
   <div class="hdr">
     <div style="display:flex;align-items:center;gap:7px">${brandMark(22)}<h1><b style="color:var(--acc)">TRAC</b> Cell</h1></div>
     <div style="display:flex;align-items:center;gap:12px">
+      <button class="hdr-btn" id="b-help" style="min-width:auto;padding:4px 4px" title="Open field guide">${helpIcon()}</button>
       <button class="hdr-btn" id="b-theme" style="min-width:auto;padding:4px 4px" title="Switch Field / Office mode">${themeIcon()}</button>
       <span style="font-size:12px;color:var(--muted)">${jobs.length} job${jobs.length!==1?'s':''}</span>
     </div>
@@ -628,6 +636,7 @@ function bHome(){
   document.getElementById('b-new').onclick=()=>go('setup');
   document.getElementById('b-hist').onclick=()=>go('history');
   const bt=document.getElementById('b-theme'); if(bt) bt.onclick=toggleTheme;
+  const bh=document.getElementById('b-help'); if(bh) bh.onclick=()=>window.open(HELP_URL(),'_blank');
   // Export
   document.getElementById('b-export').onclick=()=>{
     const json=JSON.stringify({version:1,exported:new Date().toISOString(),jobs},null,2);
@@ -964,19 +973,20 @@ function saveVal(v){
 function advance(skip){
   const inp=document.getElementById('ri');
   if(!skip) saveVal(inp?inp.value.trim():'');
+  haptic(10);
   const {job,editMode}=CUR; let {ci,ri}=CUR;
   ri++;
   if(ri>=NR){
     if(editMode){ // Done editing this cell — return to summary
-      CUR=null; go('summary',{CUR:null,DID:job.id}); return;
+      CUR=null; toast('Cell '+(ci+1)+' updated'); go('summary',{CUR:null,DID:job.id}); return;
     }
-    ri=0; ci++;
+    toast('Cell '+(ci+1)+' saved'); ri=0; ci++;
   }
   if(ci>=job.numCells){ // All cells done
     job.complete=true;
     const idx=jobs.findIndex(j=>j.id===job.id);
     if(idx>=0)jobs[idx]=job;
-    saveJobs(); CUR=null; DID=job.id; go('summary',{CUR:null,DID:job.id}); return;
+    saveJobs(); haptic([16,45,16]); CUR=null; DID=job.id; go('summary',{CUR:null,DID:job.id}); return;
   }
   CUR={job,ci,ri,editMode}; render();
 }
@@ -1287,6 +1297,19 @@ function bindJobDelete(){
 
 // ─── UTILS ───────────────────────────────────────────────
 function esc(s){ if(!s&&s!==0)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Subtle save confirmation + tactile feedback
+let _toastEl=null,_toastT=null;
+function toast(msg){
+  if(!_toastEl){ _toastEl=document.createElement('div'); _toastEl.className='toast'; document.body.appendChild(_toastEl); }
+  _toastEl.innerHTML='<span style="color:var(--good);font-weight:800">✓</span> '+msg;
+  requestAnimationFrame(function(){ _toastEl.classList.add('show'); });
+  clearTimeout(_toastT);
+  _toastT=setTimeout(function(){ if(_toastEl) _toastEl.classList.remove('show'); },1150);
+}
+function haptic(pattern){ try{ if(navigator.vibrate) navigator.vibrate(pattern||10); }catch(e){} }
+function HELP_URL(){ return 'https://rodacus.github.io/Field-Apps/Field-Apps-Guide.html'; }
+function helpIcon(){ return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.5.8c0 1.8-2.7 2.2-2.7 4"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg>'; }
 
 // ─── SHARE JOB ───────────────────────────────────────────────────
 function exportJob(jobId) {

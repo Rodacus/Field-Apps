@@ -1,0 +1,14 @@
+{
+  "name": "TRAC Belt — Michelli",
+  "short_name": "TRAC Belt",
+  "start_url": "./BeltScaleLogger.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#235AA7",
+  "theme_color": "#235AA7",
+  "icons": [
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}

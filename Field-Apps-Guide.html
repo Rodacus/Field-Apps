@@ -319,19 +319,27 @@
     <div class="step-item">
       <div class="step-num" style="background:var(--navy);">1</div>
       <div class="step-body">
-        <strong>Excitation Resistance (Ω)</strong>
-        <p>Resistance across excitation wires. Must be positive — negative auto-fails.</p>
+        <strong>Dead Load (mV DC)</strong>
+        <p>Read this <strong>first</strong> — deck loaded, no test weight, while the wires are still connected. Must be positive; negative auto-fails.</p>
+        <span class="step-tip">💡 First on purpose: capture it before anything gets disconnected for the resistance checks.</span>
       </div>
     </div>
     <div class="step-item">
       <div class="step-num" style="background:var(--navy);">2</div>
       <div class="step-body">
-        <strong>Signal Resistance (Ω)</strong>
-        <p>Resistance across signal wires. Must be positive.</p>
+        <strong>Excitation Resistance (Ω)</strong>
+        <p>Resistance across the excitation wires. Must be positive — negative auto-fails.</p>
       </div>
     </div>
     <div class="step-item">
-      <div class="step-num" style="background:var(--navy);">3–6</div>
+      <div class="step-num" style="background:var(--navy);">3</div>
+      <div class="step-body">
+        <strong>Signal Resistance (Ω)</strong>
+        <p>Resistance across the signal wires. Must be positive.</p>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num" style="background:var(--navy);">4–7</div>
       <div class="step-body">
         <strong>Cross-Bridge Readings (pp / pn / nn / np)</strong>
         <p>Four bridge readings. If any deviate &gt;1% from their average, all four are flagged purple — cell status becomes REVIEW.</p>
@@ -339,14 +347,14 @@
       </div>
     </div>
     <div class="step-item">
-      <div class="step-num" style="background:var(--navy);">7–8</div>
+      <div class="step-num" style="background:var(--navy);">8–9</div>
       <div class="step-body">
         <strong>−Comp / +Comp (Ω)</strong>
         <p>Compensation resistor readings. Must be positive.</p>
       </div>
     </div>
     <div class="step-item">
-      <div class="step-num" style="background:var(--navy);">9–10</div>
+      <div class="step-num" style="background:var(--navy);">10–11</div>
       <div class="step-body">
         <strong>Shorts — Ω and nS</strong>
         <p>Insulation check. Shorts Ω: any numeric value = FAIL (OL = PASS). Shorts nS: &lt;0.5 = PASS, 0.5–1.0 = SUSPECT, &gt;1.0 = BAD.</p>
@@ -354,24 +362,17 @@
       </div>
     </div>
     <div class="step-item">
-      <div class="step-num" style="background:var(--navy);">11</div>
+      <div class="step-num" style="background:var(--navy);">12</div>
       <div class="step-body">
         <strong>Zero Load (mV DC)</strong>
         <p>Must be between 0 and +0.5 mV. Negative = FAIL.</p>
       </div>
     </div>
     <div class="step-item">
-      <div class="step-num" style="background:var(--navy);">12</div>
-      <div class="step-body">
-        <strong>Dead Load (mV DC)</strong>
-        <p>Must be positive. Negative = FAIL.</p>
-      </div>
-    </div>
-    <div class="step-item">
       <div class="step-num" style="background:var(--navy);">13</div>
       <div class="step-body">
         <strong>Known Load (mV DC)</strong>
-        <p>ROC is auto-calculated: Known Load − Dead Load. Displayed in summary alongside the theoretical ROC from job setup.</p>
+        <p>ROC is auto-calculated: Known Load − Dead Load. Shown in the on-screen summary and Full Report alongside the theoretical ROC from job setup.</p>
       </div>
     </div>
   </div>

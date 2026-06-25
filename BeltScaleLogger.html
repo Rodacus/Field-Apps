@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>TRAC Belt — Michelli</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#235AA7">
+  <meta name="apple-mobile-web-app-title" content="TRAC Belt">
+  <link rel="manifest" href="manifest-belt.webmanifest">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
@@ -70,12 +77,14 @@
     /* BUTTONS */
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:11px 17px;border-radius:9px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .1s;text-decoration:none;}
     .btn:active{transform:scale(0.97);}
-    .btn-primary{background:var(--orange);color:white;} .btn-primary:hover{background:var(--orange-dark);}
-    .btn-secondary{background:var(--navy);color:white;} .btn-secondary:hover{background:var(--navy-light);}
+    .btn-primary{background:var(--navy);color:white;} .btn-primary:hover{background:var(--navy-dark);}
+    .btn-secondary{background:var(--surface);color:var(--navy);border:2px solid var(--navy);} .btn-secondary:hover{background:var(--gray-light);}
     .btn-ghost{background:transparent;color:var(--navy);border:2px solid var(--navy);} .btn-ghost:hover{background:var(--gray-light);}
     .btn-danger{background:var(--red);color:white;}
     .btn-green{background:var(--green);color:white;}
     .btn-full{width:100%;} .btn-sm{padding:7px 12px;font-size:13px;} .btn:disabled{opacity:0.4;cursor:not-allowed;}
+    .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--surface);padding:9px 16px;border-radius:22px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.28);z-index:9999;opacity:0;transition:opacity .18s ease,transform .18s ease;pointer-events:none;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+    .toast.show{opacity:.96;transform:translateX(-50%) translateY(0);}
 
     /* BADGES */
     .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:700;}
@@ -241,6 +250,7 @@
   </div>
   <div class="header-actions" style="align-items:center;">
     <span id="online-dot" title="Online" style="width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block;margin-right:2px;flex-shrink:0;"></span>
+    <button class="btn-icon" onclick="openGuide()" title="Field guide" style="display:inline-flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.5.8c0 1.8-2.7 2.2-2.7 4"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg></button>
     <button class="btn-icon" id="theme-btn" onclick="toggleTheme()" title="Field / Office mode">🌙</button>
     <button class="btn-icon" onclick="showJobSummary()" title="Job Summary">📑</button>
     <button class="btn-icon" onclick="showBackup()" title="Backup">💾</button>
@@ -413,6 +423,15 @@ let state = {
 // ─── DATA LAYER ──────────────────────────────────────
 function loadData(){ try{ return JSON.parse(localStorage.getItem(DB_KEY))||{scales:[],visits:[]}; }catch{ return{scales:[],visits:[]}; } }
 function saveData(d){ localStorage.setItem(DB_KEY,JSON.stringify(d)); }
+function openGuide(){ window.open('https://rodacus.github.io/Field-Apps/Field-Apps-Guide.html','_blank'); }
+function haptic(p){ try{ if(navigator.vibrate) navigator.vibrate(p||10); }catch(e){} }
+let _toastEl=null,_toastT=null;
+function toast(msg){
+  if(!_toastEl){ _toastEl=document.createElement('div'); _toastEl.className='toast'; document.body.appendChild(_toastEl); }
+  _toastEl.innerHTML='<span style="color:var(--green);font-weight:800">✓</span> '+msg;
+  requestAnimationFrame(function(){ _toastEl.classList.add('show'); });
+  clearTimeout(_toastT); _toastT=setTimeout(function(){ if(_toastEl) _toastEl.classList.remove('show'); },1150);
+}
 function getScale(id){ return loadData().scales.find(s=>s.id===id); }
 function getVisitsForScale(id){ return loadData().visits.filter(v=>v.scaleId===id).sort((a,b)=>b.date.localeCompare(a.date)); }
 function getVisit(id){ return loadData().visits.find(v=>v.id===id); }
@@ -554,7 +573,7 @@ function renderHome(){
         const lastRound=last.testRounds&&last.testRounds.length>0?last.testRounds[last.testRounds.length-1]:null;
         if(lastRound){
           const s=passStatus(lastRound.percentError||0);
-          badges+=`<span class="badge badge-${s==='pass'?'pass':s==='warn'?'warn':'fail'}">${s==='pass'?'✅ PASS':s==='warn'?'⚠️ MARGINAL':'❌ FAIL'}</span>`;
+          badges+=`<span class="badge badge-${s==='pass'?'pass':s==='warn'?'warn':'fail'}">${s==='pass'?'PASS':s==='warn'?'MARGINAL':'FAIL'}</span>`;
         }
         if(last.calibrationDue){
           const due=new Date(last.calibrationDue+'T12:00:00');
@@ -649,7 +668,7 @@ function renderSD(scaleId){
     const lastRound=v.testRounds&&v.testRounds.length>0?v.testRounds[v.testRounds.length-1]:null;
     const pct=lastRound?fmt(lastRound.percentError,3)+'%':'—';
     const s=lastRound?passStatus(lastRound.percentError||0):'info';
-    const badge=`<span class="badge badge-${s==='pass'?'pass':s==='warn'?'warn':'fail'}">${s==='pass'?'✅ PASS':s==='warn'?'⚠️ MARGINAL':'❌ FAIL'}</span>`;
+    const badge=`<span class="badge badge-${s==='pass'?'pass':s==='warn'?'warn':'fail'}">${s==='pass'?'PASS':s==='warn'?'MARGINAL':'FAIL'}</span>`;
     const d=new Date(v.date+'T12:00:00');
     const mo=d.toLocaleString('default',{month:'short'}).toUpperCase();
     const dy=d.getDate();
@@ -974,7 +993,7 @@ function recalcCurrentRound(){
     <div class="result-box ${s}">
       <div class="rl">Actual TPH</div>
       <div class="rv">${fmt(actual,2)}</div>
-      <div class="rs">% Error: <strong>${fmt(pct,3)}%</strong> &nbsp;|&nbsp; ${s==='pass'?'✅ PASS':s==='warn'?'⚠️ MARGINAL':'❌ FAIL'}</div>
+      <div class="rs">% Error: <strong>${fmt(pct,3)}%</strong> &nbsp;|&nbsp; ${s==='pass'?'PASS':s==='warn'?'MARGINAL':'FAIL'}</div>
       ${s!=='pass'?`<div class="rs">Suggested new ${spanLabel}: <strong>${fmt(sugg,6)}</strong></div>`:''}
     </div>`;
 }
@@ -1028,6 +1047,7 @@ function addRound(){
 
 function markTestDone(){
   // Final round already recorded — move to next step
+  haptic([16,45,16]); toast('Test complete');
   nextStep();
 }
 
@@ -1115,7 +1135,7 @@ function renderS6(d,sc){
   const firstRound=d.testRounds.find(r=>r.label==='As Found');
   const lastRound=d.testRounds.length>0?d.testRounds[d.testRounds.length-1]:null;
   const finalStatus=lastRound?passStatus(lastRound.percentError||0):'info';
-  const overallBadge=finalStatus==='pass'?'<span class="badge badge-pass" style="font-size:15px;padding:7px 16px;">✅ PASS</span>':finalStatus==='warn'?'<span class="badge badge-warn" style="font-size:15px;padding:7px 16px;">⚠️ MARGINAL</span>':'<span class="badge badge-fail" style="font-size:15px;padding:7px 16px;">❌ FAIL</span>';
+  const overallBadge=finalStatus==='pass'?'<span class="badge badge-pass" style="font-size:15px;padding:7px 16px;">PASS</span>':finalStatus==='warn'?'<span class="badge badge-warn" style="font-size:15px;padding:7px 16px;">MARGINAL</span>':'<span class="badge badge-fail" style="font-size:15px;padding:7px 16px;">FAIL</span>';
 
   return `
     <div class="card">
@@ -1259,7 +1279,7 @@ function renderSummary(visit){
 
   const finalRound=visit.testRounds.length>0?visit.testRounds[visit.testRounds.length-1]:null;
   const finalStatus=finalRound?passStatus(finalRound.percentError||0):'info';
-  const finalBadge=finalStatus==='pass'?'<span class="badge badge-pass" style="font-size:14px;padding:6px 14px;">✅ PASS</span>':finalStatus==='warn'?'<span class="badge badge-warn" style="font-size:14px;padding:6px 14px;">⚠️ MARGINAL</span>':'<span class="badge badge-fail" style="font-size:14px;padding:6px 14px;">❌ FAIL</span>';
+  const finalBadge=finalStatus==='pass'?'<span class="badge badge-pass" style="font-size:14px;padding:6px 14px;">PASS</span>':finalStatus==='warn'?'<span class="badge badge-warn" style="font-size:14px;padding:6px 14px;">MARGINAL</span>':'<span class="badge badge-fail" style="font-size:14px;padding:6px 14px;">FAIL</span>';
 
   const html=`
     <div class="card">
@@ -1846,7 +1866,7 @@ function buildJobSummaryForDate(date,items,siteOverride){
       <div class="card" style="break-inside:avoid;">
         <div class="card-header" style="justify-content:space-between;">
           <span><span class="icon">⚖️</span> ${sc.scaleId}</span>
-          <span class="badge badge-${s==='pass'?'pass':s==='warn'?'warn':'fail'}">${s==='pass'?'✅ PASS':s==='warn'?'⚠️ MARGINAL':'❌ FAIL'}</span>
+          <span class="badge badge-${s==='pass'?'pass':s==='warn'?'warn':'fail'}">${s==='pass'?'PASS':s==='warn'?'MARGINAL':'FAIL'}</span>
         </div>
         <div class="card-body">
           <div class="field-row-3" style="margin-bottom:10px;">
