@@ -163,6 +163,10 @@ body {
 .job-row-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
 .job-row-info p  { font-size: 13px; color: var(--muted); }
 .job-row-cells { text-align: right; }
+.job-row-right { display: flex; align-items: center; gap: 12px; }
+.job-del { background: none; border: none; color: var(--muted); font-size: 17px; line-height: 1; padding: 9px; margin: -6px -6px -6px 0; cursor: pointer; border-radius: 9px; flex-shrink: 0; -webkit-tap-highlight-color: transparent; transition: color .15s, background .15s; }
+.job-del:hover { color: var(--bad); }
+.job-del:active { color: var(--bad); background: var(--bad-lt); }
 .cells-num { font-size: 22px; font-weight: 800; color: var(--acc); line-height: 1; }
 .cells-lbl { font-size: 11px; color: var(--muted); }
 .empty-state { text-align: center; padding: 44px 24px; color: var(--muted); }
@@ -609,9 +613,12 @@ function rHome(){
         <p>${esc(j.scale)||'No Scale'} · ${j.date||'—'}${j.cellModel?' · '+esc(j.cellModel):''}</p>
         <p style="margin-top:4px">${statusTag(j)}</p>
       </div>
-      <div class="job-row-cells">
-        <div class="cells-num">${j.numCells}</div>
-        <div class="cells-lbl">cell${j.numCells!==1?'s':''}</div>
+      <div class="job-row-right">
+        <div class="job-row-cells">
+          <div class="cells-num">${j.numCells}</div>
+          <div class="cells-lbl">cell${j.numCells!==1?'s':''}</div>
+        </div>
+        <button class="job-del" data-del="${j.id}" aria-label="Delete job" title="Delete job">🗑</button>
       </div>
     </div>`).join('')}
   ${!rec.length?`<div class="empty-state"><div class="icon">📋</div><p>No jobs yet.<br>Tap <strong>New Job</strong> to start.</p></div>`:''}
@@ -696,6 +703,7 @@ function bHome(){
       j.complete?go('summary',{CUR:null,DID:j.id}):go('entry',{CUR:{job:j,ci:0,ri:0,editMode:false}});
     };
   });
+  bindJobDelete();
 }
 
 // ─── SETUP ───────────────────────────────────────────────
@@ -1149,14 +1157,15 @@ function rSummary(){
     <button class="btn btn-outline" id="b-del" style="color:var(--bad);border-color:var(--bad-lt)">🗑 Delete</button>
     <button class="btn btn-primary" id="b-home">← Home</button>
   </div>
-  <div style="padding:0 16px 4px;display:flex;gap:10px;" class="no-print">
-    <button class="btn" id="b-report" style="background:#235aa7;color:#fff;flex:1">📄 Customer Report</button>
-    <button class="btn btn-outline" id="b-share" style="flex:1">📤 Share Job</button>
+  <div style="padding:0 16px 8px;display:flex;gap:10px;" class="no-print">
+    <button class="btn" id="b-textreport" style="background:#235aa7;color:#fff;flex:1">📱 Text Report</button>
+    <button class="btn btn-outline" id="b-report" style="flex:1">📄 Full Report</button>
   </div>
-  <div style="padding:0 16px 8px;" class="no-print">
-    <button class="btn btn-outline" id="b-editinfo" style="font-size:14px">✏ Edit Job Info</button>
+  <div style="padding:0 16px 8px;display:flex;gap:10px;" class="no-print">
+    <button class="btn btn-outline" id="b-share" style="flex:1;font-size:14px">📤 Share to Tech</button>
+    <button class="btn btn-outline" id="b-editinfo" style="flex:1;font-size:14px">✏ Edit Job Info</button>
   </div>
-  <div style="padding:4px 16px 20px;font-size:12px;color:var(--muted);text-align:center" class="no-print">Share sends a .json file — other techs import it to their app</div>`}
+  <div style="padding:4px 16px 20px;font-size:12px;color:var(--muted);text-align:center" class="no-print"><b>Text Report</b> sends a clean image to your customer · <b>Full Report</b> is the printable PDF for records</div>`}
   </div>`;
 }
 function bSummary(){
@@ -1181,6 +1190,8 @@ function bSummary(){
     };
   } else {
     document.getElementById('b-home').onclick=()=>go('home');
+    const textBtn=document.getElementById('b-textreport');
+    if(textBtn) textBtn.onclick=()=>shareReportImage(DID);
     const rptBtn=document.getElementById('b-report');
     if(rptBtn) rptBtn.onclick=()=>{
       const sig=confirm('Include signature / sign-off block?');
@@ -1222,9 +1233,12 @@ function rHistory(){
           ${j.cellModel?`<p style="font-size:12px;color:var(--muted);margin-top:1px">${esc(j.cellModel)}</p>`:''}
           <p style="margin-top:4px">${statusTag(j)}</p>
         </div>
-        <div class="job-row-cells">
-          <div class="cells-num">${j.numCells}</div>
-          <div class="cells-lbl">cell${j.numCells!==1?'s':''}</div>
+        <div class="job-row-right">
+          <div class="job-row-cells">
+            <div class="cells-num">${j.numCells}</div>
+            <div class="cells-lbl">cell${j.numCells!==1?'s':''}</div>
+          </div>
+          <button class="job-del" data-del="${j.id}" aria-label="Delete job" title="Delete job">🗑</button>
         </div>
       </div>`).join('')}
   </div>`:`<div class="empty-state"><div class="icon">📋</div><p>No jobs saved yet.</p></div>`}
@@ -1238,6 +1252,7 @@ function bHistory(){
       j.complete?go('summary',{CUR:null,DID:j.id}):go('entry',{CUR:{job:j,ci:0,ri:0,editMode:false}});
     };
   });
+  bindJobDelete();
 }
 
 // ─── DIALOG ──────────────────────────────────────────────
@@ -1250,6 +1265,25 @@ function showDlg({title,msg,acts}){
   acts.forEach((a,i)=>{ const b=document.getElementById(`dlg-${i}`); if(b)b.onclick=a.fn; });
 }
 function hideDlg(){ if(dlgEl){dlgEl.remove();dlgEl=null;} render(); }
+
+// Delete any job (in-progress or complete) from a list card. hideDlg() re-renders the list.
+function confirmDeleteJob(id){
+  const j=jobs.find(x=>x.id==id); if(!j) return;
+  const who=esc(j.customer)||'This job';
+  showDlg({
+    title:'Delete this job?',
+    msg:`${who}${j.scale?' — '+esc(j.scale):''} will be permanently removed. This can’t be undone.`,
+    acts:[
+      {lbl:'Delete',cls:'btn-danger',fn:()=>{ jobs=jobs.filter(x=>x.id!=id); saveJobs(); hideDlg(); }},
+      {lbl:'Cancel',cls:'btn-outline',fn:hideDlg}
+    ]
+  });
+}
+function bindJobDelete(){
+  document.querySelectorAll('.job-del').forEach(el=>{
+    el.onclick=(e)=>{ e.stopPropagation(); confirmDeleteJob(el.dataset.del); };
+  });
+}
 
 // ─── UTILS ───────────────────────────────────────────────
 function esc(s){ if(!s&&s!==0)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -1524,6 +1558,190 @@ function printCustomerReport(jobId, includeSig) {
   var _url=URL.createObjectURL(_blob);
   var w=window.open(_url,'_blank','width=900,height=700');
   if(w){setTimeout(function(){URL.revokeObjectURL(_url);},60000);}
+}
+
+// ─── SHAREABLE REPORT IMAGE (offline, no dependencies) ─────────────
+// Renders a clean customer certificate to a <canvas> so it can be texted as
+// an image (universal MMS, works with no signal). Status/verdict come from the
+// same cellStatus()/calcROC() the on-screen summary uses, so they always agree.
+function _rrect(ctx,x,y,w,h,r){
+  r=Math.min(r,h/2,w/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function _trunc(ctx,s,maxW){
+  s=String(s==null?'':s);
+  if(ctx.measureText(s).width<=maxW) return s;
+  while(s.length>1 && ctx.measureText(s+'…').width>maxW) s=s.slice(0,-1);
+  return s+'…';
+}
+function _safeName(s){ return String(s||'Report').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'Report'; }
+
+function renderCertCanvas(jobId){
+  var job=jobs.find(function(j){return j.id==jobId;}); if(!job) return null;
+  var statuses=job.cells.map(function(c){return cellStatus(c);});
+  var active=job.cells.map(function(c,i){return {c:c,i:i,st:statuses[i]};}).filter(function(x){return x.st.lbl!=='EMPTY';});
+  var anyFail=active.some(function(x){return x.st.cls==='bad';});
+  var anyReview=active.some(function(x){return x.st.cls==='warn';});
+  var oCls=anyFail?'bad':anyReview?'warn':'good';
+  var oLbl=anyFail?'ISSUES DETECTED':anyReview?'REVIEW REQUIRED':'ALL CELLS PASS';
+  var oIcon=anyFail?'✗':anyReview?'≈':'✓';
+  var scol={bad:'#7f1d1d',warn:'#713f12',good:'#14532d'}[oCls];
+  var sbg ={bad:'#fde8e8',warn:'#fefce8',good:'#dcfce7'}[oCls];
+  var sbd ={bad:'#dc2626',warn:'#ca8a04',good:'#16a34a'}[oCls];
+  var stCol=function(cls){return {good:'#16a34a',warn:'#ca8a04',bad:'#dc2626',muted:'#9ca3af'}[cls]||'#9ca3af';};
+  var passC=active.filter(function(x){return x.st.lbl==='PASS';}).length;
+  var revC =active.filter(function(x){return x.st.lbl==='REVIEW';}).length;
+  var failC=active.filter(function(x){return x.st.lbl==='FAIL';}).length;
+  var partC=active.filter(function(x){return x.st.lbl==='PARTIAL';}).length;
+  var theoROC=calcTheoROC(job);
+  var sumParts=[];
+  if(passC) sumParts.push(passC+' pass');
+  if(revC)  sumParts.push(revC+' review');
+  if(failC) sumParts.push(failC+' failed');
+  if(partC) sumParts.push(partC+' incomplete');
+  var untested=statuses.length-active.length;
+  if(untested>0) sumParts.push(untested+' not tested');
+
+  var rows=active.map(function(x){
+    var roc=calcROC(x.c), dev='';
+    var bvals=BRIDGE_KEYS.map(function(k){return parseFloat(x.c[k]);}).filter(function(n){return !isNaN(n);});
+    if(bvals.length===4){
+      var avg=bvals.reduce(function(a,b){return a+b;},0)/4;
+      var md=Math.max.apply(null,bvals.map(function(v){return Math.abs(v-avg)/avg*100;}));
+      dev=md.toFixed(2)+'%';
+    }
+    return {n:x.i+1,lbl:x.st.lbl,cls:x.st.cls,roc:roc?roc+' mV':'—',dev:dev||'—'};
+  });
+
+  var infoL=[['Customer',job.customer||''],['Scale / Location',job.scale||''],['Technician',job.tech||''],['Date',job.date||'']];
+  if(job.cellModel) infoL.push(['Load Cell Model',job.cellModel]);
+  var infoR=[['Excitation',job.excitation?job.excitation+' V':''],['mV/V Rating',job.mvv||'']];
+  if(job.testWeight) infoR.push(['Test Weight',job.testWeight+' '+(job.weightUnit||'lbs')]);
+  if(job.cellCapacity) infoR.push(['Cell Capacity',job.cellCapacity+' '+(job.weightUnit||'lbs')]);
+  if(theoROC) infoR.push(['Theoretical ROC',theoROC+' mV']);
+  var infoRows=Math.max(infoL.length,infoR.length);
+
+  // layout metrics (logical px)
+  var S=2.5, W=760, PAD=36, CW=W-PAD*2, GAP=16;
+  var headerH=78, bannerH=72, infoHdrH=26, infoRowH=24, tblTitleH=24, tblHdrH=30, tblRowH=27, footerH=40;
+  var infoBodyH=infoRows*infoRowH;
+  var infoH=infoHdrH+infoBodyH+8;
+  var tblH=tblTitleH+tblHdrH+rows.length*tblRowH+8;
+  var H=PAD+headerH+GAP+bannerH+GAP+infoH+GAP+tblH+GAP+footerH+PAD;
+
+  var cv=document.createElement('canvas');
+  cv.width=Math.round(W*S); cv.height=Math.round(H*S);
+  var ctx=cv.getContext('2d'); ctx.scale(S,S);
+  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
+  ctx.textBaseline='alphabetic';
+  var FF='-apple-system,"Helvetica Neue",Arial,sans-serif';
+  function T(s,x,y,size,weight,color,align){ ctx.font=weight+' '+size+'px '+FF; ctx.fillStyle=color; ctx.textAlign=align||'left'; ctx.fillText(s,x,y); }
+
+  var y=PAD;
+  // ── HEADER ──
+  T('INSPECTION SERVICE REPORT',PAD,y+12,10,'700','#9ca3af','left');
+  T('TRAC Cell — Michelli',W-PAD,y+12,13,'700','#235aa7','right');
+  ctx.font='700 21px '+FF;
+  T(_trunc(ctx,'Load Cell Inspection & Diagnostic Report',CW),PAD,y+38,21,'700','#235aa7','left');
+  var sub=(job.customer||'')+(job.scale?'  ·  '+job.scale:'');
+  T(_trunc(ctx,sub,CW),PAD,y+58,12.5,'400','#374151','left');
+  ctx.fillStyle='#235aa7'; ctx.fillRect(PAD,y+headerH-4,CW,3);
+  y+=headerH+GAP;
+
+  // ── STATUS BANNER ──
+  _rrect(ctx,PAD,y,CW,bannerH,8); ctx.fillStyle=sbg; ctx.fill();
+  ctx.lineWidth=2; ctx.strokeStyle=sbd; _rrect(ctx,PAD+1,y+1,CW-2,bannerH-2,7); ctx.stroke();
+  var cx=PAD+20+18, cyc=y+bannerH/2;
+  ctx.beginPath(); ctx.arc(cx,cyc,18,0,Math.PI*2); ctx.fillStyle=sbd; ctx.fill();
+  T(oIcon,cx,cyc+7,21,'900','#ffffff','center');
+  T(oLbl,PAD+58,y+30,16,'800',scol,'left');
+  T(_trunc(ctx,sumParts.join('  ·  '),CW-58-90),PAD+58,y+50,11,'600',scol,'left');
+  T('CELLS TESTED',W-PAD-16,y+26,8.5,'700',scol,'right');
+  T(String(active.length),W-PAD-16,y+52,22,'800',scol,'right');
+  y+=bannerH+GAP;
+
+  // ── INFO (two columns) ──
+  var colGap=18, colW=(CW-colGap)/2, lx=PAD, rx=PAD+colW+colGap;
+  function infoBlock(x,title,arr){
+    ctx.fillStyle='#235aa7'; ctx.fillRect(x,y,colW,infoHdrH);
+    T(title,x+9,y+17,10,'700','#ffffff','left');
+    var ry=y+infoHdrH;
+    arr.forEach(function(row,i){
+      if(i%2===1){ ctx.fillStyle='#f7f8fa'; ctx.fillRect(x,ry,colW,infoRowH); }
+      ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.strokeRect(x+0.5,ry+0.5,colW-1,infoRowH);
+      T(row[0],x+9,ry+16,9.5,'400','#6b7280','left');
+      ctx.font='600 10px '+FF;
+      T(_trunc(ctx,row[1]||'—',colW-9-ctx.measureText(row[0]).width-22),x+colW-9,ry+16,10,'600','#111827','right');
+      ry+=infoRowH;
+    });
+  }
+  infoBlock(lx,'Job Information',infoL);
+  infoBlock(rx,'Instrument Setup',infoR);
+  y+=infoH+GAP;
+
+  // ── PER-CELL RESULTS TABLE ──
+  ctx.fillStyle='#235aa7'; ctx.fillRect(PAD,y,CW,tblTitleH);
+  T('CELL RESULTS',PAD+9,y+16,9.5,'700','#ffffff','left');
+  y+=tblTitleH;
+  var c1=PAD, w1=70, c2=PAD+w1, w2=190, c3=PAD+w1+w2, w3=(CW-w1-w2)/2, c4=c3+w3, w4=CW-w1-w2-w3;
+  ctx.fillStyle='#f3f4f6'; ctx.fillRect(PAD,y,CW,tblHdrH);
+  T('CELL',c1+12,y+19,9.5,'700','#374151','left');
+  T('STATUS',c2+w2/2,y+19,9.5,'700','#374151','center');
+  T('ROC (mV)',c3+w3/2,y+19,9.5,'700','#374151','center');
+  T('BRIDGE DEV',c4+w4/2,y+19,9.5,'700','#374151','center');
+  var ry=y+tblHdrH;
+  rows.forEach(function(r,i){
+    if(i%2===1){ ctx.fillStyle='#fafafa'; ctx.fillRect(PAD,ry,CW,tblRowH); }
+    T('Cell '+r.n,c1+12,ry+18,11,'600','#111827','left');
+    var chipW=Math.min(w2-20, Math.max(64, ctx.measureText(r.lbl).width+26)), chipX=c2+(w2-chipW)/2, chipY=ry+(tblRowH-17)/2;
+    _rrect(ctx,chipX,chipY,chipW,17,8.5); ctx.fillStyle=stCol(r.cls); ctx.fill();
+    T(r.lbl,c2+w2/2,ry+18,9.5,'700','#ffffff','center');
+    T(r.roc,c3+w3/2,ry+18,10.5,'600','#111827','center');
+    T(r.dev,c4+w4/2,ry+18,10.5,'400','#374151','center');
+    ry+=tblRowH;
+  });
+  ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.strokeRect(PAD+0.5,(y-tblHdrH)+0.5,CW-1,tblHdrH+rows.length*tblRowH);
+  y+=tblHdrH+rows.length*tblRowH+8+GAP;
+
+  // ── FOOTER ──
+  ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(PAD,y); ctx.lineTo(W-PAD,y); ctx.stroke();
+  var now=new Date();
+  T('Generated by TRAC Cell · Michelli Weighing & Measurement',PAD,y+18,8.5,'400','#9ca3af','left');
+  T(now.toLocaleString(),PAD,y+31,8.5,'400','#9ca3af','left');
+  T('Confidential — For authorized use only',W-PAD,y+18,8.5,'400','#9ca3af','right');
+  return cv;
+}
+
+function shareReportImage(jobId){
+  var job=jobs.find(function(j){return j.id==jobId;}); if(!job) return;
+  var cv=renderCertCanvas(jobId);
+  if(!cv){ alert('Could not build the report.'); return; }
+  var fname='TRAC_Cell_'+_safeName(job.customer)+'_'+(job.date||new Date().toISOString().slice(0,10))+'.png';
+  cv.toBlob(function(blob){
+    if(!blob){ alert('Could not build the report image.'); return; }
+    var file=null;
+    try{ file=new File([blob],fname,{type:'image/png'}); }catch(e){ file=null; }
+    if(file && navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+      navigator.share({files:[file],title:'Load Cell Inspection Report',
+        text:(job.customer||'Load cell inspection')+(job.date?' — '+job.date:'')})
+        .catch(function(e){ if(!e||e.name!=='AbortError') _downloadBlob(blob,fname,true); });
+      return;
+    }
+    _downloadBlob(blob,fname,true);
+  },'image/png');
+}
+function _downloadBlob(blob,fname,note){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download=fname;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},60000);
+  if(note) showDlg({title:'Report image saved',msg:'Direct sharing isn’t available here, so the report image was saved to your device. Open Messages and attach it to text your customer.',acts:[{lbl:'OK',cls:'btn-primary',fn:hideDlg}]});
 }
 
 // ─── CELL PICKER SHEET ───────────────────────────────────────────
