@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Michelli TRAC — Field Calibration Apps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --blue:#235AA7; --green:#029F49; --yellow:#F5DA02; --ink:#16223a; --muted:#5b6678; --bg:#f4f6fa; --card:#fff; --line:#e6eaf0; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{ font-family:'Libre Franklin',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:32px 18px 48px; }
+  .mark{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .mark svg{ flex-shrink:0; }
+  h1{ font-size:30px; font-weight:800; letter-spacing:-.5px; }
+  h1 b{ color:var(--blue); }
+  .tag{ color:var(--muted); font-size:14px; font-weight:600; margin:4px 0 30px; text-align:center; }
+  .cards{ display:flex; flex-wrap:wrap; gap:18px; justify-content:center; width:100%; max-width:720px; }
+  a.card{ flex:1 1 300px; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:24px 22px; text-decoration:none; color:inherit; box-shadow:0 6px 22px rgba(20,40,80,.06); transition:transform .15s, box-shadow .15s, border-color .15s; display:block; }
+  a.card:hover{ transform:translateY(-3px); box-shadow:0 12px 30px rgba(20,40,80,.12); border-color:var(--blue); }
+  .badge{ display:inline-block; font-size:11px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:#fff; padding:4px 10px; border-radius:20px; margin-bottom:14px; }
+  .card h2{ font-size:21px; font-weight:800; margin-bottom:6px; }
+  .card h2 b{ color:var(--blue); }
+  .card p{ color:var(--muted); font-size:14px; line-height:1.5; }
+  .open{ margin-top:16px; font-weight:700; font-size:14px; color:var(--blue); }
+  .open::after{ content:" →"; }
+  footer{ margin-top:36px; color:var(--muted); font-size:12px; text-align:center; line-height:1.6; }
+</style>
+</head>
+<body>
+  <div class="mark">
+    <svg viewBox="0 0 34 34" width="38" height="38" aria-hidden="true">
+      <rect x="3" y="5" width="6" height="24" rx="1.5" fill="#235AA7"/>
+      <rect x="25" y="5" width="6" height="24" rx="1.5" fill="#235AA7"/>
+      <polygon points="9,5 17,15 25,5 25,11 17,21 9,11" fill="#029F49"/>
+      <polygon points="10.5,18 17,26 23.5,18 23.5,23 17,31 10.5,23" fill="#029F49" opacity=".9"/>
+    </svg>
+    <h1><b>TRAC</b> Field Apps</h1>
+  </div>
+  <div class="tag">Michelli Weighing &amp; Measurement · Track Records, Assets &amp; Calibrations</div>
+
+  <div class="cards">
+    <a class="card" href="./LoadCellLogger.html">
+      <span class="badge" style="background:var(--blue)">TRAC Cell</span>
+      <h2><b>TRAC</b> Cell</h2>
+      <p>Load-cell verification &amp; diagnostics. Records OHM readings, flags cross-bridge deviation, calculates ROC, and texts a clean inspection certificate to the customer.</p>
+      <div class="open">Open TRAC Cell</div>
+    </a>
+    <a class="card" href="./BeltScaleLogger.html">
+      <span class="badge" style="background:var(--green)">TRAC Belt</span>
+      <h2><b>TRAC</b> Belt</h2>
+      <p>Belt conveyor scale calibration. Guided test wizard, auto-calculated TWPF / TPH / % error, PASS/FAIL thresholds, and professional customer &amp; site-summary reports.</p>
+      <div class="open">Open TRAC Belt</div>
+    </a>
+  </div>
+
+  <footer>
+    Internal field tools for Michelli technicians.<br>
+    Add to Home Screen in Safari to use offline.
+  </footer>
+</body>
+</html>
