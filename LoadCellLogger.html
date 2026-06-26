@@ -587,19 +587,14 @@ function rHome(){
   const rec=[...jobs].reverse().slice(0,3);
   return `<div class="page">
   <div class="hdr">
-    <div style="display:flex;align-items:center;gap:8px"><svg viewBox="0 0 34 34" width="22" height="22" style="flex-shrink:0;vertical-align:middle" aria-hidden="true"><rect x="3" y="5" width="6" height="24" rx="1.5" fill="#fff"/><rect x="25" y="5" width="6" height="24" rx="1.5" fill="#fff"/><polygon points="9,5 17,15 25,5 25,11 17,21 9,11" fill="#fff" opacity=".9"/><polygon points="10.5,18 17,26 23.5,18 23.5,23 17,31 10.5,23" fill="#fff" opacity=".72"/></svg><h1><b style="opacity:.82">TRAC</b> Cell</h1></div>
+    <div style="display:flex;align-items:center;gap:9px"><svg viewBox="0 0 34 34" width="24" height="24" style="flex-shrink:0;vertical-align:middle" aria-hidden="true"><rect x="3" y="5" width="6" height="24" rx="1.5" fill="#fff"/><rect x="25" y="5" width="6" height="24" rx="1.5" fill="#fff"/><polygon points="9,5 17,15 25,5 25,11 17,21 9,11" fill="#fff" opacity=".9"/><polygon points="10.5,18 17,26 23.5,18 23.5,23 17,31 10.5,23" fill="#fff" opacity=".72"/></svg><div><h1 style="line-height:1.1"><b style="opacity:.82">TRAC</b> Cell</h1><div style="font-size:11px;opacity:.72;margin-top:1px">Load Cell Verification · Michelli</div></div></div>
     <div style="display:flex;align-items:center;gap:12px">
       <button class="hdr-btn" id="b-help" style="min-width:auto;padding:4px 4px" title="Open field guide">${helpIcon()}</button>
       <button class="hdr-btn" id="b-theme" style="min-width:auto;padding:4px 4px" title="Switch Field / Office mode">${themeIcon()}</button>
       <span style="font-size:12px;color:rgba(255,255,255,.72)">${jobs.length} job${jobs.length!==1?'s':''}</span>
     </div>
   </div>
-  <div class="home-hero">
-    <span class="icon" style="font-size:0">${brandMark(54)}</span>
-    <h2 style="margin-top:8px"><b style="color:var(--acc)">TRAC</b> Cell</h2>
-    <p>Load Cell Verification · Michelli Weighing &amp; Measurement</p>
-  </div>
-  <div class="home-actions">
+  <div class="home-actions" style="margin-top:18px">
     <button class="btn btn-primary" id="b-new">+ New Job</button>
     <button class="btn btn-outline" id="b-hist">📋  All History</button>
   </div>
@@ -981,6 +976,8 @@ function advance(skip){
       CUR=null; toast('Cell '+(ci+1)+' updated'); go('summary',{CUR:null,DID:job.id}); return;
     }
     toast('Cell '+(ci+1)+' saved'); ri=0; ci++;
+  } else if(!skip){
+    toast('Saved');   // visible confirmation on every reading (works on iOS, where haptics don't)
   }
   if(ci>=job.numCells){ // All cells done
     job.complete=true;
