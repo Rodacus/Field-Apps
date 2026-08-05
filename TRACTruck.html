@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TRAC Truck">
+<meta name="theme-color" content="#235AA7">
 <title>TRAC Truck — Vehicle Scale Tester</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -550,9 +552,9 @@ function stepLoad(s,which,title){
     <button class="btn ghost" style="width:auto;margin-top:10px" onclick="gotoStep(0)">‹ Go to Visit step</button></div>`;}
   const copyBtn=which==='asLeft'?`<button class="btn subtle sm" style="width:auto;margin-bottom:10px" onclick="copyFoundLoad()">⇩ Copy As-Found numbers</button>`:'';
   let rows='';
-  // Render top (max load) first, down to the empty cart. Decreasing starts one drop below the top
-  // (you pull a rack off before the first down-reading), so the max row has no decreasing cell.
-  [...L.rows].reverse().forEach(r=>{
+  // Render empty cart first (top), building down the screen to max load. Decreasing starts one drop
+  // below the top (you pull a rack off before the first down-reading), so the max row has no decreasing cell.
+  L.rows.forEach(r=>{
     const k=r.blocks;const isTop=(k===bc);
     const lbl=k===0?'Empty cart':`Drop ${k}`;
     const ie=r.incErr, de=r.decErr;
