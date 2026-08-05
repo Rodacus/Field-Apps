@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TRAC Truck — Vehicle Scale Tester</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#235AA7; --blue-d:#1a4680; --blue-l:#e9f0fa;
+  --green:#029F49; --green-l:#e4f6ec;
+  --yellow:#F5DA02; --yellow-d:#8a7a00;
+  --red:#d21f3c; --red-l:#fbe7ea;
+  --orange:#e07b00; --orange-l:#fdf0e0;
+  --ink:#12233b; --muted:#5c6b7d; --line:#dbe3ec; --bg:#f4f7fb; --card:#ffffff;
+  --shadow:0 1px 3px rgba(16,40,70,.08),0 4px 16px rgba(16,40,70,.06);
+  --radius:14px;
+}
+[data-theme="field"]{
+  --blue:#5b9bff; --blue-d:#3f7ddb; --blue-l:#152a45;
+  --green:#25c46b; --green-l:#0f2e1f;
+  --yellow:#ffe23d; --yellow-d:#ffe23d;
+  --red:#ff5a72; --red-l:#3a1620;
+  --orange:#ffa23d; --orange-l:#3a2610;
+  --ink:#eaf1fb; --muted:#9fb2c8; --line:#26405f; --bg:#0a1626; --card:#0f2138;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:'Libre Franklin',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+.app{max-width:760px;margin:0 auto;padding-bottom:96px}
+
+/* Header */
+header{position:sticky;top:0;z-index:40;background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 10px rgba(16,40,70,.18)}
+[data-theme="field"] header{background:linear-gradient(135deg,#0f2138,#0a1626);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:.3px;font-size:18px}
+.brand .mark{width:30px;height:30px;border-radius:8px;background:var(--yellow);color:var(--blue-d);display:grid;place-items:center;font-weight:800;font-size:15px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.06)}
+.brand small{display:block;font-size:10px;font-weight:600;opacity:.85;letter-spacing:.5px;text-transform:uppercase;margin-top:-2px}
+.hspace{flex:1}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+.dot.off{background:var(--red)}
+.toggle{display:flex;background:rgba(255,255,255,.16);border-radius:999px;padding:3px;font-size:11px;font-weight:700}
+.toggle button{border:0;background:transparent;color:#fff;padding:5px 10px;border-radius:999px;cursor:pointer;opacity:.7;font-weight:700;font-family:inherit}
+.toggle button.on{background:#fff;color:var(--blue-d);opacity:1}
+
+/* Layout bits */
+.wrap{padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.card h2{margin:0 0 4px;font-size:17px;font-weight:800}
+.card .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:12px 0 5px}
+input,select,textarea{width:100%;font-family:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+input[type=number]{-moz-appearance:textfield}
+textarea{min-height:70px;resize:vertical}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:11px;padding:13px 16px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:transform .05s,filter .15s;width:100%}
+.btn:active{transform:scale(.985)}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.green{background:var(--green);color:#fff}
+.btn.ghost{background:transparent;color:var(--blue);border:1.5px solid var(--line)}
+.btn.subtle{background:var(--blue-l);color:var(--blue-d)}
+.btn.danger{background:var(--red);color:#fff}
+.btn.sm{padding:9px 12px;font-size:13px;width:auto}
+.btn.wide{width:100%}
+.btnrow{display:flex;gap:10px;margin-top:6px}.btnrow .btn{width:auto;flex:1}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.3px;text-transform:uppercase}
+.b-pass{background:var(--green-l);color:var(--green)}
+.b-fail{background:var(--red-l);color:var(--red)}
+.b-part{background:var(--blue-l);color:var(--blue-d)}
+.b-empty{background:var(--line);color:var(--muted)}
+.b-warn{background:var(--orange-l);color:var(--orange)}
+
+/* Home cards */
+.site-h{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:16px 4px 8px}
+.scard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px}
+.scard:active{transform:scale(.995)}
+.scard .icn{width:42px;height:42px;border-radius:11px;background:var(--blue-l);color:var(--blue);display:grid;place-items:center;font-size:20px;flex-shrink:0}
+.scard .t{font-weight:800;font-size:16px}
+.scard .m{font-size:12.5px;color:var(--muted)}
+.scard .chev{color:var(--muted);font-size:22px}
+.empty-state{text-align:center;color:var(--muted);padding:50px 20px}
+.empty-state .big{font-size:46px;margin-bottom:8px}
+
+/* Steps */
+.steps{display:flex;gap:5px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--card);border:1.5px solid var(--line);color:var(--muted);cursor:pointer}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip.done{border-color:var(--green);color:var(--green)}
+
+/* Section test table */
+.stbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.stbl th{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:800;text-align:left;padding:6px 6px}
+.stbl td{padding:5px 6px;border-top:1px solid var(--line)}
+.stbl input{padding:9px 8px;text-align:right;font-variant-numeric:tabular-nums}
+.stbl .secn{font-weight:800;width:64px;color:var(--blue)}
+.dev{font-size:12px;font-weight:800;text-align:right;white-space:nowrap}
+.dev.hi{color:var(--red)}.dev.lo{color:var(--orange)}.dev.ok{color:var(--muted)}
+
+/* live result strip */
+.result{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;margin:12px 0;background:var(--bg);border:1px solid var(--line)}
+.result .num{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.result .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:700}
+.result.pass{background:var(--green-l);border-color:transparent}
+.result.fail{background:var(--red-l);border-color:transparent}
+
+/* scale diagram */
+.diagram{display:flex;gap:4px;margin:8px 0 4px;height:54px}
+.seg{flex:1;border-radius:8px;background:var(--blue-l);border:1.5px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--muted);position:relative;overflow:hidden}
+.seg .sv{font-size:12px;font-weight:800;color:var(--ink)}
+.seg.hi{background:var(--red-l);border-color:var(--red);color:var(--red)}
+.seg.hi .sv{color:var(--red)}
+.seg.lo{background:var(--orange-l);border-color:var(--orange)}
+.seg.lo .sv{color:var(--orange)}
+.seg.arrowL::before{content:"▶";position:absolute;top:2px;left:3px;font-size:8px;color:var(--green)}
+.guide{background:var(--blue-l);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:8px;line-height:1.5}
+.guide b{color:var(--blue-d)}
+.flag{background:var(--orange-l);color:var(--orange);border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:600;margin-top:8px}
+
+/* photos */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.pthumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--bg)}
+.pthumb img{width:100%;height:100%;object-fit:cover}
+.pthumb .x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:0;font-size:13px;cursor:pointer}
+.padd{aspect-ratio:1;border:2px dashed var(--line);border-radius:10px;display:grid;place-items:center;color:var(--muted);font-size:26px;cursor:pointer;background:var(--card)}
+
+/* misc */
+.kv{display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.kv:first-child{border-top:0}
+.kv .k{color:var(--muted)}.kv .v{font-weight:700;font-variant-numeric:tabular-nums}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:45;width:min(728px,calc(100% - 24px));display:flex;gap:10px}
+.fab .btn{box-shadow:var(--shadow)}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--blue-l);color:var(--blue-d);margin-left:6px}
+.seg-pill{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.seg-pill button{flex:0 0 auto;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
+.seg-pill button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:999px;font-size:14px;font-weight:600;z-index:80;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.divider{height:1px;background:var(--line);margin:14px 0}
+.mini{font-size:12px;color:var(--muted)}
+@media print{.noprint{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><span class="mark">TT</span><div>TRAC Truck<small>Vehicle Scale Tester</small></div></div>
+    <div class="hspace"></div>
+    <div class="toggle" id="themeToggle">
+      <button data-t="office" class="on">Office</button>
+      <button data-t="field">Field</button>
+    </div>
+    <span class="dot" id="netdot" title="online"></span>
+  </header>
+  <div id="view"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================ CALC (verified) ============================ */
+function sectionResult(fwd, rev, tol, sectionCount, division, doRev){
+  const dv=(division>0)?division:1;
+  const useRev=(doRev===false)?false:true;
+  const clean=v=>(v!==null&&v!==''&&v!==undefined&&!isNaN(Number(v)))?Number(v):null;
+  const f=(fwd||[]).map(clean), r=(rev||[]).map(clean);
+  const all=(useRev?[...f,...r]:[...f]).filter(v=>v!==null);
+  if(all.length===0) return {status:'EMPTY',spread:null,min:null,max:null,avg:null,sections:[],high:null,low:null,complete:false,tol};
+  const min=Math.min(...all),max=Math.max(...all);
+  const spread=+(max-min).toFixed(2);
+  const avg=+(all.reduce((a,b)=>a+b,0)/all.length).toFixed(2);
+  let filled=0; for(let i=0;i<sectionCount;i++){if(useRev?(f[i]!=null&&r[i]!=null):(f[i]!=null))filled++;}
+  const complete=filled===sectionCount;
+  let status = spread>tol ? 'FAIL' : (complete?'PASS':'PARTIAL');
+  const sections=[];
+  for(let i=0;i<sectionCount;i++){
+    const fv=f[i]??null, rv=useRev?(r[i]??null):null, vals=[fv,rv].filter(v=>v!==null);
+    const secAvg=vals.length?+(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2):null;
+    sections.push({n:i+1,fwd:fv,rev:rv,dev:secAvg!==null?Math.round((secAvg-avg)/dv)*dv:null,repeat:(useRev&&fv!==null&&rv!==null)?+Math.abs(fv-rv).toFixed(2):null});
+  }
+  const rated=sections.filter(s=>s.dev!==null);
+  const high=rated.length?rated.reduce((a,b)=>b.dev>a.dev?b:a):null;
+  const low=rated.length?rated.reduce((a,b)=>b.dev<a.dev?b:a):null;
+  return {status,spread,min,max,avg,tol,sections,high,low,complete};
+}
+function loadResult(cartCert,blockWeight,blockCount,incReadings,decReadings,tol){
+  const clean=v=>(v!==null&&v!==''&&v!==undefined&&!isNaN(Number(v)))?Number(v):null;
+  const rows=[]; let worst=0,anyFail=false,filled=0;
+  for(let k=0;k<=blockCount;k++){
+    const applied=+(cartCert+k*blockWeight).toFixed(2);
+    const inc=clean(incReadings?incReadings[k]:null), dec=clean(decReadings?decReadings[k]:null);
+    const incErr=inc!==null?+(inc-applied).toFixed(2):null, decErr=dec!==null?+(dec-applied).toFixed(2):null;
+    const ret=(inc!==null&&dec!==null)?+Math.abs(inc-dec).toFixed(2):null;
+    [incErr,decErr].forEach(e=>{if(e!==null){if(Math.abs(e)>worst)worst=Math.abs(e);if(Math.abs(e)>tol)anyFail=true;}});
+    if(inc!==null)filled++;
+    rows.push({blocks:k,applied,inc,dec,incErr,decErr,ret,
+      incStatus:incErr!==null?(Math.abs(incErr)<=tol?'PASS':'FAIL'):null,
+      decStatus:decErr!==null?(Math.abs(decErr)<=tol?'PASS':'FAIL'):null});
+  }
+  const hasData=rows.some(r=>r.inc!==null||r.dec!==null);
+  let status = !hasData?'EMPTY':(anyFail?'FAIL':(filled===blockCount+1?'PASS':'PARTIAL'));
+  return {status,worst:+worst.toFixed(2),tol,rows};
+}
+function rollUp(st){const s=st.filter(Boolean);if(!s.length)return'EMPTY';if(s.includes('FAIL'))return'FAIL';if(s.includes('PARTIAL')||s.includes('EMPTY'))return'PARTIAL';return'PASS';}
+
+/* ============================ STORAGE / STATE ============================ */
+const KEY='tractruck_v1';
+let DB={scales:[],visits:[]};
+function load(){try{const r=localStorage.getItem(KEY);if(r)DB=JSON.parse(r);}catch(e){}}
+function save(){localStorage.setItem(KEY,JSON.stringify(DB));}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+let ST={view:'home',scaleId:null,visitId:null,step:0,draft:null};
+
+/* defaults */
+const DEF={capacity:120000,division:20,sections:5,sectionTol:60,loadTol:20,blockWeight:4000,blockCount:3};
+/* blockWeight = certified weight per DROP (a rack, default 4×1,000 lb). blockCount = number of drops (varies by test truck). */
+
+/* theme */
+function setTheme(t){document.documentElement.setAttribute('data-theme',t==='field'?'field':'office');
+  document.querySelectorAll('#themeToggle button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  try{localStorage.setItem('tractruck_theme',t);}catch(e){}}
+document.getElementById('themeToggle').addEventListener('click',e=>{if(e.target.dataset.t)setTheme(e.target.dataset.t);});
+
+/* net dot */
+function net(){const d=document.getElementById('netdot');const on=navigator.onLine;d.classList.toggle('off',!on);d.title=on?'online':'offline';}
+addEventListener('online',net);addEventListener('offline',net);
+
+/* toast */
+let tT;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),1800);}
+
+/* helpers */
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const badge=st=>({PASS:'<span class="badge b-pass">Pass</span>',FAIL:'<span class="badge b-fail">Fail</span>',PARTIAL:'<span class="badge b-part">In&nbsp;progress</span>',EMPTY:'<span class="badge b-empty">Not started</span>',WARN:'<span class="badge b-warn">Review</span>'}[st]||'');
+const money=n=>Number(n).toLocaleString('en-US');
+const todayISO=()=>new Date().toISOString().slice(0,10);
+
+/* ============================ ROUTER ============================ */
+function go(view,opts={}){ST=Object.assign(ST,{view},opts);render();}
+function render(){
+  const v=document.getElementById('view');
+  if(ST.view==='home')return v.innerHTML=renderHome();
+  if(ST.view==='scaleForm')return v.innerHTML=renderScaleForm();
+  if(ST.view==='scaleDetail')return v.innerHTML=renderScaleDetail();
+  if(ST.view==='visit')return renderVisit();
+}
+
+/* ============================ HOME ============================ */
+function renderHome(){
+  if(!DB.scales.length){
+    return `<div class="wrap"><div class="empty-state"><div class="big">🚛</div>
+      <h2>No scales yet</h2><p>Add a truck scale to start testing.</p></div>
+      <button class="btn primary wide" onclick="newScale()">＋ Add Truck Scale</button>
+      <div class="btnrow"><button class="btn ghost" onclick="importJSON()">Import backup</button></div></div>`;
+  }
+  const sites={};DB.scales.forEach(s=>{(sites[s.site||'Unassigned']=sites[s.site||'Unassigned']||[]).push(s);});
+  let h='<div class="wrap">';
+  h+=`<button class="btn primary wide" onclick="newScale()">＋ Add Truck Scale</button>`;
+  Object.keys(sites).sort().forEach(site=>{
+    h+=`<div class="site-h">${esc(site)}</div>`;
+    sites[site].forEach(s=>{
+      const last=lastVisit(s.id);
+      const st=last?visitStatus(last):'EMPTY';
+      h+=`<div class="scard" onclick="openScale('${s.id}')">
+        <div class="icn">🚛</div>
+        <div style="flex:1"><div class="t">${esc(s.name)}</div>
+        <div class="m">${s.sections}-section · ${money(s.capacity)} lb × ${s.division} lb${last?' · last '+fmtDate(last.date):''}</div></div>
+        ${badge(st)}<div class="chev">›</div></div>`;
+    });
+  });
+  h+=`<div class="divider"></div><div class="btnrow">
+    <button class="btn ghost" onclick="exportJSON()">Export backup</button>
+    <button class="btn ghost" onclick="importJSON()">Import backup</button></div></div>`;
+  return h;
+}
+function lastVisit(sid){const v=DB.visits.filter(x=>x.scaleId===sid).sort((a,b)=>(b.date||'').localeCompare(a.date||''));return v[0]||null;}
+function fmtDate(d){if(!d)return'';const p=d.split('-');return p.length===3?`${p[1]}/${p[2]}/${p[0].slice(2)}`:d;}
+
+/* ============================ SCALE FORM ============================ */
+function newScale(){ST.scaleId=null;go('scaleForm');}
+function openScale(id){ST.scaleId=id;go('scaleDetail');}
+function renderScaleForm(){
+  const s=DB.scales.find(x=>x.id===ST.scaleId)||{};
+  const g=(k,d='')=>esc(s[k]??d);
+  const sel=(k,val)=>String(s[k])===String(val)?'selected':'';
+  let secOpts='';for(let i=2;i<=10;i++)secOpts+=`<option ${String(s.sections||DEF.sections)===String(i)?'selected':''}>${i}</option>`;
+  return `<div class="wrap">
+   <button class="btn ghost sm noprint" onclick="go('home')" style="width:auto;margin-bottom:12px">‹ Back</button>
+   <div class="card"><h2>${s.id?'Edit scale':'New truck scale'}</h2>
+    <div class="sub">Set up once — reused every visit.</div>
+    <label>Site / Customer</label><input id="f_site" value="${g('site')}" placeholder="e.g. Rogers Group – Ennis TX">
+    <label>Scale name / ID</label><input id="f_name" value="${g('name')}" placeholder="e.g. Inbound Truck Scale #1">
+    <label>Manufacturer</label><input id="f_mfr" value="${g('mfr')}" placeholder="e.g. Cardinal / Rice Lake / Mettler Toledo">
+    <div class="row">
+      <div><label>Capacity (lb)</label><input id="f_cap" type="number" inputmode="numeric" value="${g('capacity',DEF.capacity)}"></div>
+      <div><label>Division / increment</label>
+        <select id="f_div"><option ${sel('division',20)||(!s.id?'selected':'')}>20</option><option ${sel('division',50)}>50</option><option ${sel('division',100)}>100</option></select></div>
+    </div>
+    <div class="row">
+      <div><label>Sections</label><select id="f_sec">${secOpts}</select></div>
+      <div><label>Indicator / integrator</label><input id="f_ind" value="${g('indicator')}" placeholder="optional"></div>
+    </div>
+    <label>Notes</label><textarea id="f_notes" placeholder="Deck type, pit/above-ground, load cell count, etc.">${g('notes')}</textarea>
+    <div style="height:12px"></div>
+    <button class="btn primary wide" onclick="saveScale()">${s.id?'Save changes':'Create scale'}</button>
+    ${s.id?`<div class="btnrow"><button class="btn danger" onclick="delScale('${s.id}')">Delete scale</button></div>`:''}
+   </div></div>`;
+}
+function saveScale(){
+  const val=id=>document.getElementById(id).value.trim();
+  const name=val('f_name');if(!name){toast('Scale name required');return;}
+  let s=DB.scales.find(x=>x.id===ST.scaleId);
+  const data={site:val('f_site')||'Unassigned',name,mfr:val('f_mfr'),
+    capacity:+val('f_cap')||DEF.capacity,division:+document.getElementById('f_div').value||DEF.division,
+    sections:+document.getElementById('f_sec').value||DEF.sections,
+    indicator:val('f_ind'),notes:val('f_notes')};
+  if(s){Object.assign(s,data);}else{s={id:uid(),...data};DB.scales.push(s);}
+  save();ST.scaleId=s.id;go('scaleDetail');toast('Saved');
+}
+function delScale(id){if(!confirm('Delete this scale and all its visits? This cannot be undone.'))return;
+  DB.scales=DB.scales.filter(s=>s.id!==id);DB.visits=DB.visits.filter(v=>v.scaleId!==id);save();go('home');toast('Deleted');}
+
+/* ============================ SCALE DETAIL ============================ */
+function renderScaleDetail(){
+  const s=DB.scales.find(x=>x.id===ST.scaleId);if(!s)return go('home');
+  const visits=DB.visits.filter(v=>v.scaleId===s.id).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  let vh=visits.length?'':'<div class="mini" style="padding:8px 2px">No visits yet.</div>';
+  visits.forEach(v=>{
+    vh+=`<div class="scard" onclick="openVisit('${v.id}')">
+      <div class="icn" style="background:var(--blue-l)">📋</div>
+      <div style="flex:1"><div class="t">${fmtDate(v.date)} <span class="tag">${esc(v.testType||'PM')}</span></div>
+      <div class="m">${esc(v.tech||'—')}${v.po?' · WO '+esc(v.po):''}</div></div>
+      ${badge(visitStatus(v))}<div class="chev">›</div></div>`;
+  });
+  return `<div class="wrap">
+    <button class="btn ghost sm noprint" onclick="go('home')" style="width:auto;margin-bottom:12px">‹ All scales</button>
+    <div class="card"><h2>${esc(s.name)}</h2><div class="sub">${esc(s.site)}</div>
+      <div class="kv"><span class="k">Capacity</span><span class="v">${money(s.capacity)} lb</span></div>
+      <div class="kv"><span class="k">Division</span><span class="v">${s.division} lb</span></div>
+      <div class="kv"><span class="k">Sections</span><span class="v">${s.sections}</span></div>
+      ${s.mfr?`<div class="kv"><span class="k">Manufacturer</span><span class="v">${esc(s.mfr)}</span></div>`:''}
+      <div style="height:10px"></div>
+      <button class="btn ghost sm" onclick="ST.scaleId='${s.id}';go('scaleForm')" style="width:auto">Edit scale</button>
+    </div>
+    <button class="btn primary wide" onclick="newVisit('${s.id}')">＋ New Test / Visit</button>
+    <div class="site-h">History</div>${vh}
+  </div>`;
+}
+
+/* ============================ VISIT WIZARD ============================ */
+const STEPS=['Visit','As-Found Sections','As-Found Load','Adjust','As-Left Sections','As-Left Load','Photos','Review'];
+function blankTest(sections,blockCount){return{
+  sec:{fwd:Array(sections).fill(''),rev:Array(sections).fill('')},
+  load:{inc:Array(blockCount+1).fill(''),dec:Array(blockCount+1).fill('')}
+};}
+function newVisit(sid){
+  const s=DB.scales.find(x=>x.id===sid);
+  ST.draft={id:uid(),scaleId:sid,date:todayISO(),tech:'',po:'',testType:'PM',reason:'',
+    startEnd:'approach', usingCart:false, doReverse:true,
+    sectionTol:DEF.sectionTol,loadTol:DEF.loadTol,
+    cartCert:'',blockWeight:DEF.blockWeight,blockCount:DEF.blockCount,
+    asFound:blankTest(s.sections,DEF.blockCount),
+    asLeft:blankTest(s.sections,DEF.blockCount),
+    leftAsFound:false, adjNotes:'', photos:[], signOff:false, custName:'', overrideNote:''};
+  ST.visitId=ST.draft.id;ST.step=0;go('visit');
+}
+function openVisit(id){const v=DB.visits.find(x=>x.id===id);ST.draft=JSON.parse(JSON.stringify(v));ST.visitId=id;ST.step=0;go('visit');}
+function saveDraft(){
+  const i=DB.visits.findIndex(v=>v.id===ST.draft.id);
+  if(i>=0)DB.visits[i]=JSON.parse(JSON.stringify(ST.draft));else DB.visits.push(JSON.parse(JSON.stringify(ST.draft)));
+  save();
+}
+function visitStatus(v){
+  const s=DB.scales.find(x=>x.id===v.scaleId);if(!s)return'EMPTY';
+  const src=v.leftAsFound?v.asFound:v.asLeft;
+  const sec=sectionResult(src.sec.fwd,src.sec.rev,v.sectionTol,s.sections,s.division,v.doReverse!==false).status;
+  const ld=loadResult(+v.cartCert||0,+v.blockWeight||DEF.blockWeight,+v.blockCount||DEF.blockCount,src.load.inc,src.load.dec,v.loadTol).status;
+  return rollUp([sec,ld]);
+}
+
+function renderVisit(){
+  const s=DB.scales.find(x=>x.id===ST.draft.scaleId);
+  const v=document.getElementById('view');
+  let chips='<div class="steps noprint">';
+  STEPS.forEach((n,i)=>{chips+=`<div class="chip ${i===ST.step?'on':''}" onclick="gotoStep(${i})">${i+1}. ${n}</div>`;});
+  chips+='</div>';
+  let body='';
+  if(ST.step===0)body=stepVisit(s);
+  else if(ST.step===1)body=stepSections(s,'asFound','As-Found Sections');
+  else if(ST.step===2)body=stepLoad(s,'asFound','As-Found Load Test');
+  else if(ST.step===3)body=stepAdjust(s);
+  else if(ST.step===4)body=stepSections(s,'asLeft','As-Left Sections');
+  else if(ST.step===5)body=stepLoad(s,'asLeft','As-Left Load Test');
+  else if(ST.step===6)body=stepPhotos(s);
+  else if(ST.step===7)body=stepReview(s);
+  const nav=`<div class="fab noprint">
+    ${ST.step>0?`<button class="btn ghost" onclick="gotoStep(${ST.step-1})">‹ Back</button>`:`<button class="btn ghost" onclick="leaveVisit()">Close</button>`}
+    ${ST.step<7?`<button class="btn primary" onclick="gotoStep(${ST.step+1})">Next ›</button>`:`<button class="btn green" onclick="finishVisit()">✓ Save Visit</button>`}
+  </div>`;
+  v.innerHTML=`<button class="btn ghost sm noprint" onclick="leaveVisit()" style="width:auto;margin:12px 0 0 16px">‹ ${esc(s.name)}</button>${chips}<div class="wrap" style="padding-top:4px">${body}</div>${nav}`;
+}
+function gotoStep(i){collectStep();ST.step=Math.max(0,Math.min(7,i));saveDraft();render();}
+function leaveVisit(){collectStep();saveDraft();ST.draft=null;go('scaleDetail');}
+function finishVisit(){collectStep();saveDraft();toast('Visit saved');ST.draft=null;go('scaleDetail');}
+
+/* --- collect current step inputs into draft --- */
+function collectStep(){
+  const d=ST.draft;if(!d)return;
+  const gv=id=>{const e=document.getElementById(id);return e?e.value:undefined;};
+  if(ST.step===0){
+    ['date','tech','po','reason','custName'].forEach(k=>{const x=gv('v_'+k);if(x!==undefined)d[k]=x;});
+    const tt=document.querySelector('#seg_tt button.on');if(tt)d.testType=tt.dataset.v;
+    const se=document.querySelector('#seg_se button.on');if(se)d.startEnd=se.dataset.v;
+    const uc=document.querySelector('#seg_uc button.on');if(uc)d.usingCart=uc.dataset.v==='cart';
+    const rv=document.querySelector('#seg_rev button.on');if(rv)d.doReverse=rv.dataset.v==='yes';
+    ['sectionTol','loadTol','cartCert','blockWeight','blockCount'].forEach(k=>{const x=gv('v_'+k);if(x!==undefined)d[k]=(x===''?'':+x);});
+    // resize load arrays if blockCount changed
+    const bc=+d.blockCount||DEF.blockCount;
+    ['asFound','asLeft'].forEach(t=>{['inc','dec'].forEach(dir=>{const a=d[t].load[dir];while(a.length<bc+1)a.push('');a.length=bc+1;});});
+  }
+  if(ST.step===1||ST.step===4){
+    const t=ST.step===1?'asFound':'asLeft';
+    d[t].sec.fwd=d[t].sec.fwd.map((_,i)=>gv(`sec_${t}_f_${i}`)??d[t].sec.fwd[i]);
+    d[t].sec.rev=d[t].sec.rev.map((_,i)=>gv(`sec_${t}_r_${i}`)??d[t].sec.rev[i]);
+  }
+  if(ST.step===2||ST.step===5){
+    const t=ST.step===2?'asFound':'asLeft';
+    d[t].load.inc=d[t].load.inc.map((_,i)=>gv(`ld_${t}_i_${i}`)??d[t].load.inc[i]);
+    d[t].load.dec=d[t].load.dec.map((_,i)=>gv(`ld_${t}_d_${i}`)??d[t].load.dec[i]);
+  }
+  if(ST.step===3){const x=gv('v_adjNotes');if(x!==undefined)d.adjNotes=x;
+    const laf=document.querySelector('#seg_laf button.on');if(laf)d.leftAsFound=laf.dataset.v==='yes';}
+  if(ST.step===7){const x=gv('v_overrideNote');if(x!==undefined)d.overrideNote=x;
+    const so=document.querySelector('#seg_so button.on');if(so)d.signOff=so.dataset.v==='yes';
+    const cn=gv('v_custName');if(cn!==undefined)d.custName=cn;}
+}
+
+/* STEP 0 — visit info */
+function segBtns(id,opts,cur){let h=`<div class="seg-pill" id="${id}">`;opts.forEach(o=>{h+=`<button data-v="${o.v}" class="${o.v===cur?'on':''}" onclick="pill(this)">${o.l}</button>`;});return h+'</div>';}
+function pill(b){b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  if(b.parentElement.id==='seg_uc'){/* refresh tol hint */}}
+function stepVisit(s){
+  const d=ST.draft;
+  return `<div class="card"><h2>Visit info</h2><div class="sub">${esc(s.name)} · ${esc(s.site)}</div>
+   <div class="row"><div><label>Date</label><input id="v_date" type="date" value="${esc(d.date)}"></div>
+     <div><label>Technician</label><input id="v_tech" value="${esc(d.tech)}" placeholder="Your name"></div></div>
+   <label>Test type</label>${segBtns('seg_tt',[{v:'PM',l:'Preventative (PM)'},{v:'Service',l:'Service Call'}],d.testType)}
+   <label>Work order / PO</label><input id="v_po" value="${esc(d.po)}" placeholder="optional">
+   <label>Reason / complaint</label><textarea id="v_reason" placeholder="Scale reads weight, not drifting; routine PM, etc.">${esc(d.reason)}</textarea>
+   <div class="divider"></div>
+   <h2 style="font-size:15px">Standard & tolerances</h2>
+   <label>Testing with</label>${segBtns('seg_uc',[{v:'truck',l:'Test Truck'},{v:'cart',l:'Test Cart'}],d.usingCart?'cart':'truck')}
+   <div class="hint">Truck runs sections; cart runs the increasing/decreasing load test. Tolerances are yours to set.</div>
+   <label>Reverse section run?</label>${segBtns('seg_rev',[{v:'yes',l:'Yes — both directions'},{v:'no',l:'No — one direction'}],d.doReverse!==false?'yes':'no')}
+   <div class="row">
+     <div><label>Section tol (lb)</label><input id="v_sectionTol" type="number" inputmode="numeric" value="${esc(d.sectionTol)}"></div>
+     <div><label>Load-test tol (lb)</label><input id="v_loadTol" type="number" inputmode="numeric" value="${esc(d.loadTol)}"></div>
+   </div>
+   <label>Certified test cart weight (lb)</label><input id="v_cartCert" type="number" inputmode="numeric" value="${esc(d.cartCert)}" placeholder="e.g. 4500 or 5000">
+   <div class="row">
+     <div><label>Weight per drop (rack, lb)</label><input id="v_blockWeight" type="number" inputmode="numeric" value="${esc(d.blockWeight)}"></div>
+     <div><label># of drops (racks)</label><input id="v_blockCount" type="number" inputmode="numeric" value="${esc(d.blockCount)}"></div>
+   </div>
+   <div class="hint">One drop = a full rack off the truck hook (default 4 × 1,000 = 4,000 lb). Applied load steps: cart → cart+4,000 → cart+8,000… Set # of drops to match how many racks this truck carries.</div>
+  </div>`;
+}
+
+/* STEP 1/4 — sections */
+function stepSections(s,which,title){
+  const d=ST.draft;const T=d[which];const tol=+d.sectionTol||DEF.sectionTol;const rev=d.doReverse!==false;
+  const R=sectionResult(T.sec.fwd,T.sec.rev,tol,s.sections,s.division,rev);
+  let rows='';
+  for(let i=0;i<s.sections;i++){
+    const dev=R.sections[i]?.dev;
+    let devCls='ok',devTxt='—';
+    if(dev!==null&&dev!==undefined){devTxt=(dev>0?'+':'')+dev;devCls=dev>0?'hi':(dev<0?'lo':'ok');}
+    const rep=R.sections[i]?.repeat;
+    rows+=`<tr><td class="secn">Sec ${i+1}</td>
+      <td><input id="sec_${which}_f_${i}" type="number" inputmode="numeric" value="${esc(T.sec.fwd[i])}" oninput="liveSections('${which}')" placeholder="${rev?'fwd':'reading'}"></td>
+      ${rev?`<td><input id="sec_${which}_r_${i}" type="number" inputmode="numeric" value="${esc(T.sec.rev[i])}" oninput="liveSections('${which}')" placeholder="rev"></td>`:''}
+      <td class="dev ${devCls}">${devTxt}${rep!==null&&rep>tol?` <span title="fwd vs rev ${rep} lb">⚠</span>`:''}</td></tr>`;
+  }
+  const copyBtn=which==='asLeft'?`<button class="btn subtle sm" style="width:auto;margin-bottom:10px" onclick="copyFound()">⇩ Copy As-Found numbers</button>`:'';
+  return `<div class="card"><h2>${title}</h2>
+   <div class="sub">${rev?'Enter each section forward, then the reverse run.':'Enter each section reading.'} Tolerance: all readings within <b>${tol} lb</b>.</div>
+   ${copyBtn}
+   <div id="secDiagram">${sectionDiagram(R,d.startEnd)}</div>
+   <table class="stbl"><thead><tr><th>Section</th><th>${rev?'Forward':'Reading'}</th>${rev?'<th>Reverse</th>':''}<th style="text-align:right">vs avg</th></tr></thead>
+   <tbody>${rows}</tbody></table>
+   <div id="secResult">${sectionResultStrip(R)}</div>
+   <div id="secGuide">${sectionGuide(R,tol)}</div>
+   <div class="hint" style="margin-top:10px">Started from the <b>${d.startEnd==='approach'?'drive-on':'drive-off'}</b> end — tap to flip:
+     <button class="btn ghost sm" style="width:auto" onclick="flipEnd()">↔ ${d.startEnd==='approach'?'drive-off end':'drive-on end'}</button></div>
+  </div>`;
+}
+function sectionDiagram(R,startEnd){
+  if(!R.sections.length)return'';
+  let h='<div class="diagram">';
+  R.sections.forEach((sec,i)=>{
+    let cls='';if(R.high&&sec.n===R.high.n&&R.status==='FAIL')cls='hi';else if(R.low&&sec.n===R.low.n&&R.status==='FAIL')cls='lo';
+    const val=sec.fwd!==null||sec.rev!==null?((sec.fwd??sec.rev)):null;
+    const arrow=(startEnd==='approach'&&i===0)||(startEnd==='far'&&i===R.sections.length-1)?'arrowL':'';
+    h+=`<div class="seg ${cls} ${arrow}"><div>S${sec.n}</div><div class="sv">${val!==null?money(val):'—'}</div></div>`;
+  });
+  return h+'</div>';
+}
+function sectionResultStrip(R){
+  if(R.status==='EMPTY')return`<div class="result"><div><div class="num">—</div><div class="lbl">Spread</div></div><div class="hspace"></div>${badge('EMPTY')}</div>`;
+  const cls=R.status==='FAIL'?'fail':(R.status==='PASS'?'pass':'');
+  return `<div class="result ${cls}">
+    <div><div class="num">${R.spread} lb</div><div class="lbl">Spread (max−min)</div></div>
+    <div><div class="num" style="font-size:16px">${R.tol} lb</div><div class="lbl">Tolerance</div></div>
+    <div class="hspace"></div>${badge(R.status)}</div>`;
+}
+function sectionGuide(R,tol){
+  if(R.status==='FAIL'&&R.high&&R.low){
+    return `<div class="guide">📐 <b>Adjust:</b> Section <b>${R.high.n}</b> reads <b>+${R.high.dev} lb</b> vs the group (highest); Section <b>${R.low.n}</b> reads <b>${R.low.dev} lb</b> (lowest). Bring the high sections down toward the group average, then re-run. Spread needs to drop from ${R.spread} → ≤ ${tol} lb.</div>`;
+  }
+  if(R.status==='PASS')return `<div class="guide" style="background:var(--green-l)">✓ All sections agree within ${tol} lb. Good to move on.</div>`;
+  const bind=R.sections.filter(s=>s.repeat!==null&&s.repeat>tol);
+  if(bind.length)return `<div class="flag">⚠ Section ${bind.map(b=>b.n).join(', ')} forward vs reverse differ more than ${tol} lb — check for binding, debris, or a sticking load cell before adjusting.</div>`;
+  return '';
+}
+function liveSections(which){
+  collectStep();const d=ST.draft;const s=DB.scales.find(x=>x.id===d.scaleId);const tol=+d.sectionTol||DEF.sectionTol;
+  const R=sectionResult(d[which].sec.fwd,d[which].sec.rev,tol,s.sections,s.division,d.doReverse!==false);
+  const dq=id=>document.getElementById(id);
+  if(dq('secDiagram'))dq('secDiagram').innerHTML=sectionDiagram(R,d.startEnd);
+  if(dq('secResult'))dq('secResult').innerHTML=sectionResultStrip(R);
+  if(dq('secGuide'))dq('secGuide').innerHTML=sectionGuide(R,tol);
+  // update dev cells
+  R.sections.forEach((sec,i)=>{});
+  saveDraft();
+}
+function flipEnd(){collectStep();ST.draft.startEnd=ST.draft.startEnd==='approach'?'far':'approach';saveDraft();render();}
+function copyFound(){collectStep();const d=ST.draft;d.asLeft.sec=JSON.parse(JSON.stringify(d.asFound.sec));saveDraft();render();toast('Copied As-Found sections');}
+
+/* STEP 2/5 — load test */
+function stepLoad(s,which,title){
+  const d=ST.draft;const cart=+d.cartCert||0;const bw=+d.blockWeight||DEF.blockWeight;const bc=+d.blockCount||DEF.blockCount;const tol=+d.loadTol||DEF.loadTol;
+  const L=loadResult(cart,bw,bc,d[which].load.inc,d[which].load.dec,tol);
+  if(!cart){return `<div class="card"><h2>${title}</h2><div class="flag">Enter the certified cart weight on the Visit step first — the error math needs it.</div>
+    <button class="btn ghost" style="width:auto;margin-top:10px" onclick="gotoStep(0)">‹ Go to Visit step</button></div>`;}
+  const copyBtn=which==='asLeft'?`<button class="btn subtle sm" style="width:auto;margin-bottom:10px" onclick="copyFoundLoad()">⇩ Copy As-Found numbers</button>`:'';
+  let rows='';
+  // Render top (max load) first, down to the empty cart. Decreasing starts one drop below the top
+  // (you pull a rack off before the first down-reading), so the max row has no decreasing cell.
+  [...L.rows].reverse().forEach(r=>{
+    const k=r.blocks;const isTop=(k===bc);
+    const lbl=k===0?'Empty cart':`Drop ${k}`;
+    const ie=r.incErr, de=r.decErr;
+    const ieC=ie===null?'ok':(Math.abs(ie)<=tol?'ok':'hi'), deC=de===null?'ok':(Math.abs(de)<=tol?'ok':'hi');
+    const decCell=isTop
+      ? `<td style="text-align:center;color:var(--muted)">—</td><td class="dev ok"></td>`
+      : `<td><input id="ld_${which}_d_${k}" type="number" inputmode="numeric" value="${esc(d[which].load.dec[k])}" oninput="liveLoad('${which}')" placeholder="↓"></td>
+         <td class="dev ${deC}">${de===null?'—':(de>0?'+':'')+de}</td>`;
+    rows+=`<tr><td class="secn" style="width:auto">${lbl}<div class="mini" style="font-weight:600;color:var(--muted)">${money(r.applied)} lb</div></td>
+      <td><input id="ld_${which}_i_${k}" type="number" inputmode="numeric" value="${esc(d[which].load.inc[k])}" oninput="liveLoad('${which}')" placeholder="↑"></td>
+      <td class="dev ${ieC}">${ie===null?'—':(ie>0?'+':'')+ie}</td>
+      ${decCell}</tr>`;
+  });
+  return `<div class="card"><h2>${title}</h2>
+   <div class="sub">Cart ${money(cart)} lb + ${bc} drop${bc>1?'s':''} × ${money(bw)} lb. Reading vs applied load must be within <b>${tol} lb</b>. Increasing runs up to ${money(cart+bc*bw)} lb; decreasing starts at ${money(cart+(bc-1)*bw)} lb and steps back to the cart.</div>
+   ${copyBtn}
+   <table class="stbl"><thead><tr><th>Load</th><th>Up ↑</th><th class="dev">err</th><th>Down ↓</th><th class="dev">err</th></tr></thead>
+   <tbody>${rows}</tbody></table>
+   <div id="ldResult">${loadResultStrip(L)}</div>
+   <div id="ldGuide">${loadGuide(L,tol)}</div>
+  </div>`;
+}
+function loadResultStrip(L){
+  if(L.status==='EMPTY')return`<div class="result"><div><div class="num">—</div><div class="lbl">Worst error</div></div><div class="hspace"></div>${badge('EMPTY')}</div>`;
+  const cls=L.status==='FAIL'?'fail':(L.status==='PASS'?'pass':'');
+  return `<div class="result ${cls}"><div><div class="num">${(L.worst>0?'±':'')}${L.worst} lb</div><div class="lbl">Worst error</div></div>
+    <div><div class="num" style="font-size:16px">${L.tol} lb</div><div class="lbl">Tolerance</div></div>
+    <div class="hspace"></div>${badge(L.status)}</div>`;
+}
+function loadGuide(L,tol){
+  const fails=L.rows.filter(r=>(r.incStatus==='FAIL')||(r.decStatus==='FAIL'));
+  if(L.status==='PASS')return`<div class="guide" style="background:var(--green-l)">✓ Every point within ${tol} lb, increasing and decreasing. Linearity good.</div>`;
+  if(fails.length){const r=fails[0];
+    return`<div class="guide">📐 <b>Off at ${r.blocks===0?'empty cart':'drop '+r.blocks}</b> (applied ${money(r.applied)} lb): ${r.incErr!==null&&Math.abs(r.incErr)>tol?`up reads ${r.incErr>0?'+':''}${r.incErr} lb`:''}${r.decErr!==null&&Math.abs(r.decErr)>tol?`${r.incErr!==null&&Math.abs(r.incErr)>tol?', ':''}down reads ${r.decErr>0?'+':''}${r.decErr} lb`:''}. Adjust span/linearity and re-run.</div>`;}
+  const hyst=L.rows.filter(r=>r.ret!==null&&r.ret>tol);
+  if(hyst.length)return`<div class="flag">⚠ Increasing vs decreasing differ &gt;${tol} lb at drop ${hyst.map(r=>r.blocks).join(', ')} — possible hysteresis/return error.</div>`;
+  return '';
+}
+function liveLoad(which){
+  collectStep();const d=ST.draft;const cart=+d.cartCert||0;const bw=+d.blockWeight||DEF.blockWeight;const bc=+d.blockCount||DEF.blockCount;const tol=+d.loadTol||DEF.loadTol;
+  const L=loadResult(cart,bw,bc,d[which].load.inc,d[which].load.dec,tol);
+  const dq=id=>document.getElementById(id);
+  if(dq('ldResult'))dq('ldResult').innerHTML=loadResultStrip(L);
+  if(dq('ldGuide'))dq('ldGuide').innerHTML=loadGuide(L,tol);
+  saveDraft();
+}
+function copyFoundLoad(){collectStep();const d=ST.draft;d.asLeft.load=JSON.parse(JSON.stringify(d.asFound.load));saveDraft();render();toast('Copied As-Found load test');}
+
+/* STEP 3 — adjust */
+function stepAdjust(s){
+  collectStep();const d=ST.draft;
+  const af=sectionResult(d.asFound.sec.fwd,d.asFound.sec.rev,+d.sectionTol,s.sections,s.division,d.doReverse!==false);
+  const afl=loadResult(+d.cartCert||0,+d.blockWeight,+d.blockCount,d.asFound.load.inc,d.asFound.load.dec,+d.loadTol);
+  const needs=af.status==='FAIL'||afl.status==='FAIL';
+  return `<div class="card"><h2>Adjustments</h2>
+   <div class="sub">As-Found result: sections ${badge(af.status)} load ${badge(afl.status)}</div>
+   ${needs?`<div class="guide">This scale was <b>out of tolerance</b> as found. Adjust the sections/span, then record the As-Left runs on the next steps.</div>`
+     :`<div class="guide" style="background:var(--green-l)">As-Found is already within tolerance. You can leave the scale as found and skip re-testing.</div>`}
+   <label>Leave as found (no adjustment)?</label>
+   ${segBtns('seg_laf',[{v:'no',l:'No — I adjusted'},{v:'yes',l:'Yes — left as found'}],d.leftAsFound?'yes':'no')}
+   <div class="hint">If "left as found", the As-Found numbers become the certified As-Left result and you can skip steps 5–6.</div>
+   <label>Adjustment notes</label><textarea id="v_adjNotes" placeholder="Which sections/corners adjusted, span change, seals broken, maintenance performed…">${esc(d.adjNotes)}</textarea>
+  </div>`;
+}
+
+/* STEP 6 — photos */
+function stepPhotos(s){
+  const d=ST.draft;
+  let grid='<div class="pgrid">';
+  (d.photos||[]).forEach((p,i)=>{grid+=`<div class="pthumb"><img src="${p.data}"><button class="x" onclick="delPhoto(${i})">✕</button></div>`;});
+  grid+=`<label class="padd">＋<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(event)"></label></div>`;
+  return `<div class="card"><h2>Photos</h2><div class="sub">Scale nameplate, sticker, deck condition, cart & blocks. These print on the report.</div>
+   ${grid}<div class="hint" style="margin-top:8px">${(d.photos||[]).length} photo(s) · compressed & stored on this device.</div></div>`;
+}
+function addPhoto(e){
+  const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=ev=>{const img=new Image();img.onload=()=>{
+    const max=1100,sc=Math.min(1,max/Math.max(img.width,img.height));
+    const c=document.createElement('canvas');c.width=img.width*sc;c.height=img.height*sc;
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    ST.draft.photos=ST.draft.photos||[];ST.draft.photos.push({data:c.toDataURL('image/jpeg',0.7),ts:Date.now()});
+    saveDraft();render();toast('Photo added');
+  };img.src=ev.target.result;};rd.readAsDataURL(f);
+}
+function delPhoto(i){if(!confirm('Remove this photo?'))return;ST.draft.photos.splice(i,1);saveDraft();render();}
+
+/* STEP 7 — review */
+function stepReview(s){
+  collectStep();const d=ST.draft;const src=d.leftAsFound?d.asFound:d.asLeft;
+  const secAF=sectionResult(d.asFound.sec.fwd,d.asFound.sec.rev,+d.sectionTol,s.sections,s.division,d.doReverse!==false);
+  const secAL=sectionResult(src.sec.fwd,src.sec.rev,+d.sectionTol,s.sections,s.division,d.doReverse!==false);
+  const ldAF=loadResult(+d.cartCert||0,+d.blockWeight,+d.blockCount,d.asFound.load.inc,d.asFound.load.dec,+d.loadTol);
+  const ldAL=loadResult(+d.cartCert||0,+d.blockWeight,+d.blockCount,src.load.inc,src.load.dec,+d.loadTol);
+  const overall=rollUp([secAL.status,ldAL.status]);
+  const big=overall==='PASS'?'var(--green)':overall==='FAIL'?'var(--red)':'var(--blue)';
+  return `<div class="card" style="text-align:center;border-top:5px solid ${big}">
+     <div class="lbl" style="margin-bottom:4px">Certified result (As-Left)</div>
+     <div style="font-size:34px;font-weight:800;color:${big}">${overall==='PASS'?'PASS ✓':overall==='FAIL'?'FAIL ✕':'IN PROGRESS'}</div>
+     <div class="mini">${d.leftAsFound?'Left as found':'After adjustment'} · ${esc(s.name)}</div>
+   </div>
+   <div class="card"><h2 style="font-size:15px">Summary</h2>
+     <div class="kv"><span class="k">As-Found sections</span><span class="v">${secAF.spread??'—'} lb ${badge(secAF.status)}</span></div>
+     <div class="kv"><span class="k">As-Found load</span><span class="v">±${ldAF.worst} lb ${badge(ldAF.status)}</span></div>
+     <div class="kv"><span class="k">As-Left sections</span><span class="v">${secAL.spread??'—'} lb ${badge(secAL.status)}</span></div>
+     <div class="kv"><span class="k">As-Left load</span><span class="v">±${ldAL.worst} lb ${badge(ldAL.status)}</span></div>
+   </div>
+   <div class="card"><h2 style="font-size:15px">Certification</h2>
+     <label>Customer rep name (for sign-off)</label><input id="v_custName" value="${esc(d.custName)}" placeholder="optional">
+     <label>Include customer sign-off line?</label>${segBtns('seg_so',[{v:'no',l:'No'},{v:'yes',l:'Yes'}],d.signOff?'yes':'no')}
+     ${overall!=='PASS'?`<label>Note (if certifying out of your tolerance)</label><input id="v_overrideNote" value="${esc(d.overrideNote)}" placeholder="e.g. left within 80 lb after extended adjustment">`:''}
+   </div>
+   <button class="btn primary wide" onclick="openReport()">📄 Generate Customer Report</button>
+   <div class="btnrow"><button class="btn ghost" onclick="shareVisit()">📤 Share JSON</button></div>`;
+}
+
+/* ============================ REPORT (PDF) ============================ */
+function openReport(){
+  collectStep();saveDraft();const d=ST.draft;const s=DB.scales.find(x=>x.id===d.scaleId);
+  const src=d.leftAsFound?d.asFound:d.asLeft;
+  const secAF=sectionResult(d.asFound.sec.fwd,d.asFound.sec.rev,+d.sectionTol,s.sections,s.division,d.doReverse!==false);
+  const secAL=sectionResult(src.sec.fwd,src.sec.rev,+d.sectionTol,s.sections,s.division,d.doReverse!==false);
+  const ldAF=loadResult(+d.cartCert||0,+d.blockWeight,+d.blockCount,d.asFound.load.inc,d.asFound.load.dec,+d.loadTol);
+  const ldAL=loadResult(+d.cartCert||0,+d.blockWeight,+d.blockCount,src.load.inc,src.load.dec,+d.loadTol);
+  const overall=rollUp([secAL.status,ldAL.status]);
+  const bannerColor=overall==='PASS'?'#029F49':overall==='FAIL'?'#d21f3c':'#235AA7';
+  const qrData=encodeURIComponent(`TRAC TRUCK|${s.name}|${s.site}|${d.date}|${overall}|sec ${secAL.spread}lb|load ±${ldAL.worst}lb`);
+  const qr=`https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${qrData}`;
+  const secTable=(R,found)=>{let r='';for(let i=0;i<s.sections;i++){const x=R.sections[i];r+=`<tr><td>Section ${i+1}</td><td>${x.fwd??'—'}</td><td>${x.rev??'—'}</td><td>${x.dev===null?'—':(x.dev>0?'+':'')+x.dev}</td></tr>`;}
+    return `<table class="rt"><tr><th>Section</th><th>Forward</th><th>Reverse</th><th>Δ avg</th></tr>${r}
+      <tr class="sum"><td colspan="3">Spread (max − min)</td><td>${R.spread??'—'} lb</td></tr></table>`;};
+  const ldTable=(L)=>{let r='';L.rows.forEach(x=>{r+=`<tr><td>${x.blocks===0?'Empty cart':'Drop '+x.blocks}</td><td>${money(x.applied)}</td><td>${x.inc??'—'}</td><td>${x.incErr===null?'—':(x.incErr>0?'+':'')+x.incErr}</td><td>${x.dec??'—'}</td><td>${x.decErr===null?'—':(x.decErr>0?'+':'')+x.decErr}</td></tr>`;});
+    return `<table class="rt"><tr><th>Load</th><th>Applied</th><th>Up</th><th>Err</th><th>Down</th><th>Err</th></tr>${r}</table>`;};
+  const photos=(d.photos||[]).length?`<div class="sec"><div class="h">Photos</div><div class="pg">${d.photos.map(p=>`<img src="${p.data}">`).join('')}</div></div>`:'';
+  const win=window.open('','_blank');
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>TRAC Truck Report — ${esc(s.name)}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+   *{box-sizing:border-box}body{font-family:'Libre Franklin',Arial,sans-serif;color:#12233b;margin:0;padding:26px;font-size:12.5px}
+   .head{display:flex;align-items:center;gap:14px;border-bottom:3px solid #235AA7;padding-bottom:12px}
+   .mark{width:44px;height:44px;border-radius:9px;background:#F5DA02;color:#1a4680;display:grid;place-items:center;font-weight:800;font-size:18px}
+   .head h1{margin:0;font-size:19px}.head .s{color:#5c6b7d;font-size:12px}
+   .qr{margin-left:auto;text-align:center}.qr img{width:88px;height:88px}.qr div{font-size:8px;color:#5c6b7d}
+   .banner{margin:14px 0;padding:12px 16px;border-radius:10px;color:#fff;font-weight:800;font-size:17px;letter-spacing:.5px;background:${bannerColor};display:flex;justify-content:space-between;align-items:center}
+   .banner small{font-weight:600;font-size:11px;opacity:.9}
+   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+   .box{border:1px solid #dbe3ec;border-radius:9px;padding:10px 12px}
+   .box .t{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#5c6b7d;font-weight:800;margin-bottom:5px}
+   .kv{display:flex;justify-content:space-between;padding:2px 0;font-size:12px}.kv .k{color:#5c6b7d}.kv b{font-weight:700}
+   .sec{margin:16px 0}.sec .h{font-size:13px;font-weight:800;border-left:4px solid #235AA7;padding-left:8px;margin-bottom:8px}
+   .rt{width:100%;border-collapse:collapse;font-size:11.5px}
+   .rt th{background:#e9f0fa;color:#1a4680;text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.3px}
+   .rt td{padding:5px 8px;border-top:1px solid #eef2f7;font-variant-numeric:tabular-nums}
+   .rt .sum td{font-weight:800;background:#f7fafd;border-top:2px solid #dbe3ec}
+   .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+   .lbl2{font-size:10px;font-weight:800;color:#5c6b7d;text-transform:uppercase;margin-bottom:4px}
+   .pg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.pg img{width:100%;border-radius:8px;border:1px solid #dbe3ec}
+   .sign{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:26px}
+   .sign .line{border-top:1.5px solid #12233b;padding-top:5px;font-size:10.5px;color:#5c6b7d}
+   .foot{margin-top:22px;border-top:1px solid #dbe3ec;padding-top:8px;font-size:9.5px;color:#8494a6;text-align:center}
+   .note{background:#fdf0e0;color:#8a5200;border-radius:8px;padding:8px 10px;font-size:11px;margin-top:8px}
+   @media print{body{padding:14px}.sec{break-inside:avoid}}
+  </style></head><body onload="setTimeout(()=>window.print(),350)">
+   <div class="head"><div class="mark">TT</div>
+     <div><h1>Vehicle Scale Calibration Report</h1><div class="s">TRAC Truck · Michelli Weighing &amp; Measurement</div></div>
+     <div class="qr"><img src="${qr}" onerror="this.style.display='none'"><div>Scan to verify</div></div></div>
+   <div class="banner">${overall==='PASS'?'PASS — WITHIN TOLERANCE':overall==='FAIL'?'FAIL — OUT OF TOLERANCE':'RESULT PENDING'}
+     <small>${d.leftAsFound?'Certified as found':'Certified after adjustment'}</small></div>
+   <div class="grid">
+     <div class="box"><div class="t">Scale</div>
+       <div class="kv"><span class="k">Site</span><b>${esc(s.site)}</b></div>
+       <div class="kv"><span class="k">Scale</span><b>${esc(s.name)}</b></div>
+       <div class="kv"><span class="k">Manufacturer</span><b>${esc(s.mfr)||'—'}</b></div>
+       <div class="kv"><span class="k">Capacity</span><b>${money(s.capacity)} × ${s.division} lb</b></div>
+       <div class="kv"><span class="k">Sections</span><b>${s.sections}</b></div></div>
+     <div class="box"><div class="t">Test</div>
+       <div class="kv"><span class="k">Date</span><b>${esc(d.date)}</b></div>
+       <div class="kv"><span class="k">Technician</span><b>${esc(d.tech)||'—'}</b></div>
+       <div class="kv"><span class="k">Type</span><b>${esc(d.testType)}</b></div>
+       <div class="kv"><span class="k">Work order</span><b>${esc(d.po)||'—'}</b></div>
+       <div class="kv"><span class="k">Standard</span><b>NIST HB-44</b></div></div>
+   </div>
+   <div class="box" style="margin-bottom:6px"><div class="t">Test standards &amp; tolerances</div>
+     <div class="kv"><span class="k">Test cart</span><b>${money(d.cartCert||0)} lb</b></div>
+     <div class="kv"><span class="k">Test load</span><b>${d.blockCount} drop${d.blockCount>1?'s':''} × ${money(d.blockWeight)} lb</b></div>
+     <div class="kv"><span class="k">Tolerances (in-house)</span><b>Sections ±${d.sectionTol} lb · Load ±${d.loadTol} lb</b></div></div>
+
+   <div class="sec"><div class="h">Section Test</div>
+     <div class="two"><div><div class="lbl2">As Found — spread ${secAF.spread??'—'} lb (${secAF.status})</div>${secTable(secAF,true)}</div>
+       <div><div class="lbl2">As Left — spread ${secAL.spread??'—'} lb (${secAL.status})</div>${secTable(secAL,false)}</div></div></div>
+
+   <div class="sec"><div class="h">Increasing / Decreasing Load Test</div>
+     <div class="lbl2">As Found — worst error ±${ldAF.worst} lb (${ldAF.status})</div>${ldTable(ldAF)}
+     <div class="lbl2" style="margin-top:10px">As Left — worst error ±${ldAL.worst} lb (${ldAL.status})</div>${ldTable(ldAL)}</div>
+
+   ${d.adjNotes?`<div class="sec"><div class="h">Adjustments</div><div style="font-size:12px">${esc(d.adjNotes)}</div></div>`:''}
+   ${d.overrideNote?`<div class="note">Note: ${esc(d.overrideNote)}</div>`:''}
+   ${photos}
+   <div class="sec"><div style="font-size:11px;color:#5c6b7d">This scale was tested in accordance with NIST Handbook 44. In-house acceptance tolerances applied are equal to or tighter than the applicable HB-44 maintenance tolerance.</div></div>
+   ${d.signOff?`<div class="sign"><div class="line">Technician — ${esc(d.tech)||''}</div><div class="line">Customer — ${esc(d.custName)||''}</div></div>`:`<div class="sign"><div class="line">Technician — ${esc(d.tech)||''}</div><div class="line">Date</div></div>`}
+   <div class="foot">Generated by TRAC Truck · ${new Date().toLocaleString()} · Track Records, Assets &amp; Calibrations</div>
+  </body></html>`);
+  win.document.close();
+}
+
+/* ============================ SHARE / BACKUP ============================ */
+function shareVisit(){collectStep();saveDraft();const d=ST.draft;const s=DB.scales.find(x=>x.id===d.scaleId);
+  dl(`TRACTruck_${(s.name||'scale').replace(/\W+/g,'_')}_${d.date}.json`,JSON.stringify({type:'tractruck-share',scale:s,visit:d},null,2));toast('Exported');}
+function exportJSON(){dl(`TRACTruck_backup_${todayISO()}.json`,JSON.stringify(DB,null,2));toast('Backup exported');}
+function dl(name,text){const b=new Blob([text],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+function importJSON(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+    r.onload=ev=>{try{const o=JSON.parse(ev.target.result);
+      if(o.type==='tractruck-share'){if(o.scale&&!DB.scales.find(x=>x.id===o.scale.id))DB.scales.push(o.scale);
+        const i=DB.visits.findIndex(x=>x.id===o.visit.id);if(i>=0)DB.visits[i]=o.visit;else DB.visits.push(o.visit);save();go('home');toast('Imported visit');}
+      else if(o.scales&&o.visits){if(confirm('Replace all local data with this backup?')){DB=o;save();go('home');toast('Backup restored');}}
+      else toast('Unrecognized file');
+    }catch(err){toast('Bad file');}};r.readAsText(f);};inp.click();}
+
+/* ============================ BOOT ============================ */
+load();net();
+try{const th=localStorage.getItem('tractruck_theme');if(th)setTheme(th);}catch(e){}
+go('home');
+</script>
+</body>
+</html>
