@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-title" content="TRAC Truck">
 <meta name="theme-color" content="#235AA7">
 <title>TRAC Truck — Vehicle Scale Tester</title>
+<link rel="manifest" href="manifest-truck.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -42,6 +45,8 @@ header{position:sticky;top:0;z-index:40;background:linear-gradient(135deg,var(--
 .brand .mark{width:30px;height:30px;border-radius:8px;background:var(--yellow);color:var(--blue-d);display:grid;place-items:center;font-weight:800;font-size:15px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.06)}
 .brand small{display:block;font-size:10px;font-weight:600;opacity:.85;letter-spacing:.5px;text-transform:uppercase;margin-top:-2px}
 .hspace{flex:1}
+.help-btn{background:none;border:0;color:#fff;padding:4px;cursor:pointer;display:flex;align-items:center;opacity:.9}
+.help-btn:hover{opacity:1}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(255,255,255,.18)}
 .dot.off{background:var(--red)}
 .toggle{display:flex;background:rgba(255,255,255,.16);border-radius:999px;padding:3px;font-size:11px;font-weight:700}
@@ -146,6 +151,13 @@ textarea{min-height:70px;resize:vertical}
 .seg-pill button{flex:0 0 auto;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
 .seg-pill button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:999px;font-size:14px;font-weight:600;z-index:80;opacity:0;transition:opacity .2s;pointer-events:none}
+/* BRANDED DIALOG (replaces native confirm/alert) */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;z-index:1000;animation:fade-in .15s ease}
+.dlg{width:100%;max-width:500px;margin:0 auto;background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.dlg h3{font-size:17px;margin-bottom:6px;color:var(--ink)}
+.dlg p{color:var(--muted);font-size:14px;margin-bottom:18px;line-height:1.5}
+.dlg-acts{display:flex;flex-direction:column;gap:10px}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
 .toast.show{opacity:1}
 .divider{height:1px;background:var(--line);margin:14px 0}
 .mini{font-size:12px;color:var(--muted)}
@@ -157,10 +169,12 @@ textarea{min-height:70px;resize:vertical}
   <header>
     <div class="brand"><span class="mark">TT</span><div>TRAC Truck<small>Vehicle Scale Tester</small></div></div>
     <div class="hspace"></div>
+    <button class="help-btn" id="b-help" title="Open field guide"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.5.8c0 1.8-2.7 2.2-2.7 4"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg></button>
     <div class="toggle" id="themeToggle">
       <button data-t="office" class="on">Office</button>
       <button data-t="field">Field</button>
     </div>
+    <span id="netlabel" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.85)">Online</span>
     <span class="dot" id="netdot" title="online"></span>
   </header>
   <div id="view"></div>
@@ -217,7 +231,7 @@ function rollUp(st){const s=st.filter(Boolean);if(!s.length)return'EMPTY';if(s.i
 const KEY='tractruck_v1';
 let DB={scales:[],visits:[]};
 function load(){try{const r=localStorage.getItem(KEY);if(r)DB=JSON.parse(r);}catch(e){}}
-function save(){localStorage.setItem(KEY,JSON.stringify(DB));}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){infoDlg('⚠️ Save failed — this device couldn\'t save your last change. Storage may be full or private browsing may be blocking it. Export a backup now if you can, then free up space or switch out of private mode.');}}
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 let ST={view:'home',scaleId:null,visitId:null,step:0,draft:null};
 
@@ -230,13 +244,34 @@ function setTheme(t){document.documentElement.setAttribute('data-theme',t==='fie
   document.querySelectorAll('#themeToggle button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   try{localStorage.setItem('tractruck_theme',t);}catch(e){}}
 document.getElementById('themeToggle').addEventListener('click',e=>{if(e.target.dataset.t)setTheme(e.target.dataset.t);});
+document.getElementById('b-help').addEventListener('click',()=>window.open('https://rodacus.github.io/Field-Apps/Field-Apps-Guide.html','_blank'));
 
 /* net dot */
-function net(){const d=document.getElementById('netdot');const on=navigator.onLine;d.classList.toggle('off',!on);d.title=on?'online':'offline';}
+function net(){const d=document.getElementById('netdot');const l=document.getElementById('netlabel');const on=navigator.onLine;d.classList.toggle('off',!on);d.title=on?'online':'offline';if(l)l.textContent=on?'Online':'Offline';}
 addEventListener('online',net);addEventListener('offline',net);
 
 /* toast */
-let tT;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),1800);}
+let tT;function toast(m){const t=document.getElementById('toast');t.innerHTML='<span style="color:var(--green);font-weight:800">✓</span> '+m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),1800);}
+
+/* BRANDED DIALOG (replaces native confirm/alert) */
+let dlgEl=null;
+function showDlg({title,msg,acts}){
+  hideDlg();
+  const ov=document.createElement('div'); ov.className='overlay';
+  ov.innerHTML=`<div class="dlg"><h3>${title}</h3><p>${msg}</p><div class="dlg-acts">${acts.map((a,i)=>`<button class="btn ${a.cls}" id="dlg-${i}">${a.lbl}</button>`).join('')}</div></div>`;
+  document.body.appendChild(ov); dlgEl=ov;
+  acts.forEach((a,i)=>{ const b=document.getElementById(`dlg-${i}`); if(b)b.onclick=a.fn; });
+}
+function hideDlg(){ if(dlgEl){dlgEl.remove();dlgEl=null;} }
+function confirmDlg(title,msg,okLabel,onOk){
+  showDlg({title,msg,acts:[
+    {lbl:okLabel||'OK',cls:'danger',fn:()=>{ hideDlg(); onOk(); }},
+    {lbl:'Cancel',cls:'ghost',fn:hideDlg}
+  ]});
+}
+function infoDlg(msg){
+  showDlg({title:'',msg,acts:[{lbl:'OK',cls:'primary',fn:hideDlg}]});
+}
 
 /* helpers */
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -326,8 +361,11 @@ function saveScale(){
   if(s){Object.assign(s,data);}else{s={id:uid(),...data};DB.scales.push(s);}
   save();ST.scaleId=s.id;go('scaleDetail');toast('Saved');
 }
-function delScale(id){if(!confirm('Delete this scale and all its visits? This cannot be undone.'))return;
-  DB.scales=DB.scales.filter(s=>s.id!==id);DB.visits=DB.visits.filter(v=>v.scaleId!==id);save();go('home');toast('Deleted');}
+function delScale(id){
+  confirmDlg('Delete this scale?','This scale and all its visits will be permanently removed. This can\'t be undone.','Delete',()=>{
+    DB.scales=DB.scales.filter(s=>s.id!==id);DB.visits=DB.visits.filter(v=>v.scaleId!==id);save();go('home');toast('Deleted');
+  });
+}
 
 /* ============================ SCALE DETAIL ============================ */
 function renderScaleDetail(){
@@ -639,7 +677,7 @@ function addPhoto(e){
     saveDraft();render();toast('Photo added');
   };img.src=ev.target.result;};rd.readAsDataURL(f);
 }
-function delPhoto(i){if(!confirm('Remove this photo?'))return;ST.draft.photos.splice(i,1);saveDraft();render();}
+function delPhoto(i){confirmDlg('Remove this photo?','It will be removed from this visit.','Remove',()=>{ST.draft.photos.splice(i,1);saveDraft();render();});}
 
 /* STEP 7 — review */
 function stepReview(s){
@@ -666,8 +704,7 @@ function stepReview(s){
      <label>Include customer sign-off line?</label>${segBtns('seg_so',[{v:'no',l:'No'},{v:'yes',l:'Yes'}],d.signOff?'yes':'no')}
      ${overall!=='PASS'?`<label>Note (if certifying out of your tolerance)</label><input id="v_overrideNote" value="${esc(d.overrideNote)}" placeholder="e.g. left within 80 lb after extended adjustment">`:''}
    </div>
-   <button class="btn primary wide" onclick="openReport()">📄 Generate Customer Report</button>
-   <div class="btnrow"><button class="btn ghost" onclick="shareVisit()">📤 Share JSON</button></div>`;
+   <button class="btn primary wide" onclick="openReport()">📄 Generate Customer Report</button>`;
 }
 
 /* ============================ REPORT (PDF) ============================ */
@@ -760,8 +797,6 @@ function openReport(){
 }
 
 /* ============================ SHARE / BACKUP ============================ */
-function shareVisit(){collectStep();saveDraft();const d=ST.draft;const s=DB.scales.find(x=>x.id===d.scaleId);
-  dl(`TRACTruck_${(s.name||'scale').replace(/\W+/g,'_')}_${d.date}.json`,JSON.stringify({type:'tractruck-share',scale:s,visit:d},null,2));toast('Exported');}
 function exportJSON(){dl(`TRACTruck_backup_${todayISO()}.json`,JSON.stringify(DB,null,2));toast('Backup exported');}
 function dl(name,text){const b=new Blob([text],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
 function importJSON(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
@@ -769,7 +804,7 @@ function importJSON(){const inp=document.createElement('input');inp.type='file';
     r.onload=ev=>{try{const o=JSON.parse(ev.target.result);
       if(o.type==='tractruck-share'){if(o.scale&&!DB.scales.find(x=>x.id===o.scale.id))DB.scales.push(o.scale);
         const i=DB.visits.findIndex(x=>x.id===o.visit.id);if(i>=0)DB.visits[i]=o.visit;else DB.visits.push(o.visit);save();go('home');toast('Imported visit');}
-      else if(o.scales&&o.visits){if(confirm('Replace all local data with this backup?')){DB=o;save();go('home');toast('Backup restored');}}
+      else if(o.scales&&o.visits){confirmDlg('Replace all local data?','Everything currently on this device will be replaced with this backup file.','Replace',()=>{DB=o;save();go('home');toast('Backup restored');});}
       else toast('Unrecognized file');
     }catch(err){toast('Bad file');}};r.readAsText(f);};inp.click();}
 

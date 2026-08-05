@@ -39,6 +39,7 @@
   .launch-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 10px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;color:#fff;border:none;cursor:pointer;}
   .launch-belt{background:var(--blue);}
   .launch-cell{background:var(--navy);}
+  .launch-truck{background:var(--yellow);color:var(--navy);}
 
   /* SECTION HEADERS */
   .section-title{font-size:19px;font-weight:800;color:var(--navy);margin:24px 0 12px;display:flex;align-items:center;gap:8px;}
@@ -121,6 +122,7 @@
 <div class="tab-bar">
   <div class="tab active" onclick="showPage('belt')">🏭 TRAC Belt</div>
   <div class="tab" onclick="showPage('cell')">⚡ TRAC Cell</div>
+  <div class="tab" onclick="showPage('truck')">🚛 TRAC Truck</div>
   <div class="tab" onclick="showPage('data')">💾 Data &amp; Backup</div>
 </div>
 
@@ -423,6 +425,123 @@
 </div><!-- end cell page -->
 
 <!-- ══════════════════════════════════════════════════════════ -->
+<!--  TRAC TRUCK PAGE                                          -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-truck">
+
+  <div style="margin-top:20px;">
+    <a class="launch-btn launch-truck" href="https://rodacus.github.io/Field-Apps/TRACTruck.html" target="_blank">
+      🚛 Open TRAC Truck
+    </a>
+  </div>
+
+  <p style="font-size:13.5px;color:var(--muted);margin:10px 0 20px;">Truck &amp; vehicle scale calibration (Handbook 44). Runs a section test and an increasing/decreasing load test, guides you through the adjustment, and generates a PASS/FAIL PDF certificate with photos.</p>
+
+  <!-- STATUS REFERENCE -->
+  <div class="section-title"><div class="dot" style="background:#F5DA02"></div>Result Status Reference</div>
+  <div class="status-grid">
+    <div class="status-card pass">
+      <div class="status-label"><span class="status-dot pass-dot"></span>PASS</div>
+      <p>Sections: spread ≤ tolerance (60 lb default).<br>Load: every point within tolerance (20 lb default).</p>
+    </div>
+    <div class="status-card fail">
+      <div class="status-label"><span class="status-dot fail-dot"></span>FAIL</div>
+      <p>Sections: spread &gt; tolerance.<br>Load: any up/down reading misses tolerance.</p>
+    </div>
+    <div class="status-card warn" style="grid-column:1/-1;background:#f8fafc;border-color:var(--border);">
+      <div class="status-label" style="color:var(--muted)"><span class="status-dot" style="background:var(--muted)"></span>PARTIAL</div>
+      <p>Not every section or load point has been entered yet — finish entering readings to get a final PASS/FAIL.</p>
+    </div>
+  </div>
+
+  <!-- 8-STEP WORKFLOW -->
+  <div class="section-title"><div class="dot" style="background:#F5DA02"></div>8-Step Calibration Walkthrough</div>
+
+  <div class="step-flow">
+
+    <div class="step-item">
+      <div class="step-num" style="background:#c9a600;">1</div>
+      <div class="step-body">
+        <strong>Visit</strong>
+        <p>Pick the scale (or add a new one). Choose Testing With: <strong>Truck</strong> (runs the section test) or <strong>Cart</strong> (runs the load test). Enter the certified cart weight, weight per drop, and # of drops.</p>
+        <span class="step-note">💡 The error math needs the certified cart weight — enter it here before moving on.</span>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num" style="background:#c9a600;">2</div>
+      <div class="step-body">
+        <strong>As-Found Sections</strong>
+        <p>Drive the truck forward across each section (and reverse too, unless this branch is cart-only). Enter each reading — the app checks the spread across all readings against your tolerance.</p>
+        <span class="step-tip">💡 Out of tolerance? The app names the high and low sections and which way to adjust.</span>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num" style="background:#c9a600;">3</div>
+      <div class="step-body">
+        <strong>As-Found Load</strong>
+        <p>With the test cart, enter the increasing run (empty cart → add a rack → add another…) then the decreasing run back down. Empty cart is the top row, drops build down the screen.</p>
+        <span class="step-warn">⚠️ Decreasing starts one rack below the top — you pull a rack before your first down-reading, so the top row's Down cell stays blank. That's expected.</span>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num" style="background:#c9a600;">4</div>
+      <div class="step-body">
+        <strong>Adjust</strong>
+        <p>If either As-Found test came back out of tolerance, make your adjustment. If both already passed, tap <strong>"Yes — left as found"</strong> to skip straight to Photos and Review.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num" style="background:#c9a600;">5</div>
+      <div class="step-body">
+        <strong>As-Left Sections</strong>
+        <p>Re-run the section test after adjusting. Tap <strong>⇩ Copy As-Found numbers</strong> if a section you didn't touch should carry over.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num" style="background:#c9a600;">6</div>
+      <div class="step-body">
+        <strong>As-Left Load</strong>
+        <p>Re-run the load test the same way — empty cart on top, drops going down, decreasing starting one rack below the max.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num" style="background:#c9a600;">7</div>
+      <div class="step-body">
+        <strong>Photos</strong>
+        <p>Capture the nameplate, stickers, deck condition, and the cart/blocks used. These embed directly in the PDF certificate.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num" style="background:#c9a600;">8</div>
+      <div class="step-body">
+        <strong>Review</strong>
+        <p>Check the final PASS/FAIL summary for both tests, add sign-off if needed, then generate the PDF certificate.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PDF OUTPUT -->
+  <div class="section-title"><div class="dot" style="background:var(--green)"></div>PDF Certificate</div>
+  <div class="info-box">
+    <strong>Generating the certificate</strong>
+    From the Review step, generate the PDF. It includes a QR code, PASS/FAIL banner, both tests (As-Found and As-Left), and your field photos — the same standard as TRAC Belt's Customer Report.
+  </div>
+  <div class="warn-box">
+    <strong>IndySoft entry is still manual</strong>
+    There's currently no phone → IndySoft sync, so office cert numbers still get typed in on the Michelli Surface tablets. A native IndySoft mobile app was announced in 2026 — worth checking with the IndySoft rep on whether Michelli's license covers it.
+  </div>
+
+</div><!-- end truck page -->
+
+<!-- ══════════════════════════════════════════════════════════ -->
 <!--  DATA & BACKUP PAGE                                       -->
 <!-- ══════════════════════════════════════════════════════════ -->
 <div class="page" id="page-data">
@@ -430,7 +549,7 @@
 
   <div class="warn-box">
     <strong>Important — Your data lives on your device</strong>
-    Both apps store all data in your phone's local browser storage. If you clear your browser data or switch phones, you'll lose your history unless you've made a backup.
+    All three apps store all data in your phone's local browser storage. If you clear your browser data or switch phones, you'll lose your history unless you've made a backup.
   </div>
 
   <div class="section-title"><div class="dot" style="background:var(--blue)"></div>Backup &amp; Restore</div>
@@ -447,24 +566,6 @@
       <div class="feature-body">
         <strong>Import / Restore</strong>
         <p>Tap <strong>Import Backup</strong> and select your .json file. The app merges the data — importing the same file twice is safe, no duplicates.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="section-title"><div class="dot" style="background:var(--navy)"></div>Sharing with Other Techs</div>
-  <div class="feature-list">
-    <div class="feature-item">
-      <div class="feature-icon">📤</div>
-      <div class="feature-body">
-        <strong>TRAC Belt — Share a Scale</strong>
-        <p>On the scale detail screen, tap <strong>📤 Share Scale</strong>. Sends a .json file with the scale info and all visit history. The receiving tech imports it and it appears in their library.</p>
-      </div>
-    </div>
-    <div class="feature-item">
-      <div class="feature-icon">📤</div>
-      <div class="feature-body">
-        <strong>TRAC Cell — Share a Job</strong>
-        <p>From the job summary screen, tap <strong>📤 Share Job</strong>. Exports the full job with all cell readings. The receiving tech imports and it appears in their history.</p>
       </div>
     </div>
   </div>
@@ -493,12 +594,19 @@
         <p style="word-break:break-all;">rodacus.github.io/Field-Apps/LoadCellLogger.html</p>
       </div>
     </div>
+    <div class="feature-item">
+      <div class="feature-icon">🚛</div>
+      <div class="feature-body">
+        <strong>TRAC Truck</strong>
+        <p style="word-break:break-all;">rodacus.github.io/Field-Apps/TRACTruck.html</p>
+      </div>
+    </div>
   </div>
 
   <hr>
   <div class="info-box">
     <strong>Office / Field Mode</strong>
-    Both apps have a mode toggle in the header. <strong>Office mode</strong> = light theme for indoor use. <strong>Field mode</strong> = dark navy high-contrast theme for reading in direct sunlight. Your preference is saved per device.
+    All three apps have a mode toggle in the header. <strong>Office mode</strong> = light theme for indoor use. <strong>Field mode</strong> = dark navy high-contrast theme for reading in direct sunlight. Your preference is saved per device.
   </div>
 
 </div><!-- end data page -->
@@ -512,7 +620,7 @@ function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  const tabs={'belt':0,'cell':1,'data':2};
+  const tabs={'belt':0,'cell':1,'truck':2,'data':3};
   document.querySelectorAll('.tab')[tabs[id]].classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
 }

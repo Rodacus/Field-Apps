@@ -48,8 +48,19 @@
     .app-header h1{font-size:17px;font-weight:800;letter-spacing:0.3px;}
     .app-header .sub{font-size:11px;opacity:0.7;margin-top:1px;}
     .header-actions{margin-left:auto;display:flex;gap:6px;}
-    .btn-icon{background:rgba(255,255,255,0.15);border:none;color:white;border-radius:8px;padding:7px 11px;font-size:13px;cursor:pointer;}
+    .btn-icon{background:rgba(255,255,255,0.15);border:none;color:white;border-radius:8px;padding:11px 13px;font-size:13px;cursor:pointer;}
     .btn-icon:hover{background:rgba(255,255,255,0.25);}
+    .hm-toggle{display:flex;background:rgba(255,255,255,.16);border-radius:999px;padding:3px;font-size:11px;font-weight:700}
+    .hm-toggle button{border:0;background:transparent;color:#fff;padding:5px 10px;border-radius:999px;cursor:pointer;opacity:.7;font-weight:700;font-family:inherit;font-size:11px}
+    .hm-toggle button.on{background:#fff;color:var(--navy);opacity:1}
+
+    /* BRANDED DIALOG (replaces native confirm/alert) */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;z-index:1000;animation:fade-in .15s ease;}
+    .dlg{width:100%;max-width:500px;margin:0 auto;background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--border);}
+    .dlg h3{font-size:17px;margin-bottom:6px;color:var(--text);}
+    .dlg p{color:var(--text-muted);font-size:14px;margin-bottom:18px;line-height:1.5;}
+    .dlg-acts{display:flex;flex-direction:column;gap:10px;}
+    @keyframes fade-in{from{opacity:0;}to{opacity:1;}}
 
     /* VIEWS */
     .view{display:none;}.view.active{display:block;}
@@ -249,9 +260,10 @@
     <div class="sub">Belt Scale Calibration · Michelli</div>
   </div>
   <div class="header-actions" style="align-items:center;">
-    <span id="online-dot" title="Online" style="width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block;margin-right:2px;flex-shrink:0;"></span>
+    <span id="online-dot" title="Online" style="width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block;flex-shrink:0;"></span>
+    <span id="online-label" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.85);margin-right:4px;">Online</span>
     <button class="btn-icon" onclick="openGuide()" title="Field guide" style="display:inline-flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.5.8c0 1.8-2.7 2.2-2.7 4"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg></button>
-    <button class="btn-icon" id="theme-btn" onclick="toggleTheme()" title="Field / Office mode">🌙</button>
+    <div class="hm-toggle" id="theme-btn"><button data-t="office" class="on">Office</button><button data-t="field">Field</button></div>
     <button class="btn-icon" onclick="showJobSummary()" title="Job Summary">📑</button>
     <button class="btn-icon" onclick="showBackup()" title="Backup">💾</button>
   </div>
@@ -328,8 +340,7 @@
     <div id="sd-history"></div>
     <div id="sd-empty" class="empty-state" style="display:none;padding:20px 0;"><p>No visits recorded yet.</p></div>
     <div style="display:flex;gap:8px;margin-top:7px;">
-      <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="editCurrentScale()">✏️ Edit Scale Info</button>
-      <button class="btn btn-ghost btn-sm" style="flex:1;color:#235aa7;border-color:#235aa7;font-weight:700;" onclick="exportScale(state.currentScaleId)">📤 Share Scale</button>
+      <button class="btn btn-ghost btn-sm btn-full" onclick="editCurrentScale()">✏️ Edit Scale Info</button>
     </div>
     <div style="margin-top:8px;">
       <button class="btn btn-ghost btn-sm btn-full" style="color:#dc2626;border-color:#dc2626;" onclick="deleteCurrentScale()">🗑️ Delete Scale</button>
@@ -422,7 +433,7 @@ let state = {
 
 // ─── DATA LAYER ──────────────────────────────────────
 function loadData(){ try{ return JSON.parse(localStorage.getItem(DB_KEY))||{scales:[],visits:[]}; }catch{ return{scales:[],visits:[]}; } }
-function saveData(d){ localStorage.setItem(DB_KEY,JSON.stringify(d)); }
+function saveData(d){ try{ localStorage.setItem(DB_KEY,JSON.stringify(d)); }catch(e){ infoDlg('⚠️ Save failed — this device couldn\'t save your last change. Storage may be full or private browsing may be blocking it. Export a backup now if you can, then free up space or switch out of private mode.'); } }
 function openGuide(){ window.open('https://rodacus.github.io/Field-Apps/Field-Apps-Guide.html','_blank'); }
 function haptic(p){ try{ if(navigator.vibrate) navigator.vibrate(p||10); }catch(e){} }
 let _toastEl=null,_toastT=null;
@@ -431,6 +442,26 @@ function toast(msg){
   _toastEl.innerHTML='<span style="color:var(--green);font-weight:800">✓</span> '+msg;
   requestAnimationFrame(function(){ _toastEl.classList.add('show'); });
   clearTimeout(_toastT); _toastT=setTimeout(function(){ if(_toastEl) _toastEl.classList.remove('show'); },1150);
+}
+
+// ─── BRANDED DIALOG (replaces native confirm/alert) ────
+let dlgEl=null;
+function showDlg({title,msg,acts}){
+  hideDlg();
+  const ov=document.createElement('div'); ov.className='overlay';
+  ov.innerHTML=`<div class="dlg"><h3>${title}</h3><p>${msg}</p><div class="dlg-acts">${acts.map((a,i)=>`<button class="btn ${a.cls}" id="dlg-${i}">${a.lbl}</button>`).join('')}</div></div>`;
+  document.body.appendChild(ov); dlgEl=ov;
+  acts.forEach((a,i)=>{ const b=document.getElementById(`dlg-${i}`); if(b)b.onclick=a.fn; });
+}
+function hideDlg(){ if(dlgEl){dlgEl.remove();dlgEl=null;} }
+function confirmDlg(title,msg,okLabel,onOk){
+  showDlg({title,msg,acts:[
+    {lbl:okLabel||'OK',cls:'btn-danger',fn:()=>{ hideDlg(); onOk(); }},
+    {lbl:'Cancel',cls:'btn-secondary',fn:hideDlg}
+  ]});
+}
+function infoDlg(msg){
+  showDlg({title:'',msg,acts:[{lbl:'OK',cls:'btn-primary',fn:hideDlg}]});
 }
 function getScale(id){ return loadData().scales.find(s=>s.id===id); }
 function getVisitsForScale(id){ return loadData().visits.filter(v=>v.scaleId===id).sort((a,b)=>b.date.localeCompare(a.date)); }
@@ -460,13 +491,15 @@ function deleteCurrentScale(){
   const sc=getScale(state.currentScaleId); if(!sc)return;
   const visits=getVisitsForScale(state.currentScaleId);
   const visitTxt=visits.length>0?` and ${visits.length} visit record${visits.length!==1?'s':''}` : '';
-  if(!confirm(`Delete "${sc.scaleId}"${visitTxt}? This cannot be undone.`))return;
-  const data=loadData();
-  data.scales=data.scales.filter(s=>s.id!==state.currentScaleId);
-  data.visits=data.visits.filter(v=>v.scaleId!==state.currentScaleId);
-  saveData(data);
-  state.currentScaleId=null;
-  showHome();
+  const scaleId=state.currentScaleId;
+  confirmDlg('Delete this scale?',`"${sc.scaleId}"${visitTxt} will be permanently removed. This can't be undone.`,'Delete',()=>{
+    const data=loadData();
+    data.scales=data.scales.filter(s=>s.id!==scaleId);
+    data.visits=data.visits.filter(v=>v.scaleId!==scaleId);
+    saveData(data);
+    state.currentScaleId=null;
+    showHome();
+  });
 }
 function showScaleDetail(id){ state.currentScaleId=id; renderSD(id); showView('scale-detail'); }
 function showBackup(){ showView('backup'); }
@@ -624,7 +657,7 @@ function fillSF(sc){
 function saveScale(){
   const site=document.getElementById('sf-site').value.trim();
   const scaleId=document.getElementById('sf-scaleid').value.trim();
-  if(!site||!scaleId){alert('Company/Site and Scale ID are required.');return;}
+  if(!site||!scaleId){infoDlg('Company/Site and Scale ID are required.');return;}
   const data=loadData();
   const sc={
     id:state.editScaleId||uid(), site, scaleId,
@@ -1006,7 +1039,7 @@ function addRound(){
   const dur=parseFloat(document.getElementById('s3-dur')?.value)||5;
 
   if(isNaN(start)||isNaN(end)||end<=start){
-    alert('Enter valid start and end totalizer values.');return;
+    infoDlg('Enter valid start and end totalizer values.');return;
   }
 
   const calcT=d._calcTPH||0;
@@ -1054,16 +1087,17 @@ function markTestDone(){
 function deleteLastRound(){
   const d=state.visitDraft;
   if(!d||d.testRounds.length===0) return;
-  if(!confirm('Remove the last recorded round? This cannot be undone.')) return;
-  d.testRounds.splice(d.testRounds.length-1,1);
-  // Roll back spanAsLeft to previous round's value, or null if no rounds remain
-  if(d.testRounds.length>0){
-    const prev=d.testRounds[d.testRounds.length-1];
-    d.spanAsLeft=prev.spanAfter||prev.spanBefore;
-  } else {
-    d.spanAsLeft=null;
-  }
-  renderStep();
+  confirmDlg('Remove last round?','The last recorded test round will be removed. This can\'t be undone.','Remove',()=>{
+    d.testRounds.splice(d.testRounds.length-1,1);
+    // Roll back spanAsLeft to previous round's value, or null if no rounds remain
+    if(d.testRounds.length>0){
+      const prev=d.testRounds[d.testRounds.length-1];
+      d.spanAsLeft=prev.spanAfter||prev.spanBefore;
+    } else {
+      d.spanAsLeft=null;
+    }
+    renderStep();
+  });
 }
 
 // ─── STEP 4: Zero As Left ─────────────────────────────
@@ -1924,7 +1958,7 @@ function printJobSiteSummary(){
     const byDate={};
     data.visits.forEach(v=>{if(!byDate[v.date])byDate[v.date]=[];byDate[v.date].push(v);});
     const dates=Object.keys(byDate).sort().reverse();
-    if(dates.length===0){alert('No visits found.');return;}
+    if(dates.length===0){infoDlg('No visits found.');return;}
     targetDate=dates[0];
     siteGroups=groupBySite(byDate[targetDate]);
   }
@@ -2199,7 +2233,7 @@ function showEmailModal(site){
     const diff=Math.floor((due-today)/(1000*60*60*24));
     if(diff<=30)dueScales.push({sc,visit:last,diff,due});
   });
-  if(dueScales.length===0){alert('No scales with upcoming calibration dates found for this site.');return;}
+  if(dueScales.length===0){infoDlg('No scales with upcoming calibration dates found for this site.');return;}
 
   const tech=dueScales[0].visit.technicians||'[Your Name]';
   const subject='Belt Conveyor Scale Calibration Due — '+site;
@@ -2259,18 +2293,6 @@ function openEmailMailto(){
   window.location.href='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
 }
 
-// ─── SHARE SCALE ──────────────────────────────────────
-function exportScale(scaleId){
-  const sc=getScale(scaleId); if(!sc)return;
-  const visits=getVisitsForScale(scaleId);
-  const shareData={type:'belt-scale-share',version:1,sharedAt:new Date().toISOString(),scale:sc,visits:visits};
-  const blob=new Blob([JSON.stringify(shareData,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download='Scale_'+sc.scaleId.replace(/[^a-zA-Z0-9]/g,'_')+'_'+todayISO()+'.json'; a.click();
-  URL.revokeObjectURL(url);
-}
-
 // ─── BACKUP ───────────────────────────────────────────
 function exportData(){
   const blob=new Blob([JSON.stringify(loadData(),null,2)],{type:'application/json'});
@@ -2312,10 +2334,11 @@ function importData(event){
   reader.readAsText(file); event.target.value='';
 }
 function clearAllData(){
-  if(!confirm('Delete ALL scales and visit history? This cannot be undone.'))return;
-  localStorage.removeItem(DB_KEY);
-  document.getElementById('backup-msg').innerHTML='<div class="alert alert-success">✅ All data cleared.</div>';
-  renderHome();
+  confirmDlg('Delete all data?','Every scale and visit history record will be permanently removed. This can\'t be undone.','Delete All',()=>{
+    localStorage.removeItem(DB_KEY);
+    document.getElementById('backup-msg').innerHTML='<div class="alert alert-success">✅ All data cleared.</div>';
+    renderHome();
+  });
 }
 
 // ─── HELPERS ──────────────────────────────────────────
@@ -2329,9 +2352,10 @@ function fmtDate(iso){
 // ─── OFFLINE INDICATOR ────────────────────────────────
 function updateOnlineStatus(){
   const dot=document.getElementById('online-dot');
+  const lbl=document.getElementById('online-label');
   if(!dot)return;
-  if(navigator.onLine){dot.title='Online';dot.style.background='#22c55e';}
-  else{dot.title='Offline — data saves locally';dot.style.background='#f97316';}
+  if(navigator.onLine){dot.title='Online';dot.style.background='#22c55e';if(lbl)lbl.textContent='Online';}
+  else{dot.title='Offline — data saves locally';dot.style.background='#f97316';if(lbl)lbl.textContent='Offline';}
 }
 window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
@@ -2340,15 +2364,20 @@ window.addEventListener('offline', updateOnlineStatus);
 function applyTheme(){
   try{ if(localStorage.getItem('bsl_theme')==='field') document.body.classList.add('field'); }catch(e){}
   updateThemeBtn();
+  const tb=document.getElementById('theme-btn');
+  if(tb) tb.addEventListener('click',e=>{ if(e.target.dataset.t) toggleTheme(e.target.dataset.t); });
 }
-function toggleTheme(){
-  const f=document.body.classList.toggle('field');
+function toggleTheme(t){
+  const f = t==='field';
+  document.body.classList.toggle('field', f);
   try{ localStorage.setItem('bsl_theme', f?'field':'office'); }catch(e){}
   updateThemeBtn();
 }
 function updateThemeBtn(){
   const b=document.getElementById('theme-btn');
-  if(b) b.textContent=document.body.classList.contains('field')?'☀️':'🌙';
+  if(!b) return;
+  const f=document.body.classList.contains('field');
+  b.querySelectorAll('button').forEach(btn=>btn.classList.toggle('on', btn.dataset.t===(f?'field':'office')));
 }
 
 // ─── INIT ─────────────────────────────────────────────
