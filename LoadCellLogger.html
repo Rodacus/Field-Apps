@@ -23,6 +23,7 @@
   --border: #e2e8f0;
   --text:   #0f1729;
   --muted:  #5b6472;
+  --hdrbar: #235aa7;
   --acc:    #235aa7;   /* Michelli Blue */
   --acc-lt: #e9f0f9;
   --good:   #029f49;   /* Michelli Green */
@@ -52,6 +53,7 @@ body.fieldmode {
   --border: #19305a;
   --text:   #eef3fa;
   --muted:  #8094b3;
+  --hdrbar: #1c4886;
   --acc:    #2d6fc4;
   --acc-lt: #10243f;
   --good:   #1ec77a;
@@ -94,15 +96,23 @@ body {
 .btn-sm       { padding: 10px 14px; font-size: 14px; border-radius: 9px; }
 .btn-xs       { padding: 7px 12px; font-size: 13px; border-radius: 8px; }
 
-/* HEADER */
+/* ══ TRAC APP BAR — canonical spec, identical in Cell / Belt / Truck ══ */
 .hdr {
   position: sticky; top: 0; z-index: 20;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: calc(13px + env(safe-area-inset-top, 0px)) 16px 13px;
-  background: var(--acc); color: #fff;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 12px;
+  background: var(--hdrbar); color: #fff;
   box-shadow: 0 2px 10px rgba(0,0,0,0.18);
 }
-.hdr h1 { font-size: 17px; font-weight: 700; color: #fff; }
+.hdr h1 { font-size: 17px; font-weight: 800; letter-spacing: .2px; line-height: 1.15; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ico{width:1em;height:1em;vertical-align:-.13em;flex-shrink:0;display:inline-block}
+.mhome{display:flex;align-items:center;flex-shrink:0;padding:6px;margin:-6px;text-decoration:none;-webkit-tap-highlight-color:transparent}.mmark{height:26px;width:auto;display:block}
+.hdr .titles { min-width: 0; flex: 1; overflow: hidden; }
+.hdr .sub { font-size: 10.5px; opacity: .72; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hdr-acts { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.net-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700;
+  background: rgba(255,255,255,.16); border-radius: 999px; padding: 4px 9px 4px 7px; white-space: nowrap; }
+.net-chip .d { width: 7px; height: 7px; border-radius: 50%; background: #f9a825; flex-shrink: 0; }
 .hdr-btn {
   background: none; border: none; cursor: pointer;
   color: #fff; font-size: 15px; font-weight: 600;
@@ -110,8 +120,8 @@ body {
 }
 .hdr-btn.right { text-align: right; }
 .hm-toggle{display:flex;background:rgba(255,255,255,.16);border-radius:999px;padding:3px;font-size:11px;font-weight:700}
-.hm-toggle button{border:0;background:transparent;color:#fff;padding:5px 10px;border-radius:999px;cursor:pointer;opacity:.7;font-weight:700;font-family:inherit;font-size:11px}
-.hm-toggle button.on{background:#fff;color:var(--acc);opacity:1}
+.hm-toggle button{border:0;background:transparent;color:#fff;padding:9px 11px;border-radius:999px;cursor:pointer;opacity:.7;font-weight:700;font-family:inherit;font-size:10.5px}
+.hm-toggle button.on{background:#fff;color:var(--hdrbar);opacity:1}
 .online-dot {
   width: 8px; height: 8px; border-radius: 50%;
   display: inline-block; margin-right: 6px; flex-shrink: 0;
@@ -181,6 +191,7 @@ body {
 .cells-lbl { font-size: 11px; color: var(--muted); }
 .empty-state { text-align: center; padding: 44px 24px; color: var(--muted); }
 .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+.empty-state .ico{stroke-width:1.25}
 .empty-state h3 { font-size: 17px; margin-bottom: 5px; color: var(--text); }
 
 /* OFFLINE PANEL */
@@ -587,26 +598,20 @@ function rHome(){
   const rec=[...jobs].reverse().slice(0,3);
   return `<div class="page">
   <div class="hdr">
-    <div style="display:flex;align-items:center;gap:9px"><svg viewBox="0 0 34 34" width="24" height="24" style="flex-shrink:0;vertical-align:middle" aria-hidden="true"><rect x="3" y="5" width="6" height="24" rx="1.5" fill="#fff"/><rect x="25" y="5" width="6" height="24" rx="1.5" fill="#fff"/><polygon points="9,5 17,15 25,5 25,11 17,21 9,11" fill="#fff" opacity=".9"/><polygon points="10.5,18 17,26 23.5,18 23.5,23 17,31 10.5,23" fill="#fff" opacity=".72"/></svg><div><h1 style="line-height:1.1"><b style="opacity:.82">TRAC</b> Cell</h1><div style="font-size:11px;opacity:.72;margin-top:1px">Load Cell Verification · Michelli</div></div></div>
-    <div style="display:flex;align-items:center;gap:12px">
-      <button class="hdr-btn" id="b-help" style="min-width:auto;padding:4px 4px" title="Open field guide">${helpIcon()}</button>
+    <a class="mhome" href="index.html" title="All TRAC apps" aria-label="All TRAC apps"><img class="mmark" alt="Michelli" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFMAAABgCAYAAABhXE4DAAAN9klEQVR42u2deZBcVRWH7+1uQgKEQFJBw1aJBhLCjgSEKBACgkCABCyRXYIVLFmNIGDJKkKhUhKrUCk2wWIX3EAWEQRklbBGFokiJGEnapAEprs//+jzktNn7n3vdU/3TM8wryqVfj3d7977u2e/55x2rsMuoAAU1f0c4FXgcmCkvOeBghu8oiB6oKTudwTup/56CdhffaY4CGp3EDUljgWuB6oCYEVelxWofwYmG1D9xx1IDeJ6wPnAuwq0iqHMigK1CtwAbBt63scJxELCnsAqwLHAewo0TYWWKi3IHwFnAMNClD7QQdTUuBfwqAKmS7F3CFRLqV3q9YvAoaENG+gsvRNwrwGtaigvuX8XuM58tpJCufcCe6mxSgNCngY09HjgagVGxQBTMdT2G2BjtQGPZmyAftavgS0HBKiGElcBTldysRpgYQ3iPGA3+ywB5GBgfoZoSED9EDgHWLNfKimjXFYFjgKejcg5KxefB76tvl/Ur9UYw4EfAAsjzwk991vAkH4hT2WCmqX3NRSUxpZLgdOA1bIoyIA6Sr63NGA6hSj+MWCaYf1CJ8vFTYCbUxSGlW3XARMaYcOAoT/BKKlqhiy+GRjbUaxvFjQeuBRYFgHNUskzwJ49URCBjdwVuD0nN7wNXAhs1KegiixLlMII4DvGcymn2IPPAjPV93ssv+wzBNRncsrp94BvJJvSa/5+YNIHAy/k1KzvA2cZuVhowyZrz2oO8EaEUi2nPAns3XajPyCjdgZ+nwKiZfFfAJs2w04JKzeyMDPX0cC54nbmcVcvMUGUUrvk4kZiDKd5I3q3/wBMaUYuhnzsRqJDAQLYDLhCbM+YYtQEcQUwruX+vsjFi4APUoIP+ppvlEuxB5Q1DPgKML4VmyKg3poydy0K3hZRUegpW3sBcRbwjxTlkoBbBRZoj8MGNnLKZC+vh4qielrZomcBI5oUFzbIcpS4p5YiQ+t8SOYypGGXNFkUsAXwt4itRoBFrlRaekjeHQ0sdCbwXEQbvyLUslqjVC/jDFH3xwbkPSa8l1x/BNbSG55GiXUfUhRSAn6iWLwSCIWhJvQacGAeORcAcTvg7ogis6LlKWC/EFXnYPXNgQfMvInogoXA7LTnrthMu6taHhkzaAJwW4pBbIO2VwGTInLQGtsTgRvV88qRDQspuRuB7WObZ8aZBFymHItyRFwl1y+BMZq4UpTjCkDXFMFcCkRq7K4eKFQRM4g1NS0HfqxkaNGMsZ24dh+mHFWUI9xg37sG2CBCFKMlGr88Z2DkNmBqZEM0FkOAKcAmyRtHCil3SbT6VGDtAKg6GlQSxfROJMBgJ/cCcJB65gbAj8xGlFO0KikUqz/3b+BsYA1FCIcBi3NG898EvhRRiNohSKJWf1fP+K6LyIyFwKE5QmHjROmkAdBljPfjgLdSvmNl46XAnkrGpQGdXC8DRwN35XQsKsDPgNFWlge8voMkpNeNk5x5w2rsvwLTc5D7nsA9KVRWyTi/iR0/TDdUckpGbLSak8K7jJaeElmXXu904D7zDK0ciVGmndTlSchKy9CANv6aCtjGFtaVQVULAwdjRXN/fEoMUxNFlujZI6S4zOuxsn6ylKMj/bIhqxNjrK8GHwPMzaDK2BHDxYm8Dhn8ZpwJwpp5xrEsPRcYHtAFduNmybpjm9YQmKEdfRiYEVmgZotp4puHZJY1b263GRoNuJtZMUwbK/hMDotlhng9aV5f02CGALhhhUmQPrH9xc0MLe5+Y4I0EsiwVDRVuZ528+YZ+VvH0ur99cW2jAU/WgZmKEXlv8AJoYMqE0BeHfi+knNvAme24oArEMP8pjw/mescYNXAZ7XZM0zWsURRYrlRYJoBM0T6j8UO/gNu3PnGuG5JaMuMs4GMs0MOzpku9nVDLN1qMEMa+xZgc8tOEferLUkBGUpLy/QtM7JKeh3MkLb8H3Cyic5o1mr78aoapxhg79WN95VmBfQJmCEWeVaUT6mv0lMCAZWvBs7yW3a1GswQ6z8ITOzt41QjF6cBd7aSpXsLzJDWXy4BiBHtOpmMyMgNxbfP9F46HcxQSO0FYO+Q59TiHKcCcIQxkcrtXmhvgBky+J8AdmoV6wechCdSgiH9EsxqRnpKFbhA+cgNH6calv60RPfzhvZafnmAXtAHFeecBqrqnPPy7xXn3Mne+5sVlVW996SxtHMO7z0C5onOuXOdc6vLs51zrhAZ386lpQK71VdZnc2cac5bKhnHqV9IY/2AqXOIySkqpyjBD+SoeDbh/PiOZPNERs2VBW9tDv1DEW8NwrWJ1kdVohm5uKkxdSqBZ2pZeSuwlXx3n3bYmO0G86eBs/AFGVSUAPIScEjg2HkY8D0VMMmi9gXATCNjZ/ZHMC+xyQjASDmtXJTiyulF3gd8Xih0loCcZzP+CZykKLygIlQz+jOYpQCbrkstsSEP63dRf7Qc0tKapa9OLARbXNBuMHstn9t7X0kUiPd+sff+OOfcHs65ec65kmj2snMO0cRF0bwl59yWoqWr8r6Xz5Xldck596Bzbor3/nDv/dIkFuC9r/TWGns1Od57j/e+nNiU3vu7nHOTnXOnOecWKVATAIoCWlXmWlDmTQLiIvn+zt77h5Kgr/e+nGZe9XswDagVAbTqvb9AqO/nzrllAmJCpV7Ns6rsxC4BcQvv/QXe+6p6Hn2xrj4t20hYUFj/Xe/9MUKp9xoqLcv/Cfvf4ZybKiC+l8jD3mTpjgNTgVpW8nS+935X59xRzrlXBbyS/P+cc+5Q7/0Xvfd/UXKx3AnrKLkOuYQ1y0BBWPVK4Cbn3Azn3ETn3EPOuTsF+EKyCa6DrpLrsEtkn3fOFbz37zvnrrHBjb5m534DpqLSioCa2KdIAKQjgexYMC3ru35yDXZeGQRzEMxBMAevQTAHFJhJcKITr7bNrdCGiSZhsTU6FMxVZd1JIKUjwUzCYkOdc4udc7eI0Y3yXnxv5BwRLqtOPKsnnHMvCqg63NeSgVuZW7SEWquGdZNFqXFK1i1sE5DF2L06S1pT5vlqK8/UXYtAhFoxvy5jDhUPrEWtPmeE+lvLkl2pb3VxNLB+Mhed7Kq+sw7wQ3UM0tWTI+BmwdQgvkJ94WmJlYWtmiqOY2VF14vAYRr4Zlmf7kVP+6hM4EXA4QZwHzh/3wV4JOVMqi1g6hPApZLqnHXGPZ366jJbZTE1JgpyyEVbIHB7ZJwHgH0t6weecZIQRyjprKVg2kqLTwUmZ1vzXGu+X4kkHlwFrJNXnhqqmmByjKrEy6ovY2WVbsFkFnslIuaas/lqq8DssimBAbaxRaq671taOp9OIniNWjlf0VK6HU9eD6dWqbuswXHeAU41FB7Ked+4UdZ3GXKxapJVdalzIcAme1BfjBQqn84q93uc+grgYiD38sus7NAQOgOvRpSJ/tw91Jf7lbRZpcY+RDY6M3U7VDupD/Wrknk7KYOlN8tIc47VUablcN6tS0+U/H08I506zzj6vbuA9QLr00ptlHBbWhJa1ak/lgNCe5cQS6v3RlIrlvooku5iJ/6wpMekdaHR7FqR3KKtSG8BZIF9CzhPWQ8h4PUz3qBW3FqyFgLdOzb8yjxjRQGWUwtDaelzVG5OSbG0rpzYLzDZGEW8bia7BbUOCNWA0khjp9DntIVRAW4CNlSbfR71nRbS5vkU9a3Lu7G+3B9pktAAXnbADsAdIkPmEGg0R/fCz6dT5KKmtg+FEkdHNPFnSe9oqJ+Vxa7XUF/QtYpRJmcoULM46DZgG2s+GYodKWLnClnDJlHTQxm3uvQ5qyTZJq9uG9HE1tDePmCL5m148giwe8iIDyjIydSK9dMUpO4vcjrhssViqgdBSvUY8HXqi/LTWvH8RyaRWUxl3TxqzVSeTDFH9Ga9JS5jcIMC42iOOID6esk0D+8x4ICY06D+FdIA9sA2Jicyq0nU1cCorMXFxpPXq0mq9PMRSn1dzLSG+7QFXNwTqDVJqWZYNYgoXFtzayOumgc+IXngSzKiK8lk5olwHqptxGYiPhLZmaPGhloHwfWbiTwFWH43ybv/IGKM2y5fs2mmfVlgIuOpL2rPSrB/MBHgVl7mjUWq+3FiXexiZXqTII6mvudGlrNyEaqyrsdBVnW/M/C7nFm8yyXwsGMPKKkUcyeboPQxonnfiLif1nK4gUALilaAarXvfsLSaWnU+m/nUt8zqNTg2KUGN8J2Rzie7h1eY2bRn4DPNbuBTYEqg5zYwCTfBI4wlFdo1/zkfl/ifTusgllsYp+903ac7i0cLmdln7VQ9MZ2cDmilTsfkIu7Ut+5ppxiYi0XJTuqUeugnaBOEtMoTZ5WzDHHhGaUSopMn0itRVpsTF1stSwWxOm7Q+juVLE79T/XFaIKraTmEmjk1+BGri3PWZZDuSDz26rtcrGH8kr7sLMCccAYqy0UO25kDm/G/hzDbNJ/40KLmPkyr2KvysUWsf5w8TLezqmkFpjAcIlwn6QCtb5zizI2S4fkzkb6G9l4ZUdfAdb/JLU+b10pbKgp6LfA1pENmkLtB+nSzLKKqVgb0xPZ3KmgbkN9L6GugIIoKwVxcXJwJ6HCLAVnW0ZO6/cg5gB1L7r3oozJ03dI/0UV+/l51Hf/Gpg/oxgwqo8x0fquFNbPOkdaIoGRoaEI0YC9AikzF1LfE72SAaL9+/W0ob9cfwNVG9zbSsF/WnvxUNvJ7QY8S/fAi5lstHUlICefMcpl8OdlM6Lg+weOFhZJBKjhn2L4OIOq8yhPAf4leUJjO1ku/h+KPXky4GocAQAAAABJRU5ErkJggg=="></a>
+    <div class="titles">
+      <h1><b style="opacity:.82">TRAC</b> Cell</h1>
+      <div class="sub">Load Cell Verification</div>
+    </div>
+    <div class="hdr-acts">
+      <button class="hdr-btn" id="b-help" style="min-width:auto;padding:12px;margin:-6px;display:inline-flex;align-items:center" title="Open field guide" aria-label="Open field guide">${helpIcon()}</button>
       <div class="hm-toggle" id="b-theme"><button data-t="office" class="${isField()?'':'on'}">Office</button><button data-t="field" class="${isField()?'on':''}">Field</button></div>
-      <span style="font-size:12px;color:rgba(255,255,255,.72)">${jobs.length} job${jobs.length!==1?'s':''}</span>
+      ${isOnline()?'':'<span class="net-chip" title="Offline — everything still saves to this device"><span class="d"></span>Offline</span>'}
     </div>
   </div>
   <div class="home-actions" style="margin-top:18px">
-    <button class="btn btn-primary" id="b-new">+ New Job</button>
-    <button class="btn btn-outline" id="b-hist">📋  All History</button>
-  </div>
-  <div class="sect-label">Backup & Sync</div>
-  <div class="sync-panel no-print">
-    <h3>${onlineDot()}${onlineLabel()} — ${isOnline()?'Connected':'No Signal'}</h3>
-    <div class="sync-status">All data is saved locally on this device. Export a backup to share jobs or move to another device.</div>
-    <div class="sync-btns">
-      <button class="sync-btn" id="b-export">💾 Export Backup</button>
-      <label class="sync-btn" style="cursor:pointer">📂 Import Backup<input id="b-import" type="file" accept=".json" style="display:none"></label>
-      ${jobs.length?`<button class="sync-btn danger" id="b-clearall" style="color:var(--muted)">🗑 Clear All</button>`:''}
-    </div>
+    <button class="btn btn-primary" id="b-new">＋ New job</button>
+    <button class="btn btn-outline" id="b-hist"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v2.5H9z"/><path d="M8.5 11h7M8.5 15h4.5"/></svg> All history</button>
   </div>
   ${rec.length?`<div class="sect-label">Recent Jobs</div>`:''}
   ${rec.map(j=>`
@@ -621,10 +626,20 @@ function rHome(){
           <div class="cells-num">${j.numCells}</div>
           <div class="cells-lbl">cell${j.numCells!==1?'s':''}</div>
         </div>
-        <button class="job-del" data-del="${j.id}" aria-label="Delete job" title="Delete job">🗑</button>
+        <button class="job-del" data-del="${j.id}" aria-label="Delete job" title="Delete job"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l1 13.5h9l1-13.5M10 10v6.5M14 10v6.5"/></svg></button>
       </div>
     </div>`).join('')}
-  ${!rec.length?`<div class="empty-state"><div class="icon">📋</div><h3>No jobs yet</h3><p>Tap <strong>New Job</strong> to start.</p></div>`:''}
+  ${!rec.length?`<div class="empty-state"><div class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v2.5H9z"/><path d="M8.5 11h7M8.5 15h4.5"/></svg></div><h3>No jobs yet</h3><p>Create your first load cell job.</p></div>`:''}
+  <div class="sect-label">Backup</div>
+  <div class="sync-panel no-print">
+    <h3>Backup &amp; restore</h3>
+    <div class="sync-status">Jobs are saved on this device. Export a backup to share a job or move to a new phone.</div>
+    <div class="sync-btns">
+      <button class="sync-btn" id="b-export"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4 17v2.5h16V17"/></svg> Export backup</button>
+      <label class="sync-btn" style="cursor:pointer"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 17v2.5h16V17"/></svg> Import backup<input id="b-import" type="file" accept=".json" style="display:none"></label>
+      ${jobs.length?`<button class="sync-btn danger" id="b-clearall" style="color:var(--muted)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l1 13.5h9l1-13.5M10 10v6.5M14 10v6.5"/></svg> Clear all</button>`:''}
+    </div>
+  </div>
   </div>`;
 }
 function bHome(){
@@ -924,7 +939,7 @@ function rEntry(){
       <button id="b-change-model" style="font-size:12px;color:var(--acc);background:none;border:none;cursor:pointer;padding:2px 6px;font-weight:600;flex-shrink:0">Change ▾</button>
     </div>
     ${canCopy&&cell1HasData?`
-      <button class="copy-btn" id="b-copy">📋 Copy all readings from Cell 1</button>`:''}
+      <button class="copy-btn" id="b-copy"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg> Copy all readings from Cell 1</button>`:''}
     <div class="entry-rname">${r.lbl} <span class="entry-unit">${r.unit}</span></div>
     <div class="entry-desc">${r.desc}</div>
     ${wireDotsForReading(r, wireProfile)}
@@ -1118,7 +1133,7 @@ function rSummary(){
 
   ${job.notes?`<div style="padding:0 16px 12px"><div style="background:var(--warn-lt);border:1px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:13px;color:#92400e"><strong>Notes:</strong> ${esc(job.notes)}</div></div>`:''}
 
-  ${flagBridge?`<div style="padding:0 16px 10px"><div class="badge badge-bridge" style="font-size:12px;padding:6px 12px">⚠ Cross-bridge deviation detected on one or more cells — see highlighted columns</div></div>`:''}
+  ${flagBridge?`<div style="padding:0 16px 10px"><div class="badge badge-bridge" style="font-size:12px;padding:6px 12px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8 21 19.5H3z"/><path d="M12 9.5v4.2"/><circle cx="12" cy="16.6" r="1" fill="currentColor" stroke="none"/></svg> Cross-bridge deviation detected on one or more cells — see highlighted columns</div></div>`:''}
 
   <div class="tbl-scroll">
     <table class="lc-table">
@@ -1161,12 +1176,12 @@ function rSummary(){
     <button class="btn btn-primary" id="b-done">✓ Finish Job</button>
   </div>`:`
   <div class="sum-actions no-print">
-    <button class="btn btn-outline" id="b-del" style="color:var(--bad);border-color:var(--bad-lt)">🗑 Delete</button>
+    <button class="btn btn-outline" id="b-del" style="color:var(--bad);border-color:var(--bad-lt)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l1 13.5h9l1-13.5M10 10v6.5M14 10v6.5"/></svg> Delete</button>
     <button class="btn btn-primary" id="b-home">← Home</button>
   </div>
   <div style="padding:0 16px 8px;display:flex;gap:10px;" class="no-print">
-    <button class="btn" id="b-textreport" style="background:#235aa7;color:#fff;flex:1">📱 Text Report</button>
-    <button class="btn btn-outline" id="b-report" style="flex:1">📄 Full Report</button>
+    <button class="btn" id="b-textreport" style="background:#235aa7;color:#fff;flex:1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg> Text report</button>
+    <button class="btn btn-outline" id="b-report" style="flex:1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M8.5 12.5h7M8.5 16h5"/></svg> Full report</button>
   </div>
   <div style="padding:0 16px 8px;display:flex;gap:10px;" class="no-print">
     <button class="btn btn-outline" id="b-editinfo" style="flex:1;font-size:14px">✏ Edit Job Info</button>
@@ -1242,10 +1257,10 @@ function rHistory(){
             <div class="cells-num">${j.numCells}</div>
             <div class="cells-lbl">cell${j.numCells!==1?'s':''}</div>
           </div>
-          <button class="job-del" data-del="${j.id}" aria-label="Delete job" title="Delete job">🗑</button>
+          <button class="job-del" data-del="${j.id}" aria-label="Delete job" title="Delete job"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l1 13.5h9l1-13.5M10 10v6.5M14 10v6.5"/></svg></button>
         </div>
       </div>`).join('')}
-  </div>`:`<div class="empty-state"><div class="icon">📋</div><h3>No jobs saved yet</h3><p>Finished jobs will show up here.</p></div>`}
+  </div>`:`<div class="empty-state"><div class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v2.5H9z"/><path d="M8.5 11h7M8.5 15h4.5"/></svg></div><h3>No jobs saved yet</h3><p>Finished jobs show up here.</p></div>`}
   </div>`;
 }
 function bHistory(){
@@ -1271,7 +1286,7 @@ function showDlg({title,msg,acts}){
 function hideDlg(){ if(dlgEl){dlgEl.remove();dlgEl=null;} render(); }
 function warnSaveFailed(){
   showDlg({
-    title:'⚠️ Save failed',
+    title:'Save failed',
     msg:'This device couldn\'t save your last change — storage may be full or private browsing may be blocking it. Export a backup now if you can, then free up space or switch out of private mode before continuing.',
     acts:[{lbl:'OK',cls:'btn-primary',fn:hideDlg}]
   });
@@ -1436,7 +1451,7 @@ function printCustomerReport(jobId, includeSig) {
     tableRows += trow('Bridge Deviation', function(d){
       if(!d.bavg) return '';
       var c = d.bflagged?'#5b21b6':'#16a34a';
-      return '<span style="color:'+c+';font-weight:'+(d.bflagged?'700':'400')+';">'+d.bmaxDev.toFixed(2)+'%'+(d.bflagged?' ⚠':'')+'</span>';
+      return '<span style="color:'+c+';font-weight:'+(d.bflagged?'700':'400')+';">'+d.bmaxDev.toFixed(2)+'%'+(d.bflagged?' '+'<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8 21 19.5H3z"/><path d="M12 9.5v4.2"/><circle cx="12" cy="16.6" r="1" fill="currentColor" stroke="none"/></svg>':'')+'</span>';
     });
   }
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TRAC Truck">
@@ -15,22 +15,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --blue:#235AA7; --blue-d:#1a4680; --blue-l:#e9f0fa;
-  --green:#029F49; --green-l:#e4f6ec;
-  --yellow:#F5DA02; --yellow-d:#8a7a00;
-  --red:#d21f3c; --red-l:#fbe7ea;
+  --hdrbar:#235AA7;
+  --blue:#235AA7; --blue-d:#1c4886; --blue-l:#e9f0f9;
+  --green:#029F49; --green-l:#e6f4ec;
+  --yellow:#a6790a; --yellow-d:#a6790a;
+  --red:#d64545; --red-l:#fbeaea;
   --orange:#e07b00; --orange-l:#fdf0e0;
-  --ink:#12233b; --muted:#5c6b7d; --line:#dbe3ec; --bg:#f4f7fb; --card:#ffffff;
+  --ink:#0f1729; --muted:#5b6472; --line:#e2e8f0; --bg:#eef2f7; --card:#ffffff;
   --shadow:0 1px 3px rgba(16,40,70,.08),0 4px 16px rgba(16,40,70,.06);
   --radius:14px;
 }
 [data-theme="field"]{
-  --blue:#5b9bff; --blue-d:#3f7ddb; --blue-l:#152a45;
-  --green:#25c46b; --green-l:#0f2e1f;
-  --yellow:#ffe23d; --yellow-d:#ffe23d;
-  --red:#ff5a72; --red-l:#3a1620;
-  --orange:#ffa23d; --orange-l:#3a2610;
-  --ink:#eaf1fb; --muted:#9fb2c8; --line:#26405f; --bg:#0a1626; --card:#0f2138;
+  --hdrbar:#1c4886;
+  --blue:#2d6fc4; --blue-d:#1c4886; --blue-l:#10243f;
+  --green:#1ec77a; --green-l:#0d2a1b;
+  --yellow:#f5da02; --yellow-d:#f5da02;
+  --red:#ff7a7a; --red-l:#2a0d0d;
+  --orange:#f5a524; --orange-l:#2a1c00;
+  --ink:#eef3fa; --muted:#8094b3; --line:#19305a; --bg:#071221; --card:#0e1f3a;
   --shadow:0 1px 3px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -38,20 +40,28 @@ html,body{margin:0;padding:0}
 body{font-family:'Libre Franklin',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
 .app{max-width:760px;margin:0 auto;padding-bottom:96px}
 
-/* Header */
-header{position:sticky;top:0;z-index:40;background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 10px rgba(16,40,70,.18)}
-[data-theme="field"] header{background:linear-gradient(135deg,#0f2138,#0a1626);border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:.3px;font-size:18px}
-.brand .mark{width:30px;height:30px;border-radius:8px;background:var(--yellow);color:var(--blue-d);display:grid;place-items:center;font-weight:800;font-size:15px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.06)}
-.brand small{display:block;font-size:10px;font-weight:600;opacity:.85;letter-spacing:.5px;text-transform:uppercase;margin-top:-2px}
+/* ══ TRAC APP BAR — canonical spec, identical in Cell / Belt / Truck ══ */
+header{position:sticky;top:0;z-index:40;background:var(--hdrbar);color:#fff;
+  padding:calc(12px + env(safe-area-inset-top,0px)) 14px 12px;box-shadow:0 2px 10px rgba(16,40,70,.18)}
+[data-theme="field"] header{border-bottom:1px solid var(--line)}
+.hdrin{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.mhome{display:flex;align-items:center;flex-shrink:0;padding:6px;margin:-6px;text-decoration:none;-webkit-tap-highlight-color:transparent}.mmark{height:26px;width:auto;display:block}
+.brand .titles{min-width:0;overflow:hidden}
+.brand .nm{font-weight:800;letter-spacing:.2px;font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand small{display:block;font-size:10.5px;font-weight:600;opacity:.72;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-acts{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ico{width:1em;height:1em;vertical-align:-.13em;flex-shrink:0;display:inline-block}
 .hspace{flex:1}
-.help-btn{background:none;border:0;color:#fff;padding:4px;cursor:pointer;display:flex;align-items:center;opacity:.9}
+.help-btn{background:none;border:0;color:#fff;padding:12px;margin:-6px;cursor:pointer;display:flex;align-items:center;opacity:.9}
 .help-btn:hover{opacity:1}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(255,255,255,.18)}
-.dot.off{background:var(--red)}
+.net-chip{display:none;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+  background:rgba(255,255,255,.16);border-radius:999px;padding:4px 9px 4px 7px;white-space:nowrap}
+.net-chip.show{display:inline-flex}
+.net-chip .d{width:7px;height:7px;border-radius:50%;background:#f9a825;flex-shrink:0}
 .toggle{display:flex;background:rgba(255,255,255,.16);border-radius:999px;padding:3px;font-size:11px;font-weight:700}
-.toggle button{border:0;background:transparent;color:#fff;padding:5px 10px;border-radius:999px;cursor:pointer;opacity:.7;font-weight:700;font-family:inherit}
-.toggle button.on{background:#fff;color:var(--blue-d);opacity:1}
+.toggle button{border:0;background:transparent;color:#fff;padding:9px 11px;border-radius:999px;cursor:pointer;opacity:.7;font-weight:700;font-family:inherit;font-size:10.5px}
+.toggle button.on{background:#fff;color:var(--hdrbar);opacity:1}
 
 /* Layout bits */
 .wrap{padding:16px}
@@ -96,6 +106,7 @@ textarea{min-height:70px;resize:vertical}
 .scard .chev{color:var(--muted);font-size:22px}
 .empty-state{text-align:center;color:var(--muted);padding:50px 20px}
 .empty-state .big{font-size:46px;margin-bottom:8px}
+.empty-state .ico{stroke-width:1.25}
 
 /* Steps */
 .steps{display:flex;gap:5px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none}
@@ -165,18 +176,23 @@ textarea{min-height:70px;resize:vertical}
 </style>
 </head>
 <body>
-<div class="app">
-  <header>
-    <div class="brand"><span class="mark">TT</span><div>TRAC Truck<small>Vehicle Scale Tester</small></div></div>
-    <div class="hspace"></div>
-    <button class="help-btn" id="b-help" title="Open field guide"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.5.8c0 1.8-2.7 2.2-2.7 4"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg></button>
-    <div class="toggle" id="themeToggle">
-      <button data-t="office" class="on">Office</button>
-      <button data-t="field">Field</button>
+<header>
+  <div class="hdrin">
+    <div class="brand">
+      <a class="mhome" href="index.html" title="All TRAC apps" aria-label="All TRAC apps"><img class="mmark" alt="Michelli" src="data:image/png;base64,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"></a>
+      <div class="titles"><div class="nm"><b style="opacity:.82">TRAC</b> Truck</div><small>Vehicle Scale Testing</small></div>
     </div>
-    <span id="netlabel" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.85)">Online</span>
-    <span class="dot" id="netdot" title="online"></span>
-  </header>
+    <div class="hdr-acts">
+      <button class="help-btn" id="b-help" title="Open field guide" aria-label="Open field guide"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.5.8c0 1.8-2.7 2.2-2.7 4"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg></button>
+      <div class="toggle" id="themeToggle">
+        <button data-t="office" class="on">Office</button>
+        <button data-t="field">Field</button>
+      </div>
+      <span class="net-chip" id="net-chip"><span class="d"></span>Offline</span>
+    </div>
+  </div>
+</header>
+<div class="app">
   <div id="view"></div>
 </div>
 <div class="toast" id="toast"></div>
@@ -231,7 +247,7 @@ function rollUp(st){const s=st.filter(Boolean);if(!s.length)return'EMPTY';if(s.i
 const KEY='tractruck_v1';
 let DB={scales:[],visits:[]};
 function load(){try{const r=localStorage.getItem(KEY);if(r)DB=JSON.parse(r);}catch(e){}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){infoDlg('⚠️ Save failed — this device couldn\'t save your last change. Storage may be full or private browsing may be blocking it. Export a backup now if you can, then free up space or switch out of private mode.');}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){infoDlg('Save failed — this device couldn\'t save your last change. Storage may be full or private browsing may be blocking it. Export a backup now if you can, then free up space or switch out of private mode.');}}
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 let ST={view:'home',scaleId:null,visitId:null,step:0,draft:null};
 
@@ -247,7 +263,9 @@ document.getElementById('themeToggle').addEventListener('click',e=>{if(e.target.
 document.getElementById('b-help').addEventListener('click',()=>window.open('https://rodacus.github.io/Field-Apps/Field-Apps-Guide.html','_blank'));
 
 /* net dot */
-function net(){const d=document.getElementById('netdot');const l=document.getElementById('netlabel');const on=navigator.onLine;d.classList.toggle('off',!on);d.title=on?'online':'offline';if(l)l.textContent=on?'Online':'Offline';}
+// Chip only appears when OFFLINE. Everything works offline by design, so a
+// permanent green "Online" badge is noise — the exception is what matters.
+function net(){const c=document.getElementById('net-chip');if(!c)return;const off=!navigator.onLine;c.classList.toggle('show',off);c.title=off?'Offline — everything still saves to this device':'';}
 addEventListener('online',net);addEventListener('offline',net);
 
 /* toast */
@@ -292,9 +310,9 @@ function render(){
 /* ============================ HOME ============================ */
 function renderHome(){
   if(!DB.scales.length){
-    return `<div class="wrap"><div class="empty-state"><div class="big">🚛</div>
-      <h2>No scales yet</h2><p>Add a truck scale to start testing.</p></div>
-      <button class="btn primary wide" onclick="newScale()">＋ Add Truck Scale</button>
+    return `<div class="wrap"><div class="empty-state"><div class="big"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 6.5h11v9h-11zM13.5 10h3.6l3.4 3.2v2.3h-7z"/><circle cx="7" cy="17.8" r="1.9"/><circle cx="17" cy="17.8" r="1.9"/></svg></div>
+      <h2>No scales yet</h2><p>Add your first truck scale.</p></div>
+      <button class="btn primary wide" onclick="newScale()">＋ Add truck scale</button>
       <div class="btnrow"><button class="btn ghost" onclick="importJSON()">Import backup</button></div></div>`;
   }
   const sites={};DB.scales.forEach(s=>{(sites[s.site||'Unassigned']=sites[s.site||'Unassigned']||[]).push(s);});
@@ -306,7 +324,7 @@ function renderHome(){
       const last=lastVisit(s.id);
       const st=last?visitStatus(last):'EMPTY';
       h+=`<div class="scard" onclick="openScale('${s.id}')">
-        <div class="icn">🚛</div>
+        <div class="icn"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 6.5h11v9h-11zM13.5 10h3.6l3.4 3.2v2.3h-7z"/><circle cx="7" cy="17.8" r="1.9"/><circle cx="17" cy="17.8" r="1.9"/></svg></div>
         <div style="flex:1"><div class="t">${esc(s.name)}</div>
         <div class="m">${s.sections}-section · ${money(s.capacity)} lb × ${s.division} lb${last?' · last '+fmtDate(last.date):''}</div></div>
         ${badge(st)}<div class="chev">›</div></div>`;
@@ -374,7 +392,7 @@ function renderScaleDetail(){
   let vh=visits.length?'':'<div class="mini" style="padding:8px 2px">No visits yet.</div>';
   visits.forEach(v=>{
     vh+=`<div class="scard" onclick="openVisit('${v.id}')">
-      <div class="icn" style="background:var(--blue-l)">📋</div>
+      <div class="icn" style="background:var(--blue-l)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v2.5H9z"/><path d="M8.5 11h7M8.5 15h4.5"/></svg></div>
       <div style="flex:1"><div class="t">${fmtDate(v.date)} <span class="tag">${esc(v.testType||'PM')}</span></div>
       <div class="m">${esc(v.tech||'—')}${v.po?' · WO '+esc(v.po):''}</div></div>
       ${badge(visitStatus(v))}<div class="chev">›</div></div>`;
@@ -525,7 +543,7 @@ function stepSections(s,which,title){
     rows+=`<tr><td class="secn">Sec ${i+1}</td>
       <td><input id="sec_${which}_f_${i}" type="number" inputmode="numeric" value="${esc(T.sec.fwd[i])}" oninput="liveSections('${which}')" placeholder="${rev?'fwd':'reading'}"></td>
       ${rev?`<td><input id="sec_${which}_r_${i}" type="number" inputmode="numeric" value="${esc(T.sec.rev[i])}" oninput="liveSections('${which}')" placeholder="rev"></td>`:''}
-      <td class="dev ${devCls}">${devTxt}${rep!==null&&rep>tol?` <span title="fwd vs rev ${rep} lb">⚠</span>`:''}</td></tr>`;
+      <td class="dev ${devCls}">${devTxt}${rep!==null&&rep>tol?` <span title="fwd vs rev ${rep} lb"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8 21 19.5H3z"/><path d="M12 9.5v4.2"/><circle cx="12" cy="16.6" r="1" fill="currentColor" stroke="none"/></svg></span>`:''}</td></tr>`;
   }
   const copyBtn=which==='asLeft'?`<button class="btn subtle sm" style="width:auto;margin-bottom:10px" onclick="copyFound()">⇩ Copy As-Found numbers</button>`:'';
   return `<div class="card"><h2>${title}</h2>
@@ -561,11 +579,11 @@ function sectionResultStrip(R){
 }
 function sectionGuide(R,tol){
   if(R.status==='FAIL'&&R.high&&R.low){
-    return `<div class="guide">📐 <b>Adjust:</b> Section <b>${R.high.n}</b> reads <b>+${R.high.dev} lb</b> vs the group (highest); Section <b>${R.low.n}</b> reads <b>${R.low.dev} lb</b> (lowest). Bring the high sections down toward the group average, then re-run. Spread needs to drop from ${R.spread} → ≤ ${tol} lb.</div>`;
+    return `<div class="guide"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 15.5 8.5-8.5 5.5 5.5L8.5 21z"/><path d="M6.5 12 8 13.5M9 9.5l1.5 1.5M12 7l1.5 1.5"/><path d="m14 6 4-4 4 4-4 4z"/></svg> <b>Adjust:</b> Section <b>${R.high.n}</b> reads <b>+${R.high.dev} lb</b> vs the group (highest); Section <b>${R.low.n}</b> reads <b>${R.low.dev} lb</b> (lowest). Bring the high sections down toward the group average, then re-run. Spread needs to drop from ${R.spread} → ≤ ${tol} lb.</div>`;
   }
   if(R.status==='PASS')return `<div class="guide" style="background:var(--green-l)">✓ All sections agree within ${tol} lb. Good to move on.</div>`;
   const bind=R.sections.filter(s=>s.repeat!==null&&s.repeat>tol);
-  if(bind.length)return `<div class="flag">⚠ Section ${bind.map(b=>b.n).join(', ')} forward vs reverse differ more than ${tol} lb — check for binding, debris, or a sticking load cell before adjusting.</div>`;
+  if(bind.length)return `<div class="flag"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8 21 19.5H3z"/><path d="M12 9.5v4.2"/><circle cx="12" cy="16.6" r="1" fill="currentColor" stroke="none"/></svg> Section ${bind.map(b=>b.n).join(', ')} forward vs reverse differ more than ${tol} lb — check for binding, debris, or a sticking load cell before adjusting.</div>`;
   return '';
 }
 function liveSections(which){
@@ -626,9 +644,9 @@ function loadGuide(L,tol){
   const fails=L.rows.filter(r=>(r.incStatus==='FAIL')||(r.decStatus==='FAIL'));
   if(L.status==='PASS')return`<div class="guide" style="background:var(--green-l)">✓ Every point within ${tol} lb, increasing and decreasing. Linearity good.</div>`;
   if(fails.length){const r=fails[0];
-    return`<div class="guide">📐 <b>Off at ${r.blocks===0?'empty cart':'drop '+r.blocks}</b> (applied ${money(r.applied)} lb): ${r.incErr!==null&&Math.abs(r.incErr)>tol?`up reads ${r.incErr>0?'+':''}${r.incErr} lb`:''}${r.decErr!==null&&Math.abs(r.decErr)>tol?`${r.incErr!==null&&Math.abs(r.incErr)>tol?', ':''}down reads ${r.decErr>0?'+':''}${r.decErr} lb`:''}. Adjust span/linearity and re-run.</div>`;}
+    return`<div class="guide"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 15.5 8.5-8.5 5.5 5.5L8.5 21z"/><path d="M6.5 12 8 13.5M9 9.5l1.5 1.5M12 7l1.5 1.5"/><path d="m14 6 4-4 4 4-4 4z"/></svg> <b>Off at ${r.blocks===0?'empty cart':'drop '+r.blocks}</b> (applied ${money(r.applied)} lb): ${r.incErr!==null&&Math.abs(r.incErr)>tol?`up reads ${r.incErr>0?'+':''}${r.incErr} lb`:''}${r.decErr!==null&&Math.abs(r.decErr)>tol?`${r.incErr!==null&&Math.abs(r.incErr)>tol?', ':''}down reads ${r.decErr>0?'+':''}${r.decErr} lb`:''}. Adjust span/linearity and re-run.</div>`;}
   const hyst=L.rows.filter(r=>r.ret!==null&&r.ret>tol);
-  if(hyst.length)return`<div class="flag">⚠ Increasing vs decreasing differ &gt;${tol} lb at drop ${hyst.map(r=>r.blocks).join(', ')} — possible hysteresis/return error.</div>`;
+  if(hyst.length)return`<div class="flag"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8 21 19.5H3z"/><path d="M12 9.5v4.2"/><circle cx="12" cy="16.6" r="1" fill="currentColor" stroke="none"/></svg> Increasing vs decreasing differ &gt;${tol} lb at drop ${hyst.map(r=>r.blocks).join(', ')} — possible hysteresis/return error.</div>`;
   return '';
 }
 function liveLoad(which){
@@ -704,7 +722,7 @@ function stepReview(s){
      <label>Include customer sign-off line?</label>${segBtns('seg_so',[{v:'no',l:'No'},{v:'yes',l:'Yes'}],d.signOff?'yes':'no')}
      ${overall!=='PASS'?`<label>Note (if certifying out of your tolerance)</label><input id="v_overrideNote" value="${esc(d.overrideNote)}" placeholder="e.g. left within 80 lb after extended adjustment">`:''}
    </div>
-   <button class="btn primary wide" onclick="openReport()">📄 Generate Customer Report</button>`;
+   <button class="btn primary wide" onclick="openReport()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M8.5 12.5h7M8.5 16h5"/></svg> Generate customer report</button>`;
 }
 
 /* ============================ REPORT (PDF) ============================ */

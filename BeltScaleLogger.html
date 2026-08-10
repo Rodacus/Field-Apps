@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>TRAC Belt — Michelli</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,6 +17,7 @@
     :root {
       color-scheme: light;
       /* Michelli — Office (light, default) */
+      --hdrbar:#235aa7;
       --navy:#235aa7; --navy-light:#2f6dc0; --navy-dark:#1c4886;   /* Michelli Blue */
       --orange:#029f49; --orange-dark:#027f3a;                      /* primary action = Michelli Green */
       --green:#029f49; --green-light:#e6f4ec;
@@ -30,6 +31,7 @@
     /* Michelli — Field / High-Sun (dark navy) */
     body.field {
       color-scheme: dark;
+      --hdrbar:#1c4886;
       --navy:#1c4886; --navy-light:#2f6dc0; --navy-dark:#122d54;
       --orange:#1ec77a; --orange-dark:#16a34a;
       --green:#1ec77a; --green-light:#0d2a1b;
@@ -43,16 +45,27 @@
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Libre Franklin',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--page);color:var(--text);min-height:100vh;}
 
-    /* HEADER */
-    .app-header{background:var(--navy);color:white;padding:13px 16px 11px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,0.3);}
-    .app-header h1{font-size:17px;font-weight:800;letter-spacing:0.3px;}
-    .app-header .sub{font-size:11px;opacity:0.7;margin-top:1px;}
-    .header-actions{margin-left:auto;display:flex;gap:6px;}
+    /* ══ TRAC APP BAR — canonical spec, identical in Cell / Belt / Truck ══ */
+    .app-header{background:var(--hdrbar);color:#fff;display:flex;align-items:center;gap:10px;
+      padding:calc(12px + env(safe-area-inset-top,0px)) 14px 12px;
+      position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,0.18);}
+    .ico{width:1em;height:1em;vertical-align:-.13em;flex-shrink:0;display:inline-block}
+.mhome{display:flex;align-items:center;flex-shrink:0;padding:6px;margin:-6px;text-decoration:none;-webkit-tap-highlight-color:transparent}.mmark{height:26px;width:auto;display:block}
+.app-header .titles{min-width:0;flex:1;overflow:hidden;}
+    .app-header h1{font-size:17px;font-weight:800;letter-spacing:0.2px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .app-header .sub{font-size:10.5px;opacity:0.72;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+    .hdr-icon{background:none;border:0;color:#fff;padding:12px;margin:-6px;cursor:pointer;display:inline-flex;align-items:center;opacity:.9;}
+    .hdr-icon:hover{opacity:1;}
+    .net-chip{display:none;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+      background:rgba(255,255,255,.16);border-radius:999px;padding:4px 9px 4px 7px;white-space:nowrap;}
+    .net-chip.show{display:inline-flex;}
+    .net-chip .d{width:7px;height:7px;border-radius:50%;background:#f9a825;flex-shrink:0;}
     .btn-icon{background:rgba(255,255,255,0.15);border:none;color:white;border-radius:8px;padding:11px 13px;font-size:13px;cursor:pointer;}
     .btn-icon:hover{background:rgba(255,255,255,0.25);}
     .hm-toggle{display:flex;background:rgba(255,255,255,.16);border-radius:999px;padding:3px;font-size:11px;font-weight:700}
-    .hm-toggle button{border:0;background:transparent;color:#fff;padding:5px 10px;border-radius:999px;cursor:pointer;opacity:.7;font-weight:700;font-family:inherit;font-size:11px}
-    .hm-toggle button.on{background:#fff;color:var(--navy);opacity:1}
+    .hm-toggle button{border:0;background:transparent;color:#fff;padding:9px 11px;border-radius:999px;cursor:pointer;opacity:.7;font-weight:700;font-family:inherit;font-size:10.5px}
+    .hm-toggle button.on{background:#fff;color:var(--hdrbar);opacity:1}
 
     /* BRANDED DIALOG (replaces native confirm/alert) */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;z-index:1000;animation:fade-in .15s ease;}
@@ -181,6 +194,7 @@
     .sec-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;}
     .empty-state{text-align:center;padding:36px 18px;color:var(--text-muted);}
     .empty-state .em{font-size:44px;margin-bottom:10px;}
+    .empty-state .ico{stroke-width:1.25}
     .empty-state h3{font-size:17px;margin-bottom:5px;color:var(--text);}
 
     /* REMINDER PANEL */
@@ -239,7 +253,7 @@
 
 <!-- ════════════════════════ TIMER LEFT BANNER ════════════════════════ -->
 <div id="timer-left-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#fef3c7;border-bottom:3px solid #f59e0b;padding:12px 16px;box-sizing:border-box;display:none;align-items:center;gap:10px;">
-  <span style="font-size:22px;flex-shrink:0;">⚠️</span>
+  <span style="font-size:22px;flex-shrink:0;color:#92400e;"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8 21 19.5H3z"/><path d="M12 9.5v4.2"/><circle cx="12" cy="16.6" r="1" fill="currentColor" stroke="none"/></svg></span>
   <div style="flex:1;">
     <div style="font-weight:700;color:#92400e;font-size:14px;">Timer stopped — you left the page</div>
     <div style="font-size:12px;color:#92400e;margin-top:2px;">Your run data may be invalid. Reset the timer and restart this test round.</div>
@@ -249,23 +263,15 @@
 
 <!-- ════════════════════════ HEADER ════════════════════════ -->
 <header class="app-header" id="app-header">
-  <svg viewBox="0 0 34 34" width="26" height="26" style="flex-shrink:0" aria-hidden="true">
-    <rect x="3" y="5" width="6" height="24" rx="1.5" fill="#fff"/>
-    <rect x="25" y="5" width="6" height="24" rx="1.5" fill="#fff"/>
-    <polygon points="9,5 17,15 25,5 25,11 17,21 9,11" fill="#fff"/>
-    <polygon points="10.5,18 17,26 23.5,18 23.5,23 17,31 10.5,23" fill="#fff" opacity=".82"/>
-  </svg>
-  <div>
+  <a class="mhome" href="index.html" title="All TRAC apps" aria-label="All TRAC apps"><img class="mmark" alt="Michelli" src="data:image/png;base64,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"></a>
+  <div class="titles">
     <h1><b style="opacity:.82">TRAC</b> Belt</h1>
-    <div class="sub">Belt Scale Calibration · Michelli</div>
+    <div class="sub">Belt Scale Calibration</div>
   </div>
-  <div class="header-actions" style="align-items:center;">
-    <span id="online-dot" title="Online" style="width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block;flex-shrink:0;"></span>
-    <span id="online-label" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.85);margin-right:4px;">Online</span>
-    <button class="btn-icon" onclick="openGuide()" title="Field guide" style="display:inline-flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.5.8c0 1.8-2.7 2.2-2.7 4"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg></button>
+  <div class="header-actions">
+    <button class="hdr-icon" onclick="openGuide()" title="Field guide" aria-label="Open field guide"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.5.8c0 1.8-2.7 2.2-2.7 4"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg></button>
     <div class="hm-toggle" id="theme-btn"><button data-t="office" class="on">Office</button><button data-t="field">Field</button></div>
-    <button class="btn-icon" onclick="showJobSummary()" title="Job Summary">📑</button>
-    <button class="btn-icon" onclick="showBackup()" title="Backup">💾</button>
+    <span class="net-chip" id="net-chip"><span class="d"></span>Offline</span>
   </div>
 </header>
 
@@ -275,12 +281,13 @@
     <div id="cal-alert-area"></div>
     <div id="home-list"></div>
     <div id="home-empty" class="empty-state" style="display:none;">
-      <div class="em">📋</div>
+      <div class="em"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v2.5H9z"/><path d="M8.5 11h7M8.5 15h4.5"/></svg></div>
       <h3>No scales yet</h3>
-      <p>Tap below to register your first belt scale.</p>
+      <p>Add your first belt scale.</p>
     </div>
-    <button class="btn btn-primary btn-full" style="margin-top:8px;" onclick="showNewScale()">➕ Add New Scale</button>
-    <button class="btn btn-ghost btn-full btn-sm" style="margin-top:8px;" onclick="showBackup()">💾 Backup / Restore Data</button>
+    <button class="btn btn-primary btn-full" style="margin-top:8px;" onclick="showNewScale()">＋ Add belt scale</button>
+    <button class="btn btn-ghost btn-full btn-sm" id="home-jobsummary" style="margin-top:8px;display:none;" onclick="showJobSummary()">Job summary</button>
+    <button class="btn btn-ghost btn-full btn-sm" style="margin-top:8px;" onclick="showBackup()">Backup / restore data</button>
   </div>
 </div>
 
@@ -289,7 +296,7 @@
   <div class="container">
     <button class="back-btn" onclick="showHome()">← Back</button>
     <div class="card">
-      <div class="card-header"><span class="icon">⚙️</span> Scale Setup</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M21.5 12h-2.6M5.1 12H2.5M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8M18.7 18.7l-1.8-1.8M7.1 7.1 5.3 5.3"/></svg></span> Scale Setup</div>
       <div class="card-body">
         <div class="alert alert-info">Enter scale details once — they'll pre-fill every future visit.</div>
         <div class="field"><label>Company / Site Name *</label><input type="text" id="sf-site" placeholder="e.g. Burnco – Bridgeport"></div>
@@ -335,7 +342,7 @@
   <div class="container">
     <button class="back-btn" onclick="showHome()">← All Scales</button>
     <div id="sd-header"></div>
-    <button class="btn btn-primary btn-full" style="margin-bottom:13px;" onclick="startNewVisit()">🔬 Start New Visit</button>
+    <button class="btn btn-primary btn-full" style="margin-bottom:13px;" onclick="startNewVisit()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M10.2 8.8 15.5 12l-5.3 3.2z"/></svg> Start new visit</button>
     <div class="sec-label">Visit History</div>
     <div id="sd-history"></div>
     <div id="sd-empty" class="empty-state" style="display:none;padding:20px 0;"><p>No visits recorded yet.</p></div>
@@ -343,7 +350,7 @@
       <button class="btn btn-ghost btn-sm btn-full" onclick="editCurrentScale()">✏️ Edit Scale Info</button>
     </div>
     <div style="margin-top:8px;">
-      <button class="btn btn-ghost btn-sm btn-full" style="color:#dc2626;border-color:#dc2626;" onclick="deleteCurrentScale()">🗑️ Delete Scale</button>
+      <button class="btn btn-ghost btn-sm btn-full" style="color:#dc2626;border-color:#dc2626;" onclick="deleteCurrentScale()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l1 13.5h9l1-13.5M10 10v6.5M14 10v6.5"/></svg> Delete scale</button>
     </div>
   </div>
 </div>
@@ -361,7 +368,7 @@
     <div id="summary-content"></div>
     <div style="display:flex;gap:9px;margin-top:13px;flex-wrap:wrap;" class="no-print">
       <button class="btn btn-ghost btn-sm" style="flex:1;min-width:120px;" onclick="editVisit(state.currentVisitId)">✏️ Edit Visit</button>
-      <button class="btn btn-secondary btn-sm" style="flex:1;min-width:120px;" onclick="printCustomerReport(state.currentVisitId)">📄 Customer Report</button>
+      <button class="btn btn-secondary btn-sm" style="flex:1;min-width:120px;" onclick="printCustomerReport(state.currentVisitId)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M8.5 12.5h7M8.5 16h5"/></svg> Customer report</button>
       <button class="btn btn-primary" style="flex:1 1 100%;" onclick="startNewVisit()">＋ New Visit</button>
     </div>
   </div>
@@ -373,8 +380,8 @@
     <button class="back-btn no-print" onclick="showHome()">← Home</button>
     <div id="job-summary-content"></div>
     <div style="display:flex;gap:9px;margin-top:13px;flex-wrap:wrap;" class="no-print">
-      <button class="btn btn-ghost btn-sm" style="flex:1;min-width:140px;" onclick="window.print()">🖨️ Print View</button>
-      <button class="btn btn-secondary" style="flex:1;min-width:140px;" onclick="printJobSiteSummary()">📄 Site Summary PDF</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;min-width:140px;" onclick="window.print()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8.5V3.5h10v5M7 18.5H5a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 5 10.5h14a1.5 1.5 0 0 1 1.5 1.5v5a1.5 1.5 0 0 1-1.5 1.5h-2"/><path d="M7 14.5h10v6H7z"/></svg> Print view</button>
+      <button class="btn btn-secondary" style="flex:1;min-width:140px;" onclick="printJobSiteSummary()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M8.5 12.5h7M8.5 16h5"/></svg> Site summary PDF</button>
     </div>
   </div>
 </div>
@@ -384,14 +391,14 @@
   <div class="container">
     <button class="back-btn" onclick="showHome()">← Back</button>
     <div class="card">
-      <div class="card-header"><span class="icon">💾</span> Data Backup & Restore</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4 17v2.5h16V17"/></svg></span> Data Backup & Restore</div>
       <div class="card-body">
         <div class="alert alert-info">All data is stored on this device. Export regularly to protect your records.</div>
-        <button class="btn btn-secondary btn-full" style="margin-bottom:9px;" onclick="exportData()">📤 Export Backup (JSON)</button>
-        <button class="btn btn-ghost btn-full" onclick="document.getElementById('import-file').click()">📥 Import / Restore Backup</button>
+        <button class="btn btn-secondary btn-full" style="margin-bottom:9px;" onclick="exportData()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4 17v2.5h16V17"/></svg> Export backup</button>
+        <button class="btn btn-ghost btn-full" onclick="document.getElementById('import-file').click()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 17v2.5h16V17"/></svg> Import / restore backup</button>
         <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(event)">
         <div class="divider"></div>
-        <button class="btn btn-danger btn-full btn-sm" onclick="clearAllData()">🗑️ Clear All Data</button>
+        <button class="btn btn-danger btn-full btn-sm" onclick="clearAllData()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l1 13.5h9l1-13.5M10 10v6.5M14 10v6.5"/></svg> Clear all data</button>
         <div id="backup-msg" style="margin-top:9px;"></div>
       </div>
     </div>
@@ -433,7 +440,7 @@ let state = {
 
 // ─── DATA LAYER ──────────────────────────────────────
 function loadData(){ try{ return JSON.parse(localStorage.getItem(DB_KEY))||{scales:[],visits:[]}; }catch{ return{scales:[],visits:[]}; } }
-function saveData(d){ try{ localStorage.setItem(DB_KEY,JSON.stringify(d)); }catch(e){ infoDlg('⚠️ Save failed — this device couldn\'t save your last change. Storage may be full or private browsing may be blocking it. Export a backup now if you can, then free up space or switch out of private mode.'); } }
+function saveData(d){ try{ localStorage.setItem(DB_KEY,JSON.stringify(d)); }catch(e){ infoDlg('Save failed — this device couldn\'t save your last change. Storage may be full or private browsing may be blocking it. Export a backup now if you can, then free up space or switch out of private mode.'); } }
 function openGuide(){ window.open('https://rodacus.github.io/Field-Apps/Field-Apps-Guide.html','_blank'); }
 function haptic(p){ try{ if(navigator.vibrate) navigator.vibrate(p||10); }catch(e){} }
 let _toastEl=null,_toastT=null;
@@ -526,10 +533,12 @@ function renderHome(){
   const listEl=document.getElementById('home-list');
   const emptyEl=document.getElementById('home-empty');
   const alertEl=document.getElementById('cal-alert-area');
+  const jsBtn=document.getElementById('home-jobsummary');
   alertEl.innerHTML='';
 
-  if(data.scales.length===0){ listEl.innerHTML=''; emptyEl.style.display='block'; return; }
+  if(data.scales.length===0){ listEl.innerHTML=''; emptyEl.style.display='block'; if(jsBtn) jsBtn.style.display='none'; return; }
   emptyEl.style.display='none';
+  if(jsBtn) jsBtn.style.display='block';
 
   // Cal due alerts
   const today=new Date(); today.setHours(0,0,0,0);
@@ -558,12 +567,12 @@ function renderHome(){
     });
     let panel=`<div class="reminder-panel">
       <div class="reminder-hdr">
-        <span>⚠️ Calibration Reminders</span>
+        <span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 13.5 6 9.5z"/><path d="M10.2 18.5a2 2 0 0 0 3.6 0"/></svg> Calibration reminders</span>
         <span class="reminder-count">${allDue.length} scale${allDue.length>1?'s':''}</span>
       </div>`;
     for(const[site,items] of Object.entries(siteMap)){
       panel+=`<div class="reminder-site-group">
-        <div class="reminder-site-lbl">📍 ${site}</div>`;
+        <div class="reminder-site-lbl"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.5-6.2 6.5-11a6.5 6.5 0 0 0-13 0C5.5 14.8 12 21 12 21z"/><circle cx="12" cy="10" r="2.4"/></svg> ${site}</div>`;
       items.forEach(x=>{
         const isOver=x.type==='overdue';
         const absDiff=Math.abs(x.diff);
@@ -576,13 +585,13 @@ function renderHome(){
             <div class="reminder-scale-meta">${x.sc.mfr||'—'} · Last cal: ${last?fmtDate(last.date):'Never'}</div>
           </div>
           <div class="reminder-card-status">
-            <div class="reminder-status-badge ${isOver?'overdue':'soon'}">${isOver?'🔴':'🟡'} ${statusTxt}</div>
+            <div class="reminder-status-badge ${isOver?'overdue':'soon'}">${statusTxt}</div>
             <div class="reminder-due-date">Due: ${last&&last.calibrationDue?fmtDate(last.calibrationDue):'—'}</div>
           </div>
         </div>`;
       });
       panel+=`<button class="reminder-email-btn" onclick="showEmailModal(this.dataset.site)" data-site="${site.replace(/"/g,'&quot;')}">
-        📧 Draft Reminder Email · ${items.length} scale${items.length!==1?'s':''} at this site
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.6 7 8.4 6 8.4-6"/></svg> Draft reminder email · ${items.length} scale${items.length!==1?'s':''} at this site
       </button></div>`;
     }
     panel+='</div>';
@@ -595,7 +604,7 @@ function renderHome(){
 
   let html='';
   for(const[site,scales] of Object.entries(sites)){
-    html+=`<div class="site-label">📍 ${site}</div>`;
+    html+=`<div class="site-label"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.5-6.2 6.5-11a6.5 6.5 0 0 0-13 0C5.5 14.8 12 21 12 21z"/><circle cx="12" cy="10" r="2.4"/></svg> ${site}</div>`;
     scales.forEach(sc=>{
       const visits=getVisitsForScale(sc.id);
       const last=visits[0];
@@ -611,14 +620,14 @@ function renderHome(){
         if(last.calibrationDue){
           const due=new Date(last.calibrationDue+'T12:00:00');
           const diff=Math.floor((due-today)/(1000*60*60*24));
-          if(diff<0) badges+=`<span class="badge badge-due">⚠️ CAL OVERDUE</span>`;
-          else if(diff<=30) badges+=`<span class="badge badge-warn">📅 Due in ${diff}d</span>`;
+          if(diff<0) badges+=`<span class="badge badge-due">CAL OVERDUE</span>`;
+          else if(diff<=30) badges+=`<span class="badge badge-warn">Due in ${diff}d</span>`;
         }
       }
 
       html+=`
         <div class="scale-item" onclick="showScaleDetail('${sc.id}')">
-          <div class="scale-icon">⚖️</div>
+          <div class="scale-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.5v15M7 19.5h10M4 8.5h16M8 8.5 5 14.5h6zM16 8.5l-3 6h6z"/><circle cx="12" cy="4.5" r="1.4"/></svg></div>
           <div class="scale-info">
             <div class="scale-name">${sc.scaleId}</div>
             <div class="scale-meta">${visitMeta}</div>
@@ -686,7 +695,7 @@ function renderSD(scaleId){
     <div class="card" style="margin-bottom:13px;">
       <div class="card-body">
         <div style="font-size:21px;font-weight:800;margin-bottom:3px;">${sc.scaleId}</div>
-        <div style="font-size:13px;color:var(--text-muted);">📍 ${sc.site}</div>
+        <div style="font-size:13px;color:var(--text-muted);"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.5-6.2 6.5-11a6.5 6.5 0 0 0-13 0C5.5 14.8 12 21 12 21z"/><circle cx="12" cy="10" r="2.4"/></svg> ${sc.site}</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${sc.mfr||''} ${sc.sn?'· '+sc.sn:''} · Load Cell: ${sc.loadCellCap||'—'} · Idler: ${sc.idlerIn}"</div>
       </div>
     </div>`;
@@ -709,7 +718,7 @@ function renderSD(scaleId){
       <div class="visit-item" onclick="showSummary('${v.id}')">
         <div class="visit-date-block"><div class="mo">${mo}</div><div class="dy">${dy}</div></div>
         <div class="visit-info">
-          <div style="font-weight:700;font-size:14px;">👷 ${v.technicians||'Tech'}</div>
+          <div style="font-weight:700;font-size:14px;"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20.5c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg> ${v.technicians||'Tech'}</div>
           <div style="font-size:13px;margin-top:2px;">${badge} Error: ${pct} · ${v.testRounds?v.testRounds.length:0} test round${v.testRounds&&v.testRounds.length!==1?'s':''}</div>
           ${v.comments?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${v.comments.substring(0,60)}${v.comments.length>60?'…':''}</div>`:''}
         </div>
@@ -798,7 +807,7 @@ function prevStep(){ gotoStep(state.currentStep-1); }
 // ─── STEP 0: Visit Info ───────────────────────────────
 function renderS0(d,sc){ return `
   <div class="card">
-    <div class="card-header"><span class="icon">📋</span> Visit Information</div>
+    <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v2.5H9z"/><path d="M8.5 11h7M8.5 15h4.5"/></svg></span> Visit Information</div>
     <div class="card-body">
       <div class="field"><label>Scale</label><input type="text" value="${sc.scaleId} · ${sc.site}" readonly></div>
       <div class="field-row">
@@ -823,7 +832,7 @@ function renderS0(d,sc){ return `
 // ─── STEP 1: Belt Speed & Tachometer ─────────────────
 function renderS1(d,sc){ return `
   <div class="card">
-    <div class="card-header"><span class="icon">💨</span> Belt Speed & Tachometer</div>
+    <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-5"/><circle cx="12" cy="17" r="1.2"/></svg></span> Belt Speed & Tachometer</div>
     <div class="card-body">
       <div class="alert alert-info">Enter the certified tachometer reading. The Calculated TPH is the target your 5-min test must match.</div>
 
@@ -878,10 +887,10 @@ function updateTPHPreview(){
 // ─── STEP 2: Zero As Found ────────────────────────────
 function renderS2(d,sc){ return `
   <div class="card">
-    <div class="card-header"><span class="icon">0️⃣</span> Zero – As Found</div>
+    <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M9.5 12h5"/></svg></span> Zero – As Found</div>
     <div class="card-body">
       <div class="alert alert-info">Belt running empty with weighbridge bar in place. Record the zero reading from the indicator.</div>
-      ${d._lastZeroLeft!==null?`<div class="alert alert-info">📌 Previous zero as left: <strong>${fmt(d._lastZeroLeft,3)}</strong></div>`:''}
+      ${d._lastZeroLeft!==null?`<div class="alert alert-info">Previous zero as left: <strong>${fmt(d._lastZeroLeft,3)}</strong></div>`:''}
       <div class="field"><label>Zero Reading – As Found</label><input type="text" inputmode="decimal" id="s2-zero" value="${d.zeroAsFound}" placeholder="e.g. 113.6"><button type="button" onclick="toggleNeg('s2-zero')" style="margin-top:6px;padding:7px 16px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--text-muted);">± Neg</button></div>
     </div>
     <div class="card-footer">
@@ -902,7 +911,7 @@ function renderS3(d,sc){
     roundsHtml+=`
       <div class="round-card ${s}">
         <div class="round-header">
-          <span>${i===0?'🔍 As Found':(i===d.testRounds.length-1&&s!=='fail'?'✅ As Left':'🔄 Adjustment Round '+(i+1))}</span>
+          <span>${i===0?'As found':(i===d.testRounds.length-1&&s!=='fail'?'As left':'Adjustment round '+(i+1))}</span>
           <span class="badge badge-${s==='pass'?'pass':s==='warn'?'warn':'fail'}">${fmt(r.percentError,3)}%</span>
         </div>
         <div class="round-body">
@@ -943,11 +952,11 @@ function renderS3(d,sc){
   }
 
   const satisfiedBtn=d.testRounds.length>0&&lastStatus!=='fail'
-    ?`<button class="btn btn-green btn-full" style="margin-top:10px;" onclick="markTestDone()">✅ Mark as Complete & Continue</button>`:'';
+    ?`<button class="btn btn-green btn-full" style="margin-top:10px;" onclick="markTestDone()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5 10-11"/></svg> Mark complete & continue</button>`:'';
 
   return `
     <div class="card">
-      <div class="card-header"><span class="icon">⏱️</span> Test Rounds</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12.5" r="8"/><path d="M12 8v4.7l3 2M9 2.5h6"/></svg></span> Test Rounds</div>
       <div class="card-body">
         <div class="span-box">
           <div><div class="sl">Calculated TPH (Target)</div><div class="sv">${calcT>0?fmt(calcT,2)+' TPH':'—'}</div></div>
@@ -983,7 +992,7 @@ function renderS3(d,sc){
               <button class="btn btn-secondary btn-sm" id="s3-timer-btn" onclick="toggleTimer('s3')">▶ Start Timer</button>
               <button class="btn btn-ghost btn-sm" onclick="resetTimer('s3')">↺ Reset</button>
             </div>
-            <div style="text-align:center;margin-top:6px;font-size:12px;font-weight:600;color:#b45309;">⚠️ Keep this screen open — timer pauses if you navigate away</div>
+            <div style="text-align:center;margin-top:6px;font-size:12px;font-weight:600;color:#b45309;">Keep this screen open — timer pauses if you navigate away</div>
           </div>
 
           <div id="s3-result"></div>
@@ -1103,7 +1112,7 @@ function deleteLastRound(){
 // ─── STEP 4: Zero As Left ─────────────────────────────
 function renderS4(d,sc){ return `
   <div class="card">
-    <div class="card-header"><span class="icon">⬛</span> Zero – As Left</div>
+    <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M9.5 12h5"/></svg></span> Zero – As Left</div>
     <div class="card-body">
       <div class="alert alert-info">Remove weights and weighbridge bar. Run belt empty and re-zero the scale.</div>
       <div class="field"><label>Zero – As Found (reference)</label><input type="text" value="${fmt(d.zeroAsFound,3)}" readonly></div>
@@ -1124,7 +1133,7 @@ function renderS5(d,sc){
   });
   return `
     <div class="card">
-      <div class="card-header"><span class="icon">☑️</span> Maintenance Checklist</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="m7.5 12 2.5 2.5 5.5-5.5"/></svg></span> Maintenance Checklist</div>
       <div class="card-body">
         <div class="alert alert-info">Common values: Good, N/A, Yes, or voltage/reading values.</div>
         ${clHtml}
@@ -1137,7 +1146,7 @@ function renderS5(d,sc){
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="icon">📸</span> Photo & Observation Notes</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5A1.5 1.5 0 0 1 5 7h2.5l1.3-2h6.4L16.5 7H19a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z"/><circle cx="12" cy="12.8" r="3.3"/></svg></span> Photo & Observation Notes</div>
       <div class="card-body">
         <div class="alert alert-info">Describe any photos taken, issues found, or observations. Reference by photo number if needed.</div>
         <div class="field">
@@ -1150,10 +1159,10 @@ function renderS5(d,sc){
         </div>
         <div class="divider"></div>
         <div class="field">
-          <label>📷 Field Photos <span style="font-weight:400;color:var(--text-muted);font-size:11px;">— embed in Customer Report PDF</span></label>
+          <label>Field photos <span style="font-weight:400;color:var(--text-muted);font-size:11px;">— embed in Customer Report PDF</span></label>
           <div id="photo-preview-area" style="margin-bottom:9px;"></div>
           <input type="file" id="photo-input" accept="image/*" multiple style="display:none" onchange="handlePhotoCapture(event)">
-          <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('photo-input').click()" style="gap:6px;">📷 Add Photo</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('photo-input').click()" style="gap:6px;"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5A1.5 1.5 0 0 1 5 7h2.5l1.3-2h6.4L16.5 7H19a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z"/><circle cx="12" cy="12.8" r="3.3"/></svg> Add photo</button>
           <p class="hint" style="margin-top:5px;">Photos are stored locally and embedded directly in the PDF — no internet required.</p>
         </div>
       </div>
@@ -1173,7 +1182,7 @@ function renderS6(d,sc){
 
   return `
     <div class="card">
-      <div class="card-header"><span class="icon">📊</span> Review & Save</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20.5V4"/><path d="M4 20.5h16"/><path d="M8 17V11M12.5 17V7.5M17 17v-4"/></svg></span> Review & Save</div>
       <div class="card-body">
         <div style="text-align:center;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:5px;">FINAL RESULT</div>
@@ -1208,7 +1217,7 @@ function renderS6(d,sc){
       </div>
       <div class="card-footer">
         <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
-        <button class="btn btn-green" style="flex:1" onclick="saveVisit()">💾 Save & View Report</button>
+        <button class="btn btn-green" style="flex:1" onclick="saveVisit()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4 17v2.5h16V17"/></svg> Save & view report</button>
       </div>
     </div>`; }
 
@@ -1317,12 +1326,12 @@ function renderSummary(visit){
 
   const html=`
     <div class="card">
-      <div class="card-header"><span class="icon">📋</span> ${sc.scaleId} · ${sc.site}</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v2.5H9z"/><path d="M8.5 11h7M8.5 15h4.5"/></svg></span> ${sc.scaleId} · ${sc.site}</div>
       <div class="card-body">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
           <div>
             <div style="font-weight:700;font-size:16px;">${fmtDate(visit.date)}</div>
-            <div style="font-size:13px;color:var(--text-muted);">👷 ${visit.technicians||'—'}</div>
+            <div style="font-size:13px;color:var(--text-muted);"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20.5c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg> ${visit.technicians||'—'}</div>
             <div style="font-size:12px;color:var(--text-muted);">${visit.reasonForService||''} · ${visit.calibrationType||''}</div>
             ${visit.po?`<div style="font-size:12px;color:var(--text-muted);">PO: ${visit.po}</div>`:''}
           </div>
@@ -1332,7 +1341,7 @@ function renderSummary(visit){
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="icon">🏭</span> Instrument Identification</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5V11l5.5 3.5V11l5.5 3.5V7.5h6v13z"/><path d="M3.5 20.5h17"/></svg></span> Instrument Identification</div>
       <div class="card-body">
         <div class="sum-row"><span class="sum-label">Manufacturer</span><span class="sum-value">${sc.mfr||'—'}</span></div>
         <div class="sum-row"><span class="sum-label">Serial Number</span><span class="sum-value">${sc.sn||'—'}</span></div>
@@ -1350,12 +1359,12 @@ function renderSummary(visit){
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="icon">⏱️</span> Test Results</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12.5" r="8"/><path d="M12 8v4.7l3 2M9 2.5h6"/></svg></span> Test Results</div>
       <div class="card-body">${roundsHtml||'<p style="color:var(--text-muted);">No rounds recorded.</p>'}</div>
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="icon">⚙️</span> Calibration Values</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M21.5 12h-2.6M5.1 12H2.5M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8M18.7 18.7l-1.8-1.8M7.1 7.1 5.3 5.3"/></svg></span> Calibration Values</div>
       <div class="card-body">
         <div class="sum-row"><span class="sum-label">Zero – As Found</span><span class="sum-value">${fmt(visit.zeroAsFound,3)}</span></div>
         <div class="sum-row"><span class="sum-label">Zero – As Left</span><span class="sum-value">${fmt(visit.zeroAsLeft,3)}</span></div>
@@ -1366,21 +1375,21 @@ function renderSummary(visit){
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="icon">☑️</span> Maintenance Checklist</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="m7.5 12 2.5 2.5 5.5-5.5"/></svg></span> Maintenance Checklist</div>
       <div class="card-body">
         ${CHECKLIST.map(f=>`<div class="sum-row"><span class="sum-label">${f.label}</span><span class="sum-value">${visit.checklist[f.id]||'—'}</span></div>`).join('')}
         <div class="sum-row"><span class="sum-label">Idler Spacing</span><span class="sum-value">${visit.idlerSpacingIn||sc.idlerIn}" ± ${visit.idlerDeviation||'—'}</span></div>
       </div>
     </div>
 
-    ${visit.photoNotes?`<div class="card"><div class="card-header"><span class="icon">📸</span> Photo & Observation Notes</div><div class="card-body" style="white-space:pre-wrap;font-size:14px;line-height:1.6;">${visit.photoNotes}</div></div>`:''}
-    ${visit.photos&&visit.photos.length>0?`<div class="card"><div class="card-header"><span class="icon">📷</span> Field Photos (${visit.photos.length})</div><div class="card-body"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;">${visit.photos.map(p=>`<div style="border-radius:8px;overflow:hidden;border:1px solid var(--border);"><img src="${p.dataUrl}" style="width:100%;height:90px;object-fit:cover;display:block;">${p.caption?`<div style="padding:3px 7px;font-size:10.5px;color:var(--text-muted);">${p.caption}</div>`:''}</div>`).join('')}</div></div></div>`:''}
+    ${visit.photoNotes?`<div class="card"><div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5A1.5 1.5 0 0 1 5 7h2.5l1.3-2h6.4L16.5 7H19a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z"/><circle cx="12" cy="12.8" r="3.3"/></svg></span> Photo & Observation Notes</div><div class="card-body" style="white-space:pre-wrap;font-size:14px;line-height:1.6;">${visit.photoNotes}</div></div>`:''}
+    ${visit.photos&&visit.photos.length>0?`<div class="card"><div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5A1.5 1.5 0 0 1 5 7h2.5l1.3-2h6.4L16.5 7H19a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z"/><circle cx="12" cy="12.8" r="3.3"/></svg></span> Field Photos (${visit.photos.length})</div><div class="card-body"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;">${visit.photos.map(p=>`<div style="border-radius:8px;overflow:hidden;border:1px solid var(--border);"><img src="${p.dataUrl}" style="width:100%;height:90px;object-fit:cover;display:block;">${p.caption?`<div style="padding:3px 7px;font-size:10.5px;color:var(--text-muted);">${p.caption}</div>`:''}</div>`).join('')}</div></div></div>`:''}
 
-    ${visit.comments?`<div class="card"><div class="card-header"><span class="icon">💬</span> Comments</div><div class="card-body" style="font-size:14px;">${visit.comments}</div></div>`:''}
+    ${visit.comments?`<div class="card"><div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 12.5c0 3.9-3.8 7-8.5 7-1 0-2-.14-2.9-.4L4 20.5l1.5-3.6A6.6 6.6 0 0 1 3.5 12.5c0-3.9 3.8-7 8.5-7s8.5 3.1 8.5 7z"/></svg></span> Comments</div><div class="card-body" style="font-size:14px;">${visit.comments}</div></div>`:''}
 
     ${visit.signOffRequired?`
     <div class="card">
-      <div class="card-header"><span class="icon">✍️</span> Sign-Off</div>
+      <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20.5h16"/><path d="M5.5 16.2 15.8 5.9a2.1 2.1 0 0 1 3 3L8.5 19.2l-4 1z"/></svg></span> Sign-Off</div>
       <div class="card-body">
         <div class="sum-row"><span class="sum-label">Technician(s)</span><span class="sum-value">${visit.technicians||'—'}</span></div>
         <div class="sum-row"><span class="sum-label">Customer Representative</span><span class="sum-value">${visit.customerRep||'—'}</span></div>
@@ -1494,7 +1503,7 @@ function printExcelFormat(visitId){
   </head><body>
   <div style="display:grid;grid-template-columns:1fr auto;align-items:start;border-bottom:3px solid #235aa7;padding-bottom:10px;margin-bottom:12px;">
     <div>
-      <h1>⚖️ Belt Conveyor Scale Calibration Report</h1>
+      <h1>Belt Conveyor Scale Calibration Report</h1>
       <h2>${sc.site||'—'}</h2>
     </div>
     <div style="text-align:right;">
@@ -1872,7 +1881,7 @@ function renderJobSummary(){
     });
     const dates=Object.keys(byDate).sort().reverse().slice(0,5);
     if(dates.length===0){
-      html=`<div class="empty-state"><div class="em">📑</div><h3>No visits yet</h3><p>Complete a visit to generate a job summary.</p></div>`;
+      html=`<div class="empty-state"><div class="em"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M8.5 12.5h7M8.5 16h5"/></svg></div><h3>No visits yet</h3><p>Complete a visit to generate a job summary.</p></div>`;
     } else {
       html+=`<div class="alert alert-info">No visits today. Showing the ${dates.length} most recent day${dates.length!==1?'s':''}.</div>`;
       dates.forEach(date=>{
@@ -1880,7 +1889,7 @@ function renderJobSummary(){
       });
     }
   } else {
-    html+=`<div class="alert alert-success">📅 Today's job — ${today}</div>`;
+    html+=`<div class="alert alert-success">Today's job — ${today}</div>`;
     for(const[site,items] of Object.entries(siteGroups)){
       html+=buildJobSummaryForDate(today,items,site);
     }
@@ -1891,7 +1900,7 @@ function renderJobSummary(){
 
 function buildJobSummaryForDate(date,items,siteOverride){
   const site=siteOverride||(items[0]?items[0].scale.site:'');
-  let html=`<div class="job-sum-header"><h2>📍 ${site}</h2><div class="meta">Date: ${fmtDate(date)} · ${items.length} scale${items.length!==1?'s':''}</div></div>`;
+  let html=`<div class="job-sum-header"><h2><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.5-6.2 6.5-11a6.5 6.5 0 0 0-13 0C5.5 14.8 12 21 12 21z"/><circle cx="12" cy="10" r="2.4"/></svg> ${site}</h2><div class="meta">Date: ${fmtDate(date)} · ${items.length} scale${items.length!==1?'s':''}</div></div>`;
   items.forEach(({visit:v,scale:sc})=>{
     const lastRound=v.testRounds&&v.testRounds.length>0?v.testRounds[v.testRounds.length-1]:null;
     const s=lastRound?passStatus(lastRound.percentError||0):'info';
@@ -1899,7 +1908,7 @@ function buildJobSummaryForDate(date,items,siteOverride){
     html+=`
       <div class="card" style="break-inside:avoid;">
         <div class="card-header" style="justify-content:space-between;">
-          <span><span class="icon">⚖️</span> ${sc.scaleId}</span>
+          <span><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.5v15M7 19.5h10M4 8.5h16M8 8.5 5 14.5h6zM16 8.5l-3 6h6z"/><circle cx="12" cy="4.5" r="1.4"/></svg></span> ${sc.scaleId}</span>
           <span class="badge badge-${s==='pass'?'pass':s==='warn'?'warn':'fail'}">${s==='pass'?'PASS':s==='warn'?'MARGINAL':'FAIL'}</span>
         </div>
         <div class="card-body">
@@ -1921,7 +1930,7 @@ function buildJobSummaryForDate(date,items,siteOverride){
 
   // Sign-off section for print
   html+=`<div class="card" style="break-inside:avoid;">
-    <div class="card-header"><span class="icon">✍️</span> Sign-Off</div>
+    <div class="card-header"><span class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20.5h16"/><path d="M5.5 16.2 15.8 5.9a2.1 2.1 0 0 1 3 3L8.5 19.2l-4 1z"/></svg></span> Sign-Off</div>
     <div class="card-body">
       <div style="margin-top:20px;">
         <div class="field-row">
@@ -2103,16 +2112,16 @@ function toggleTimer(prefix){
   if(!state.timerRunning){
     if(state.timerSeconds<=0)state.timerSeconds=300;
     state.timerRunning=true;
-    if(btn)btn.textContent='⏸ Pause';
+    if(btn)btn.textContent='Pause';
     state.timerInterval=setInterval(()=>{
       state.timerSeconds--;
       updateTimerDisplay();
       if(state.timerSeconds<=0){
         stopTimer();
         const b=document.getElementById(state.timerPrefix+'-timer-btn');
-        if(b)b.textContent='✅ Done!';
+        if(b)b.textContent='Done';
         const d=document.getElementById(state.timerPrefix+'-timer');
-        if(d){d.className='timer-display done';d.textContent='0:00 ✅';}
+        if(d){d.className='timer-display done';d.textContent='0:00';}
       }
     },1000);
   } else {
@@ -2206,7 +2215,7 @@ function renderPhotoThumbs(){
         <input type="text" placeholder="Caption (optional)" value="${p.caption||''}"
           oninput="state.visitDraft.photos[${i}].caption=this.value"
           style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:15px;margin-bottom:5px;">
-        <button type="button" onclick="removePhoto(${i})" class="btn btn-danger btn-sm" style="font-size:11px;padding:4px 10px;">🗑 Remove</button>
+        <button type="button" onclick="removePhoto(${i})" class="btn btn-danger btn-sm" style="font-size:11px;padding:4px 10px;"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l1 13.5h9l1-13.5M10 10v6.5M14 10v6.5"/></svg> Remove</button>
       </div>
     </div>
   `).join('');
@@ -2300,7 +2309,7 @@ function exportData(){
   const a=document.createElement('a');
   a.href=url; a.download=`BeltScaleBackup_${todayISO()}.json`; a.click();
   URL.revokeObjectURL(url);
-  document.getElementById('backup-msg').innerHTML='<div class="alert alert-success">✅ Backup downloaded.</div>';
+  document.getElementById('backup-msg').innerHTML='<div class="alert alert-success">Backup downloaded.</div>';
 }
 function importData(event){
   const file=event.target.files[0]; if(!file)return;
@@ -2317,7 +2326,7 @@ function importData(event){
         const vIds=new Set(existing.visits.map(v=>v.id));
         vs.forEach(v=>{if(!vIds.has(v.id))existing.visits.push(v);});
         saveData(existing);
-        document.getElementById('backup-msg').innerHTML='<div class="alert alert-success">✅ Scale "'+sc.scaleId+'" imported with '+vs.length+' visit'+(vs.length!==1?'s':'')+'.</div>';
+        document.getElementById('backup-msg').innerHTML='<div class="alert alert-success">Scale "'+sc.scaleId+'" imported with '+vs.length+' visit'+(vs.length!==1?'s':'')+'.</div>';
         renderHome();
       } else if(data.scales&&data.visits){
         // Full backup
@@ -2326,17 +2335,17 @@ function importData(event){
         const vIds=new Set(existing.visits.map(v=>v.id));
         data.visits.forEach(v=>{if(!vIds.has(v.id))existing.visits.push(v);});
         saveData(existing);
-        document.getElementById('backup-msg').innerHTML='<div class="alert alert-success">✅ Restored successfully.</div>';
+        document.getElementById('backup-msg').innerHTML='<div class="alert alert-success">Restored successfully.</div>';
         renderHome();
       } else { throw new Error('Unknown format'); }
-    }catch{document.getElementById('backup-msg').innerHTML='<div class="alert alert-danger">❌ Invalid file. Expected a scale share or backup file.</div>';}
+    }catch{document.getElementById('backup-msg').innerHTML='<div class="alert alert-danger">Invalid file. Expected a scale share or backup file.</div>';}
   };
   reader.readAsText(file); event.target.value='';
 }
 function clearAllData(){
   confirmDlg('Delete all data?','Every scale and visit history record will be permanently removed. This can\'t be undone.','Delete All',()=>{
     localStorage.removeItem(DB_KEY);
-    document.getElementById('backup-msg').innerHTML='<div class="alert alert-success">✅ All data cleared.</div>';
+    document.getElementById('backup-msg').innerHTML='<div class="alert alert-success">All data cleared.</div>';
     renderHome();
   });
 }
@@ -2350,12 +2359,14 @@ function fmtDate(iso){
 }
 
 // ─── OFFLINE INDICATOR ────────────────────────────────
+// Chip only appears when OFFLINE. Everything works offline by design, so a
+// permanent green "Online" badge is noise — the exception is what matters.
 function updateOnlineStatus(){
-  const dot=document.getElementById('online-dot');
-  const lbl=document.getElementById('online-label');
-  if(!dot)return;
-  if(navigator.onLine){dot.title='Online';dot.style.background='#22c55e';if(lbl)lbl.textContent='Online';}
-  else{dot.title='Offline — data saves locally';dot.style.background='#f97316';if(lbl)lbl.textContent='Offline';}
+  const chip=document.getElementById('net-chip');
+  if(!chip)return;
+  const off=!navigator.onLine;
+  chip.classList.toggle('show',off);
+  chip.title=off?'Offline — everything still saves to this device':'';
 }
 window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
@@ -2391,7 +2402,7 @@ updateOnlineStatus();
 <div id="email-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeEmailModal()">
   <div class="modal-box">
     <div class="modal-hdr">
-      <span>📧 Reminder Email Draft</span>
+      <span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.6 7 8.4 6 8.4-6"/></svg> Reminder email draft</span>
       <button class="modal-close-btn" onclick="closeEmailModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -2400,8 +2411,8 @@ updateOnlineStatus();
     </div>
     <div id="email-copy-confirm" class="copy-confirm" style="display:none;">✓ Copied to clipboard!</div>
     <div class="modal-footer">
-      <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="copyEmailDraft()">📋 Copy</button>
-      <button class="btn btn-primary" style="flex:2;" onclick="openEmailMailto()">📨 Open in Mail App</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="copyEmailDraft()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg> Copy</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="openEmailMailto()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 3.5 11 13M20.5 3.5 14.5 20.5l-3.5-7.5-7.5-3.5z"/></svg> Open in mail app</button>
     </div>
   </div>
 </div>
