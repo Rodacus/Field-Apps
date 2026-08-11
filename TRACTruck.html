@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#235AA7">
 <title>TRAC Truck — Vehicle Scale Tester</title>
 <link rel="manifest" href="manifest-truck.webmanifest">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" href="icon-truck-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -545,7 +545,7 @@ function stepSections(s,which,title){
       ${rev?`<td><input id="sec_${which}_r_${i}" type="number" inputmode="numeric" value="${esc(T.sec.rev[i])}" oninput="liveSections('${which}')" placeholder="rev"></td>`:''}
       <td class="dev ${devCls}">${devTxt}${rep!==null&&rep>tol?` <span title="fwd vs rev ${rep} lb"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8 21 19.5H3z"/><path d="M12 9.5v4.2"/><circle cx="12" cy="16.6" r="1" fill="currentColor" stroke="none"/></svg></span>`:''}</td></tr>`;
   }
-  const copyBtn=which==='asLeft'?`<button class="btn subtle sm" style="width:auto;margin-bottom:10px" onclick="copyFound()">⇩ Copy As-Found numbers</button>`:'';
+  const copyBtn=which==='asLeft'?`<button class="btn subtle sm" style="width:auto;margin-bottom:10px" onclick="copyFound()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4 17v2.5h16V17"/></svg> Copy As-Found numbers</button>`:'';
   return `<div class="card"><h2>${title}</h2>
    <div class="sub">${rev?'Enter each section forward, then the reverse run.':'Enter each section reading.'} Tolerance: all readings within <b>${tol} lb</b>.</div>
    ${copyBtn}
@@ -606,7 +606,7 @@ function stepLoad(s,which,title){
   const L=loadResult(cart,bw,bc,d[which].load.inc,d[which].load.dec,tol);
   if(!cart){return `<div class="card"><h2>${title}</h2><div class="flag">Enter the certified cart weight on the Visit step first — the error math needs it.</div>
     <button class="btn ghost" style="width:auto;margin-top:10px" onclick="gotoStep(0)">‹ Go to Visit step</button></div>`;}
-  const copyBtn=which==='asLeft'?`<button class="btn subtle sm" style="width:auto;margin-bottom:10px" onclick="copyFoundLoad()">⇩ Copy As-Found numbers</button>`:'';
+  const copyBtn=which==='asLeft'?`<button class="btn subtle sm" style="width:auto;margin-bottom:10px" onclick="copyFoundLoad()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4 17v2.5h16V17"/></svg> Copy As-Found numbers</button>`:'';
   let rows='';
   // Render empty cart first (top), building down the screen to max load. Decreasing starts one drop
   // below the top (you pull a rack off before the first down-reading), so the max row has no decreasing cell.

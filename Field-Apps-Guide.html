@@ -2,33 +2,45 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#235AA7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TRAC Guide">
+<link rel="manifest" href="manifest-guide.webmanifest">
+<link rel="apple-touch-icon" href="icon-guide-180.png">
 <title>TRAC Field Apps — User Guide</title>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
+    --hdrbar:#235AA7;
     --blue:#235AA7; --green:#029F49; --yellow:#F5DA02;
-    --navy:#0f2347; --orange:#d97706;
+    --navy:#1c4886; --orange:#d97706;
     --pass:#029F49; --warn:#d97706; --fail:#dc2626;
-    --bg:#f8fafc; --card:#fff; --border:#e2e8f0;
-    --text:#1e293b; --muted:#64748b;
+    --bg:#eef2f7; --card:#fff; --border:#e2e8f0;
+    --text:#0f1729; --muted:#5b6472;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'Libre Franklin',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;}
 
   .ico{width:1em;height:1em;vertical-align:-.13em;flex-shrink:0;display:inline-block}
-  /* HEADER */
-  .guide-header{background:var(--navy);color:#fff;padding:20px 20px 16px;text-align:center;}
-  .guide-header .logo-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px;}
-  .guide-header svg{flex-shrink:0;}
-  .guide-header .brand{font-size:22px;font-weight:800;letter-spacing:1px;}
-  .guide-header .brand span{color:var(--yellow);}
-  .guide-header .subtitle{font-size:13px;opacity:.75;letter-spacing:.5px;text-transform:uppercase;}
+  /* HEADER — canonical TRAC APP BAR, matches Cell / Belt / Truck */
+  .guide-header{background:var(--hdrbar);color:#fff;display:flex;align-items:center;gap:10px;
+    padding:calc(12px + env(safe-area-inset-top,0px)) 14px 12px;}
+  .mhome{display:flex;align-items:center;flex-shrink:0;padding:6px;margin:-6px;text-decoration:none;}
+  .mmark{height:26px;width:auto;display:block;}
+  .guide-header .titles{min-width:0;flex:1;overflow:hidden;}
+  .guide-header .brand{font-size:17px;font-weight:800;letter-spacing:.2px;line-height:1.15;white-space:nowrap;}
+  .guide-header .brand b{opacity:.82;font-weight:800;}
+  .guide-header .subtitle{font-size:10.5px;opacity:.72;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-  /* NAV TABS */
-  .tab-bar{display:flex;background:var(--blue);position:sticky;top:0;z-index:100;}
-  .tab{flex:1;padding:13px 6px;text-align:center;font-weight:700;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;border-bottom:3px solid transparent;transition:.15s;text-transform:uppercase;letter-spacing:.5px;}
-  .tab.active{color:#fff;border-bottom-color:var(--yellow);}
+  /* NAV TABS — same bar colour, white underline for active */
+  .tab-bar{display:flex;background:var(--hdrbar);position:sticky;top:0;z-index:100;
+    box-shadow:0 2px 10px rgba(0,0,0,.18);border-top:1px solid rgba(255,255,255,.14);}
+  .tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:13px 4px;
+    text-align:center;font-weight:700;font-size:13px;color:rgba(255,255,255,.68);cursor:pointer;
+    border-bottom:3px solid transparent;transition:.15s;white-space:nowrap;}
+  .tab.active{color:#fff;border-bottom-color:#fff;}
   .tab:hover{color:#fff;}
 
   /* PAGE SECTIONS */
@@ -39,8 +51,8 @@
   .launch-row{display:flex;gap:10px;margin-bottom:24px;}
   .launch-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 10px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;color:#fff;border:none;cursor:pointer;}
   .launch-belt{background:var(--blue);}
-  .launch-cell{background:var(--navy);}
-  .launch-truck{background:var(--yellow);color:var(--navy);}
+  .launch-cell{background:var(--blue);}
+  .launch-truck{background:var(--blue);}
 
   /* SECTION HEADERS */
   .section-title{font-size:19px;font-weight:800;color:var(--navy);margin:24px 0 12px;display:flex;align-items:center;gap:8px;}
@@ -108,23 +120,19 @@
 
 <!-- HEADER -->
 <div class="guide-header">
-  <div class="logo-row">
-    <svg viewBox="0 0 34 34" width="30" height="30" aria-hidden="true">
-      <rect x="3" y="5" width="6" height="24" rx="1.5" fill="#fff"/>
-      <rect x="25" y="5" width="6" height="24" rx="1.5" fill="#fff"/>
-      <polygon points="9,5 17,15 25,5 25,11 17,21 9,11" fill="#fff"/>
-    </svg>
-    <div class="brand">TRAC <span>Field Apps</span></div>
+  <a class="mhome" href="index.html" title="All TRAC apps" aria-label="All TRAC apps"><img class="mmark" alt="Michelli" src="data:image/png;base64,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"></a>
+  <div class="titles">
+    <div class="brand"><b>TRAC</b> Field Apps</div>
+    <div class="subtitle">User guide · Michelli Weighing &amp; Measurement</div>
   </div>
-  <div class="subtitle">User Guide · Michelli Weighing &amp; Measurement</div>
 </div>
 
 <!-- NAV TABS -->
 <div class="tab-bar">
-  <div class="tab active" onclick="showPage('belt')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5V11l5.5 3.5V11l5.5 3.5V7.5h6v13z"/><path d="M3.5 20.5h17"/></svg> TRAC Belt</div>
-  <div class="tab" onclick="showPage('cell')">⚡ TRAC Cell</div>
-  <div class="tab" onclick="showPage('truck')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 6.5h11v9h-11zM13.5 10h3.6l3.4 3.2v2.3h-7z"/><circle cx="7" cy="17.8" r="1.9"/><circle cx="17" cy="17.8" r="1.9"/></svg> TRAC Truck</div>
-  <div class="tab" onclick="showPage('data')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4 17v2.5h16V17"/></svg> Data &amp; backup</div>
+  <div class="tab active" onclick="showPage('belt')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5V11l5.5 3.5V11l5.5 3.5V7.5h6v13z"/><path d="M3.5 20.5h17"/></svg> Belt</div>
+  <div class="tab" onclick="showPage('cell')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.2 2.5 4.8 13.4h6L10.8 21.5l8.4-10.9h-6z"/></svg> Cell</div>
+  <div class="tab" onclick="showPage('truck')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 6.5h11v9h-11zM13.5 10h3.6l3.4 3.2v2.3h-7z"/><circle cx="7" cy="17.8" r="1.9"/><circle cx="17" cy="17.8" r="1.9"/></svg> Truck</div>
+  <div class="tab" onclick="showPage('data')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4 17v2.5h16V17"/></svg> Backup</div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════ -->
@@ -192,7 +200,7 @@
       <div class="step-num">4</div>
       <div class="step-body">
         <strong>Test Rounds</strong>
-        <p>Enter start totalizer, run the belt, record end totalizer. Tap <strong>▶ Start Timer</strong> to run the 5-minute countdown.</p>
+        <p>Enter start totalizer, run the belt, record end totalizer. Tap <strong>Start timer</strong> to run the 5-minute countdown.</p>
         <span class="step-warn">Keep this screen open while the timer runs — leaving the page pauses the timer. The app will alert you if you navigate away.</span>
         <br><span class="step-tip">Record As Found first, then make adjustments and add rounds to confirm As Left.</span>
       </div>
@@ -257,7 +265,7 @@
 
   <div style="margin-top:20px;">
     <a class="launch-btn launch-cell" href="https://rodacus.github.io/Field-Apps/LoadCellLogger.html" target="_blank">
-      ⚡ Open TRAC Cell
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.2 2.5 4.8 13.4h6L10.8 21.5l8.4-10.9h-6z"/></svg> Open TRAC Cell
     </a>
   </div>
 
@@ -391,10 +399,10 @@
       </div>
     </div>
     <div class="feature-item">
-      <div class="feature-icon">✏️</div>
+      <div class="feature-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20.5h16"/><path d="M5.5 16.2 15.8 5.9a2.1 2.1 0 0 1 3 3L8.5 19.2l-4 1z"/></svg></div>
       <div class="feature-body">
         <strong>Edit from Summary</strong>
-        <p>After completing a cell, tap the ✏ button on the summary row to go back and edit any reading. Returns you to summary when done — no data loss.</p>
+        <p>After completing a cell, tap the edit icon on the summary row to go back and edit any reading. Returns you to summary when done — no data loss.</p>
       </div>
     </div>
     <div class="feature-item">
@@ -499,7 +507,7 @@
       <div class="step-num" style="background:#c9a600;">5</div>
       <div class="step-body">
         <strong>As-Left Sections</strong>
-        <p>Re-run the section test after adjusting. Tap <strong>⇩ Copy As-Found numbers</strong> if a section you didn't touch should carry over.</p>
+        <p>Re-run the section test after adjusting. Tap <strong>Copy As-Found numbers</strong> if a section you didn't touch should carry over.</p>
       </div>
     </div>
 
@@ -559,7 +567,7 @@
       <div class="feature-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4 17v2.5h16V17"/></svg></div>
       <div class="feature-body">
         <strong>Export Backup</strong>
-        <p>Tap the menu (≡) → <strong>Export Backup</strong>. Downloads a .json file with all your data. Save it to Files, iCloud, or email it to yourself. Do this regularly.</p>
+        <p>Find <strong>Export backup</strong> at the bottom of the home screen in each app (TRAC Belt: <strong>Backup / restore data</strong>). Downloads a .json file with all your data. Save it to Files, iCloud, or email it to yourself. Do this regularly.</p>
       </div>
     </div>
     <div class="feature-item">
@@ -589,7 +597,7 @@
       </div>
     </div>
     <div class="feature-item">
-      <div class="feature-icon">⚡</div>
+      <div class="feature-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.2 2.5 4.8 13.4h6L10.8 21.5l8.4-10.9h-6z"/></svg></div>
       <div class="feature-body">
         <strong>TRAC Cell</strong>
         <p style="word-break:break-all;">rodacus.github.io/Field-Apps/LoadCellLogger.html</p>

@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#235AA7">
   <meta name="apple-mobile-web-app-title" content="TRAC Belt">
   <link rel="manifest" href="manifest-belt.webmanifest">
-  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="apple-touch-icon" href="icon-belt-180.png">
   <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -347,7 +347,7 @@
     <div id="sd-history"></div>
     <div id="sd-empty" class="empty-state" style="display:none;padding:20px 0;"><p>No visits recorded yet.</p></div>
     <div style="display:flex;gap:8px;margin-top:7px;">
-      <button class="btn btn-ghost btn-sm btn-full" onclick="editCurrentScale()">✏️ Edit Scale Info</button>
+      <button class="btn btn-ghost btn-sm btn-full" onclick="editCurrentScale()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20.5h16"/><path d="M5.5 16.2 15.8 5.9a2.1 2.1 0 0 1 3 3L8.5 19.2l-4 1z"/></svg> Edit scale info</button>
     </div>
     <div style="margin-top:8px;">
       <button class="btn btn-ghost btn-sm btn-full" style="color:#dc2626;border-color:#dc2626;" onclick="deleteCurrentScale()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l1 13.5h9l1-13.5M10 10v6.5M14 10v6.5"/></svg> Delete scale</button>
@@ -367,7 +367,7 @@
     <button class="back-btn no-print" onclick="showScaleDetail(state.currentScaleId)">← Back to Scale</button>
     <div id="summary-content"></div>
     <div style="display:flex;gap:9px;margin-top:13px;flex-wrap:wrap;" class="no-print">
-      <button class="btn btn-ghost btn-sm" style="flex:1;min-width:120px;" onclick="editVisit(state.currentVisitId)">✏️ Edit Visit</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;min-width:120px;" onclick="editVisit(state.currentVisitId)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20.5h16"/><path d="M5.5 16.2 15.8 5.9a2.1 2.1 0 0 1 3 3L8.5 19.2l-4 1z"/></svg> Edit visit</button>
       <button class="btn btn-secondary btn-sm" style="flex:1;min-width:120px;" onclick="printCustomerReport(state.currentVisitId)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M8.5 12.5h7M8.5 16h5"/></svg> Customer report</button>
       <button class="btn btn-primary" style="flex:1 1 100%;" onclick="startNewVisit()">＋ New Visit</button>
     </div>
@@ -963,7 +963,7 @@ function renderS3(d,sc){
           <div><div class="sl">${spanLabel}</div><div class="sv">${fmt(currentSpan,6)}</div></div>
         </div>
 
-        ${roundsHtml?`<div class="sec-label" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">Completed Rounds<button class="btn btn-danger btn-sm" style="font-size:11px;padding:3px 10px;" onclick="deleteLastRound()">↩ Undo Last Round</button></div>${roundsHtml}`:''}
+        ${roundsHtml?`<div class="sec-label" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">Completed Rounds<button class="btn btn-danger btn-sm" style="font-size:11px;padding:3px 10px;" onclick="deleteLastRound()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h11a5 5 0 0 1 0 10h-6"/><path d="M8 5 4 9.5 8 14"/></svg> Undo last round</button></div>${roundsHtml}`:''}
 
         ${satisfiedBtn}
 
@@ -989,8 +989,8 @@ function renderS3(d,sc){
           <div style="text-align:center;margin:10px 0;">
             <div class="timer-display" id="s3-timer">5:00</div>
             <div style="display:flex;gap:8px;justify-content:center;">
-              <button class="btn btn-secondary btn-sm" id="s3-timer-btn" onclick="toggleTimer('s3')">▶ Start Timer</button>
-              <button class="btn btn-ghost btn-sm" onclick="resetTimer('s3')">↺ Reset</button>
+              <button class="btn btn-secondary btn-sm" id="s3-timer-btn" onclick="toggleTimer('s3')">Start timer</button>
+              <button class="btn btn-ghost btn-sm" onclick="resetTimer('s3')">Reset</button>
             </div>
             <div style="text-align:center;margin-top:6px;font-size:12px;font-weight:600;color:#b45309;">Keep this screen open — timer pauses if you navigate away</div>
           </div>
@@ -2126,7 +2126,7 @@ function toggleTimer(prefix){
     },1000);
   } else {
     state.timerRunning=false;
-    if(btn)btn.textContent='▶ Resume';
+    if(btn)btn.textContent='Resume';
     clearInterval(state.timerInterval);
   }
 }
@@ -2146,7 +2146,7 @@ function resetTimer(prefix){
   const d=document.getElementById(prefix+'-timer');
   if(d){d.className='timer-display';d.textContent='5:00';}
   const b=document.getElementById(prefix+'-timer-btn');
-  if(b)b.textContent='▶ Start Timer';
+  if(b)b.textContent='Start timer';
 }
 
 // ─── VISIBILITY CHANGE ───────────────────────────────
@@ -2156,7 +2156,7 @@ document.addEventListener('visibilitychange',function(){
       state.timerLeftPage=true;
       stopTimer();
       const btn=document.getElementById(state.timerPrefix+'-timer-btn');
-      if(btn)btn.textContent='▶ Resume';
+      if(btn)btn.textContent='Resume';
     }
   } else if(document.visibilityState==='visible'){
     if(state.timerLeftPage){
