@@ -249,6 +249,8 @@ body {
   transition: background .15s, border-color .15s;
 }
 .ol-btn:active { background: var(--acc-lt); border-color: var(--acc); }
+.ol-btn.ol-fail { color: var(--bad); border-color: var(--bad-lt); }
+.ol-btn.ol-fail:active { background: var(--bad-lt); border-color: var(--bad); }
 .copy-btn {
   display: flex; align-items: center; gap: 8px;
   padding: 11px 14px; border-radius: 10px;
@@ -275,6 +277,46 @@ body {
   color: var(--muted); font-size: 13px; padding: 6px; font-weight: 500;
 }
 .nav-btn:disabled { opacity: .3; cursor: default; }
+
+/* STATS */
+.stat-grid { margin: 0 16px 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.stat b { display: block; font-size: 20px; font-weight: 800; color: var(--acc); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+/* FINDINGS */
+.find-box { margin: 14px 16px 4px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.find-h { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.find-row { display: flex; align-items: baseline; gap: 8px; font-size: 14px; padding: 5px 0; border-top: 1px solid var(--border); }
+.find-h + .find-row { border-top: none; }
+.find-row b { flex-shrink: 0; }
+.find-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transform: translateY(-1px); }
+
+/* JUMP-TO-TEST LIST */
+.tj-wrap { margin-top: 22px; }
+.tj-head { display: flex; justify-content: space-between; align-items: baseline; padding: 0 4px 8px;
+  font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.tj-hint { font-weight: 500; text-transform: none; letter-spacing: 0; }
+.tj-list { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.tj-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 8px 12px;
+  background: none; border: none; border-top: 1px solid var(--border); color: var(--text);
+  font: inherit; font-size: 14px; text-align: left; cursor: pointer; -webkit-appearance: none; }
+.tj-row:first-child { border-top: none; }
+.tj-row:active { background: var(--acc-lt); }
+.tj-n { width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%; display: inline-flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: 700; background: var(--border); color: var(--muted); }
+.tj-lbl { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tj-unit { font-weight: 500; color: var(--muted); font-size: 12px; }
+.tj-val { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--muted); max-width: 40%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tj-done .tj-n { background: var(--good-lt); color: var(--good); }
+.tj-done .tj-val { color: var(--text); }
+.tj-bad .tj-n, .tj-bad .tj-val { background: var(--bad-lt); color: var(--bad); }
+.tj-bad .tj-val { background: none; }
+.tj-warn .tj-n { background: var(--warn-lt); color: var(--warn); }
+.tj-warn .tj-val { color: var(--warn); }
+.tj-cur { background: var(--acc-lt); box-shadow: inset 3px 0 0 var(--acc); cursor: default; }
+.tj-cur .tj-n { background: var(--acc); color: #fff; }
 
 /* SUMMARY */
 .meta-grid {
@@ -365,12 +407,12 @@ body {
 // ─── READINGS ────────────────────────────────────────────
 const R = [
   { k:'dead_load',  lbl:'Dead Load',   unit:'mV DC', desc:'Deck loaded, no test weight — read first while wires still connected', mode:'decimal', val:'deadLoad', wires:['plusSIG','minusSIG'] },
-  { k:'excitation', lbl:'Excitation',  unit:'Ω',     desc:'+ Exc → − Exc',                           mode:'decimal', val:'ohm', wires:['plusEX','minusEX'] },
-  { k:'signal',     lbl:'Signal',      unit:'Ω',     desc:'+ Sig → − Sig',                           mode:'decimal', val:'ohm', wires:['plusSIG','minusSIG'] },
-  { k:'pp',         lbl:'+ex / +sig',  unit:'Ω',     desc:'+ Exc → + Sig  (cross-bridge)',           mode:'decimal', val:'ohm', bridge:true, wires:['plusEX','plusSIG'] },
-  { k:'pn',         lbl:'+ex / −sig',  unit:'Ω',     desc:'+ Exc → − Sig  (cross-bridge)',           mode:'decimal', val:'ohm', bridge:true, wires:['plusEX','minusSIG'] },
-  { k:'nn',         lbl:'−ex / −sig',  unit:'Ω',     desc:'− Exc → − Sig  (cross-bridge)',           mode:'decimal', val:'ohm', bridge:true, wires:['minusEX','minusSIG'] },
-  { k:'np',         lbl:'−ex / +sig',  unit:'Ω',     desc:'− Exc → + Sig  (cross-bridge)',           mode:'decimal', val:'ohm', bridge:true, wires:['minusEX','plusSIG'] },
+  { k:'excitation', lbl:'Excitation',  unit:'Ω',     desc:'+ Exc → − Exc  (OL = open → FAIL)',        mode:'decimal', val:'ohmOL', showOL:true, olFail:true, wires:['plusEX','minusEX'] },
+  { k:'signal',     lbl:'Signal',      unit:'Ω',     desc:'+ Sig → − Sig  (OL = open → FAIL)',        mode:'decimal', val:'ohmOL', showOL:true, olFail:true, wires:['plusSIG','minusSIG'] },
+  { k:'pp',         lbl:'+ex / +sig',  unit:'Ω',     desc:'+ Exc → + Sig  (cross-bridge · OL = open → FAIL)',           mode:'decimal', val:'ohmOL', showOL:true, olFail:true, bridge:true, wires:['plusEX','plusSIG'] },
+  { k:'pn',         lbl:'+ex / −sig',  unit:'Ω',     desc:'+ Exc → − Sig  (cross-bridge · OL = open → FAIL)',           mode:'decimal', val:'ohmOL', showOL:true, olFail:true, bridge:true, wires:['plusEX','minusSIG'] },
+  { k:'nn',         lbl:'−ex / −sig',  unit:'Ω',     desc:'− Exc → − Sig  (cross-bridge · OL = open → FAIL)',           mode:'decimal', val:'ohmOL', showOL:true, olFail:true, bridge:true, wires:['minusEX','minusSIG'] },
+  { k:'np',         lbl:'−ex / +sig',  unit:'Ω',     desc:'− Exc → + Sig  (cross-bridge · OL = open → FAIL)',           mode:'decimal', val:'ohmOL', showOL:true, olFail:true, bridge:true, wires:['minusEX','plusSIG'] },
   { k:'cmp_n',      lbl:'−Comp',       unit:'Ω',     desc:'Both sig wires → − Exc',                  mode:'decimal', val:'ohm', wires:['plusSIG','minusSIG','minusEX'] },
   { k:'cmp_p',      lbl:'+Comp',       unit:'Ω',     desc:'Both sig wires → + Exc',                  mode:'decimal', val:'ohm', wires:['plusSIG','minusSIG','plusEX'] },
   { k:'shrt_ohm',   lbl:'Shorts',      unit:'Ω',     desc:'Wire to shield / cell body (OL = PASS)',  mode:'text',    val:'shortsOhm', showOL:true, wires:['plusEX','minusEX','plusSIG','minusSIG','shield'] },
@@ -431,6 +473,7 @@ function wireDotsForReading(r, profile){
 }
 
 // ─── VALIDATORS ─────────────────────────────────────────
+function isOL(v){ return String(v==null?'':v).trim().toUpperCase()==='OL'; }
 const V = {
   shortsOhm(v) {
     if (!v || v.trim().toUpperCase()==='OL') return { ok:true,  lbl:'PASS',             cls:'good' };
@@ -449,6 +492,11 @@ const V = {
     return n>0.5
       ? { ok:false, lbl:'OUT OF RANGE (> 0.5 mV)', cls:'bad'  }
       : { ok:true,  lbl:'GOOD',                     cls:'good' };
+  },
+  // Excitation / Signal: OL means an open bridge arm — the cell is bad.
+  ohmOL(v) {
+    if (isOL(v)) return { ok:false, lbl:'FAIL — OPEN (OL)', cls:'bad' };
+    return V.ohm(v);
   },
   ohm(v) {
     const n=parseFloat(v); if(isNaN(n)) return null;
@@ -471,6 +519,37 @@ function bridgeFlagged(cell) {
   if (vals.length < 4) return false;
   const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
   return vals.some(v => Math.abs(v-avg)/avg > 0.01);
+}
+
+// ─── FINDINGS (plain-English "why") ──────────────────────
+// One short line per problem, so a customer can see WHY a cell failed or needs review.
+// Uses the same validators as cellStatus(), so the reason always matches the verdict.
+function bridgeMaxDev(cell){
+  const vals=BRIDGE_KEYS.map(k=>parseFloat(cell[k])).filter(n=>!isNaN(n));
+  if(vals.length<4) return null;
+  const avg=vals.reduce((a,b)=>a+b,0)/4;
+  return Math.max(...vals.map(v=>Math.abs(v-avg)/avg*100));
+}
+function cellFindings(cell){
+  const out=[];
+  R.forEach(r=>{
+    const v=cell[r.k]; if(!v&&v!==0) return;
+    const res=vld(r,v); if(!res||res.ok) return;
+    const n=parseFloat(v); let txt;
+    if(isOL(v))                 txt=r.lbl+' open (OL)';
+    else if(r.k==='shrt_ohm')   txt='Short to shield / cell body ('+v+' Ω)';
+    else if(r.k==='shrt_ns')    txt='Insulation leakage '+v+' nS — '+(res.cls==='bad'?'bad (over 1 nS)':'suspect (over 0.5 nS)');
+    else if(r.k==='zero_load')  txt=n<0?'Zero load negative ('+v+' mV)':'Zero load out of range ('+v+' mV, max 0.5)';
+    else                        txt=r.lbl+' reads negative ('+v+' '+r.unit+')';
+    out.push({txt, cls:res.cls});
+  });
+  if(bridgeFlagged(cell)) out.push({txt:'Cross-bridge imbalance '+bridgeMaxDev(cell).toFixed(2)+'% (limit 1%)', cls:'bridge'});
+  return out;
+}
+function jobFindings(job){
+  const out=[];
+  job.cells.forEach((c,i)=>cellFindings(c).forEach(f=>out.push({cell:i+1, txt:f.txt, cls:f.cls})));
+  return out;
 }
 
 // ─── CELL STATUS ─────────────────────────────────────────
@@ -620,6 +699,14 @@ function rHome(){
       </div>
     </div>`).join('')}
   ${!rec.length?`<div class="empty-state"><div class="icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v2.5H9z"/><path d="M8.5 11h7M8.5 15h4.5"/></svg></div><h3>No jobs yet</h3><p>Create your first load cell job.</p></div>`:''}
+  ${(()=>{ const st=workStats(); if(!st.cells) return ''; return `
+  <div class="sect-label">Your numbers</div>
+  <div class="stat-grid no-print">
+    <div class="stat"><b>${st.jobsDone}</b><span>jobs finished</span></div>
+    <div class="stat"><b>${st.cells}</b><span>cells tested</span></div>
+    <div class="stat"><b>${fmtMin(st.perCell)}</b><span>avg per cell</span></div>
+    <div class="stat"><b>${fmtMin(st.ms)}</b><span>total logged</span></div>
+  </div>`; })()}
   <div class="sect-label">Backup</div>
   <div class="sync-panel no-print">
     <h3>Backup &amp; restore</h3>
@@ -629,6 +716,10 @@ function rHome(){
       <label class="sync-btn" style="cursor:pointer"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 17v2.5h16V17"/></svg> Import backup<input id="b-import" type="file" accept=".json" style="display:none"></label>
       ${jobs.length?`<button class="sync-btn danger" id="b-clearall" style="color:var(--muted)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l1 13.5h9l1-13.5M10 10v6.5M14 10v6.5"/></svg> Clear all</button>`:''}
     </div>
+  </div>
+  <div class="sect-label">Feedback</div>
+  <div class="no-print" style="padding:0 16px 28px">
+    <button class="btn btn-outline tfb-open-btn" style="width:100%" onclick="TRACFeedback.open()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M8 9.5h8M8 12.5h5"/></svg> Send feedback</button>
   </div>
   </div>`;
 }
@@ -942,7 +1033,7 @@ function rEntry(){
     </div>
     <div class="badge-row" id="badge-row">
       ${vRes?`<span class="badge badge-${vRes.cls}">${vRes.lbl}</span>`:''}
-      ${r.showOL?`<button class="ol-btn" id="b-ol">✓ OL  (Open Loop)</button>`:''}
+      ${r.showOL?olBtnHtml(r):''}
       ${r.mode==='decimal'?`<button class="ol-btn" id="b-neg">± Neg</button>`:''}
     </div>
     <div class="entry-nav">
@@ -950,6 +1041,7 @@ function rEntry(){
       <span style="font-size:11px;color:var(--muted)">${done} of ${total} entered</span>
       <button class="nav-btn" id="b-skip">Skip →</button>
     </div>
+    ${testJumpList(cell, ri)}
   </div>
   <div class="entry-btns no-print">
     <div class="entry-btns-row">
@@ -962,9 +1054,60 @@ function rEntry(){
   </div>`;
 }
 
+// ─── JUMP-TO-TEST LIST ───────────────────────────────────
+// Every test for the current cell, listed under the input. Tap one to go straight to it.
+function testJumpList(cell, curRi){
+  const rows=R.map((r,i)=>{
+    const v=cell[r.k], has=!!v||v===0;
+    const res=has&&r.val?V[r.val](v):null;
+    const st=i===curRi?'cur':!has?'empty':res&&!res.ok?(res.cls==='bad'?'bad':'warn'):'done';
+    const shown=!has?'—':isOL(v)?'OL':esc(String(v));
+    return `<button class="tj-row tj-${st}" data-ri="${i}" ${i===curRi?'aria-current="step"':''}>
+      <span class="tj-n">${i+1}</span>
+      <span class="tj-lbl">${r.lbl} <span class="tj-unit">${r.unit}</span></span>
+      <span class="tj-val">${shown}</span>
+    </button>`;
+  }).join('');
+  return `<div class="tj-wrap no-print">
+    <div class="tj-head"><span>All tests — this cell</span><span class="tj-hint">Tap to jump</span></div>
+    <div class="tj-list">${rows}</div>
+  </div>`;
+}
+
+function olBtnHtml(r){
+  return r.olFail
+    ? `<button class="ol-btn ol-fail" id="b-ol">OL  (open)</button>`
+    : `<button class="ol-btn" id="b-ol">✓ OL  (Open Loop)</button>`;
+}
+
+// ─── WORK-TIME TRACKING ──────────────────────────────────
+// Counts time between readings as work. A gap over 15 min is treated as a break and
+// not counted, so lunch or a phone call doesn't inflate the numbers. Feeds the stats card.
+const BREAK_MS=15*60*1000;
+function logWork(job, ci){
+  const now=Date.now(), last=job._lastTs||job.createdAt||now, gap=now-last;
+  if(gap>0 && gap<=BREAK_MS){
+    job._activeMs=(job._activeMs||0)+gap;
+    const c=job.cells[ci]; if(c) c._activeMs=(c._activeMs||0)+gap;
+  }
+  job._lastTs=now;
+}
+function fmtMin(ms){ const m=Math.round(ms/60000); return m<1?'<1 min':m<60?m+' min':Math.floor(m/60)+' h '+(m%60)+' min'; }
+function workStats(){
+  let jobsDone=0, cells=0, ms=0;
+  jobs.forEach(j=>{
+    if(!j._activeMs) return;              // jobs from before tracking existed are skipped
+    const tested=j.cells.filter(c=>R.some(r=>c[r.k])).length; if(!tested) return;
+    if(j.complete) jobsDone++;
+    cells+=tested; ms+=j._activeMs;
+  });
+  return {jobsDone, cells, ms, perCell: cells?ms/cells:0};
+}
+
 function saveVal(v){
   if(!CUR)return;
   CUR.job.cells[CUR.ci][R[CUR.ri].k]=v;
+  logWork(CUR.job, CUR.ci);
   const idx=jobs.findIndex(j=>j.id===CUR.job.id);
   if(idx>=0)jobs[idx]=CUR.job;
   saveJobs();
@@ -1010,10 +1153,12 @@ function bEntry(){
   const inp=document.getElementById('ri');
   if(inp){
     inp.addEventListener('input',()=>{
+      const lv=inp.value.trim(), cv=document.querySelector('.tj-cur .tj-val');
+      if(cv) cv.textContent=lv?(isOL(lv)?'OL':lv):'—';
       const r=R[CUR.ri]; if(!r.val)return;
       const v=inp.value.trim(), res=v?V[r.val](v):null;
       const br=document.getElementById('badge-row'); if(!br)return;
-      const olPart=r.showOL?`<button class="ol-btn" id="b-ol">✓ OL  (Open Loop)</button>`:'';
+      const olPart=r.showOL?olBtnHtml(r):'';
       const negPart=r.mode==='decimal'?`<button class="ol-btn" id="b-neg">± Neg</button>`:'';
       br.innerHTML=(res?`<span class="badge badge-${res.cls}">${res.lbl}</span>`:'')+olPart+negPart;
       wireOLBtn();
@@ -1029,7 +1174,7 @@ function bEntry(){
   }
   function wireNegBtn(){
     const b=document.getElementById('b-neg');
-    if(b) b.onclick=()=>{ const i=document.getElementById('ri'); if(!i)return; const v=i.value.trim(); i.value=v.startsWith('-')?v.slice(1):'-'+(v||'0'); i.dispatchEvent(new Event('input')); };
+    if(b) b.onclick=()=>{ const i=document.getElementById('ri'); if(!i)return; const v=i.value.trim(); if(isOL(v)) return; i.value=v.startsWith('-')?v.slice(1):'-'+(v||'0'); i.dispatchEvent(new Event('input')); };
   }
   wireOLBtn();
   wireNegBtn();
@@ -1067,6 +1212,16 @@ function bEntry(){
     showCellPickerSheet(CUR.job, CUR.ci);
   };
 
+  document.querySelectorAll('.tj-row').forEach(btn=>{
+    btn.onclick=()=>{
+      const to=parseInt(btn.dataset.ri,10);
+      if(isNaN(to)||to===CUR.ri) return;
+      const inp=document.getElementById('ri'); saveVal(inp?inp.value.trim():'');
+      haptic(8);
+      CUR={...CUR,ri:to}; render();
+    };
+  });
+
   const p1=document.getElementById('b-prev'), p2=document.getElementById('b-prev2');
   if(p1)p1.onclick=goBack; if(p2)p2.onclick=goBack;
 
@@ -1088,6 +1243,15 @@ function bEntry(){
     const j=CUR.job; DID=j.id;
     go('summary',{CUR,DID:j.id});
   };
+}
+
+function findingsHtml(job){
+  const f=jobFindings(job); if(!f.length) return '';
+  const col={bad:'var(--bad)',warn:'var(--warn)',bridge:'var(--bridge)'};
+  return `<div class="find-box">
+    <div class="find-h">Findings</div>
+    ${f.map(x=>`<div class="find-row"><span class="find-dot" style="background:${col[x.cls]||'var(--muted)'}"></span><b>Cell ${x.cell}</b><span>${esc(x.txt)}</span></div>`).join('')}
+  </div>`;
 }
 
 // ─── SUMMARY ─────────────────────────────────────────────
@@ -1117,6 +1281,7 @@ function rSummary(){
     <div class="meta-cell"><label>Date</label><span>${job.date||'—'}</span></div>
     <div class="meta-cell"><label>Excitation</label><span>${job.excitation?job.excitation+' V':'—'}</span></div>
     <div class="meta-cell"><label>mV/V</label><span>${job.mvv||'—'}</span></div>
+    ${job._activeMs?`<div class="meta-cell" style="grid-column:span 2"><label>Time on job</label><span>${fmtMin(job._activeMs)}${(()=>{const n=job.cells.filter(c=>R.some(r=>c[r.k])).length;return n?` <span style="font-size:12px;color:var(--muted);font-weight:500">· ${fmtMin(job._activeMs/n)} per cell</span>`:'';})()}</span></div>`:''}
     ${job.cellModel?`<div class="meta-cell" style="grid-column:span 2"><label>Cell Model</label><span>${esc(job.cellModel)}</span></div>`:''}
     ${theoROC?`<div class="meta-cell" style="grid-column:span 2"><label>Theoretical ROC</label><span style="color:var(--good)">${theoROC} mV  <span style="font-size:12px;color:var(--muted);font-weight:400">(${job.testWeight} ${job.weightUnit} on ${job.cellCapacity} ${job.weightUnit} cell)</span></span></div>`:''}
   </div>
@@ -1159,6 +1324,7 @@ function rSummary(){
       </tbody>
     </table>
   </div>
+  ${findingsHtml(job)}
 
   ${CUR?`
   <div class="sum-actions no-print">
@@ -1172,6 +1338,10 @@ function rSummary(){
   <div style="padding:0 16px 8px;display:flex;gap:10px;" class="no-print">
     <button class="btn" id="b-textreport" style="background:#235aa7;color:#fff;flex:1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg> Text report</button>
     <button class="btn btn-outline" id="b-report" style="flex:1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M8.5 12.5h7M8.5 16h5"/></svg> Full report</button>
+  </div>
+  <div style="padding:0 16px 8px;display:flex;gap:10px;" class="no-print">
+    <button class="btn btn-outline" id="b-csv" style="flex:1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15"/></svg> Excel export</button>
+    <button class="btn btn-outline tfb-open-btn" style="flex:1" onclick="TRACFeedback.open()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M8 9.5h8M8 12.5h5"/></svg> Feedback</button>
   </div>
   <div style="padding:0 16px 8px;display:flex;gap:10px;" class="no-print">
     <button class="btn btn-outline" id="b-editinfo" style="flex:1;font-size:14px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20.5h16"/><path d="M5.5 16.2 15.8 5.9a2.1 2.1 0 0 1 3 3L8.5 19.2l-4 1z"/></svg> Edit job info</button>
@@ -1201,6 +1371,8 @@ function bSummary(){
     };
   } else {
     document.getElementById('b-home').onclick=()=>go('home');
+    const csvBtn=document.getElementById('b-csv');
+    if(csvBtn) csvBtn.onclick=()=>exportJobCSV(DID);
     const textBtn=document.getElementById('b-textreport');
     if(textBtn) textBtn.onclick=()=>shareReportImage(DID);
     const rptBtn=document.getElementById('b-report');
@@ -1417,8 +1589,10 @@ function printCustomerReport(jobId, includeSig) {
 
   // RESISTANCE section
   tableRows += tsec('Resistance (&#x2126;)');
-  tableRows += trow('Excitation', function(d){ return d.cell.excitation ? d.cell.excitation+' &#x2126;' : ''; });
-  tableRows += trow('Signal',     function(d){ return d.cell.signal     ? d.cell.signal    +' &#x2126;' : ''; });
+  function ohmOLCell(v){ return !v ? '' : isOL(v) ? '<span style="color:#dc2626;font-weight:700;">OL — OPEN</span>' : v+' &#x2126;'; }
+  function ohmOLStyle(v){ return isOL(v) ? 'background:#fde8e8;' : ''; }
+  tableRows += trow('Excitation', function(d){ return ohmOLCell(d.cell.excitation); }, function(d){ return ohmOLStyle(d.cell.excitation); });
+  tableRows += trow('Signal',     function(d){ return ohmOLCell(d.cell.signal); },     function(d){ return ohmOLStyle(d.cell.signal); });
   tableRows += trow('&minus;Comp',function(d){ return d.cell.cmp_n      ? d.cell.cmp_n     +' &#x2126;' : ''; });
   tableRows += trow('+Comp',      function(d){ return d.cell.cmp_p      ? d.cell.cmp_p     +' &#x2126;' : ''; });
 
@@ -1430,11 +1604,13 @@ function printCustomerReport(jobId, includeSig) {
       var rdef = R.find(function(r){ return r.k===k; });
       tableRows += trow(rdef?rdef.lbl:k, function(d){
         var v = d.cell[k]; if(!v) return '';
+        if (isOL(v)) return ohmOLCell(v);
         var bv = d.bavg, dev = bv ? Math.abs(parseFloat(v)-bv)/bv*100 : 0;
         var flag = dev>1;
         return v+' &#x2126;'+(flag?'<span style="font-size:8px;color:#5b21b6;"> (+'+dev.toFixed(1)+'%)</span>':'');
       }, function(d){
         var v=d.cell[k]; if(!v)return'';
+        if(isOL(v)) return ohmOLStyle(v);
         var bv=d.bavg, dev=bv?Math.abs(parseFloat(v)-bv)/bv*100:0;
         return dev>1?'background:#f5f3ff;color:#5b21b6;font-weight:700;':'';
       });
@@ -1451,7 +1627,7 @@ function printCustomerReport(jobId, includeSig) {
   tableRows += trow('Shorts (&#x2126;)', function(d){
     var v=d.cell.shrt_ohm; if(!v) return '';
     var res=V.shortsOhm(v); var c=res&&!res.ok?'#dc2626':'#16a34a';
-    return '<span style="color:'+c+';">'+v+'&#x2126; — '+(res?res.lbl:'')+'</span>';
+    return '<span style="color:'+c+';">'+(isOL(v)?'OL':v+' &#x2126;')+' — '+(res?res.lbl:'')+'</span>';
   });
   tableRows += trow('Insulation (nS)', function(d){
     var v=d.cell.shrt_ns; if(!v) return '';
@@ -1474,6 +1650,15 @@ function printCustomerReport(jobId, includeSig) {
   });
 
   var readingsTable = '<table style="border-collapse:collapse;width:100%;margin-bottom:10px;">'+tableRows+'</table>';
+  var _jf = jobFindings(job);
+  if (_jf.length) {
+    var _fc = {bad:'#dc2626',warn:'#ca8a04',bridge:'#5b21b6'};
+    readingsTable += '<table class="blk" style="border-collapse:collapse;width:100%;margin-bottom:10px;">' + sh('Findings', 2) +
+      _jf.map(function(f){
+        return '<tr><td style="padding:3px 8px;border:1px solid #d1d5db;font-size:10px;font-weight:700;width:60px;white-space:nowrap;">Cell '+f.cell+'</td>'+
+               '<td style="padding:3px 8px;border:1px solid #d1d5db;font-size:10px;color:'+(_fc[f.cls]||'#111')+';font-weight:600;">'+esc(f.txt)+'</td></tr>';
+      }).join('') + '</table>';
+  }
 
   // ── Summary parts ──
   var summaryParts = [];
@@ -1658,7 +1843,9 @@ function renderCertCanvas(jobId){
   var infoBodyH=infoRows*infoRowH;
   var infoH=infoHdrH+infoBodyH+8;
   var tblH=tblTitleH+tblHdrH+rows.length*tblRowH+8;
-  var H=PAD+headerH+GAP+bannerH+GAP+infoH+GAP+tblH+GAP+footerH+PAD;
+  var finds=jobFindings(job), findTitleH=24, findRowH=22;
+  var findH=finds.length?findTitleH+finds.length*findRowH+8:0;
+  var H=PAD+headerH+GAP+bannerH+GAP+infoH+GAP+tblH+GAP+(findH?findH+GAP:0)+footerH+PAD;
 
   var cv=document.createElement('canvas');
   cv.width=Math.round(W*S); cv.height=Math.round(H*S);
@@ -1740,6 +1927,23 @@ function renderCertCanvas(jobId){
   ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.strokeRect(PAD+0.5,(y-tblHdrH)+0.5,CW-1,tblHdrH+rows.length*tblRowH);
   y+=tblHdrH+rows.length*tblRowH+8+GAP;
 
+  // ── FINDINGS — the plain-English "why" behind any FAIL / REVIEW ──
+  if(finds.length){
+    ctx.fillStyle='#235aa7'; ctx.fillRect(PAD,y,CW,findTitleH);
+    T('FINDINGS',PAD+9,y+16,9.5,'700','#ffffff','left');
+    var fy=y+findTitleH, fcol={bad:'#dc2626',warn:'#ca8a04',bridge:'#7c3aed'};
+    finds.forEach(function(f,i){
+      if(i%2===1){ ctx.fillStyle='#fafafa'; ctx.fillRect(PAD,fy,CW,findRowH); }
+      ctx.beginPath(); ctx.arc(PAD+14,fy+findRowH/2,4,0,Math.PI*2); ctx.fillStyle=fcol[f.cls]||'#6b7280'; ctx.fill();
+      T('Cell '+f.cell,PAD+26,fy+15,10,'700','#111827','left');
+      ctx.font='600 10px '+FF;
+      T(_trunc(ctx,f.txt,CW-90),PAD+80,fy+15,10,'600',fcol[f.cls]||'#111827','left');
+      fy+=findRowH;
+    });
+    ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.strokeRect(PAD+0.5,y+findTitleH+0.5,CW-1,finds.length*findRowH);
+    y+=findH+GAP;
+  }
+
   // ── FOOTER ──
   ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(PAD,y); ctx.lineTo(W-PAD,y); ctx.stroke();
   var now=new Date();
@@ -1767,6 +1971,45 @@ function shareReportImage(jobId){
     _downloadBlob(blob,fname,true);
   },'image/png');
 }
+// ─── EXCEL EXPORT (CSV) ──────────────────────────────────
+// One row per cell, every reading in its own column — opens straight in Excel / Sheets.
+function jobCSV(job){
+  // Text starting with + - = @ (e.g. "+ex / +sig") would be read by Excel as a formula — a leading space stops that. Real numbers pass through.
+  const q=v=>{ let t=String(v==null?'':v); if(/^[=+\-@]/.test(t)&&isNaN(Number(t))) t=' '+t; return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t; };
+  const line=a=>a.map(q).join(',');
+  const theo=calcTheoROC(job);
+  const out=[
+    line(['TRAC Cell — Load Cell Inspection']),
+    line(['Customer',job.customer]), line(['Scale / Location',job.scale]), line(['Technician',job.tech]), line(['Date',job.date]),
+    line(['Cell model',job.cellModel]), line(['Excitation (V)',job.excitation]), line(['mV/V',job.mvv]),
+    line(['Test weight',job.testWeight?job.testWeight+' '+(job.weightUnit||'lbs'):'']),
+    line(['Cell capacity',job.cellCapacity?job.cellCapacity+' '+(job.weightUnit||'lbs'):'']),
+    line(['Theoretical ROC (mV)',theo]),
+    line(['Time on job (min)',job._activeMs?Math.round(job._activeMs/60000):'']),
+    line(['Notes',job.notes]),
+    '',
+    line(['Cell','Status','Cell model',...R.map(r=>r.lbl+' ('+r.unit+')'),'ROC measured (mV)','Bridge max dev (%)','Findings','Minutes on cell'])
+  ];
+  job.cells.forEach((c,i)=>{
+    const st=cellStatus(c); if(st.lbl==='EMPTY') return;
+    const dev=bridgeMaxDev(c);
+    out.push(line([i+1, st.lbl, c._cellModel||job.cellModel||'', ...R.map(r=>c[r.k]||''), calcROC(c), dev==null?'':dev.toFixed(2),
+      cellFindings(c).map(f=>f.txt).join('; '), c._activeMs?Math.round(c._activeMs/60000):'']));
+  });
+  return '\ufeff'+out.join('\r\n');   // BOM so Excel shows Ω and − correctly
+}
+function exportJobCSV(jobId){
+  const job=jobs.find(j=>j.id==jobId); if(!job) return;
+  const fname='TRAC_Cell_'+_safeName(job.customer)+'_'+(job.date||new Date().toISOString().slice(0,10))+'.csv';
+  const blob=new Blob([jobCSV(job)],{type:'text/csv;charset=utf-8'});
+  let file=null; try{ file=new File([blob],fname,{type:'text/csv'}); }catch(e){}
+  if(file && navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+    navigator.share({files:[file],title:fname}).catch(e=>{ if(!e||e.name!=='AbortError') _downloadBlob(blob,fname,false); });
+    return;
+  }
+  _downloadBlob(blob,fname,false); toast('Excel file saved');
+}
+
 function _downloadBlob(blob,fname,note){
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a'); a.href=url; a.download=fname;
@@ -2027,5 +2270,129 @@ function showEditJobInfoSheet(job){
 applyTheme();
 render();
 </script>
+<!-- ═══ TRAC FEEDBACK (shared — identical in Cell / Belt / Truck) ═══
+     Sends to Austin's Google Form → Google Sheet. No account or email app needed.
+     Offline: saved on the phone and sent automatically once signal is back.
+     To wire up: fill TRAC_FB_FORM below (form id + entry ids from a pre-filled link). -->
+<style>
+.tfb-ov{position:fixed;inset:0;z-index:9999;background:rgba(8,15,30,.55);display:flex;align-items:flex-end;justify-content:center;-webkit-tap-highlight-color:transparent}
+.tfb-sh{--tfb-card:#fff;--tfb-ink:#0f1729;--tfb-mut:#5b6472;--tfb-line:#e2e8f0;--tfb-bg:#eef2f7;--tfb-acc:#235AA7;--tfb-acc-lt:#e9f0f9;
+  width:100%;max-width:500px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--tfb-card);color:var(--tfb-ink);
+  border-radius:18px 18px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px));font-family:inherit;box-shadow:0 -8px 30px rgba(0,0,0,.25);animation:tfb-up .2s ease}
+.tfb-sh.tfb-dark{--tfb-card:#0e1f3a;--tfb-ink:#eef3fa;--tfb-mut:#8094b3;--tfb-line:#19305a;--tfb-bg:#071221;--tfb-acc:#2d6fc4;--tfb-acc-lt:#10243f}
+@keyframes tfb-up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.tfb-sh h3{margin:0 0 4px;font-size:20px;font-weight:800}
+.tfb-sh p.tfb-sub{margin:0 0 16px;font-size:13.5px;color:var(--tfb-mut);line-height:1.45}
+.tfb-lbl{display:block;font-size:12px;font-weight:700;color:var(--tfb-mut);text-transform:uppercase;letter-spacing:.5px;margin:0 0 7px}
+.tfb-seg{display:flex;gap:8px;margin-bottom:16px}
+.tfb-seg button{flex:1;min-height:44px;border-radius:10px;border:1.5px solid var(--tfb-line);background:var(--tfb-bg);color:var(--tfb-ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.tfb-seg button[aria-pressed="true"]{border-color:var(--tfb-acc);background:var(--tfb-acc-lt);color:var(--tfb-acc)}
+.tfb-sh textarea,.tfb-sh input{display:block;width:100%;box-sizing:border-box;padding:12px 13px;border-radius:10px;border:1.5px solid var(--tfb-line);background:var(--tfb-bg);color:var(--tfb-ink);font:inherit;font-size:16px;outline:none;-webkit-appearance:none;margin-bottom:14px}
+.tfb-sh textarea{min-height:120px;resize:vertical;line-height:1.45}
+.tfb-sh textarea:focus,.tfb-sh input:focus{border-color:var(--tfb-acc)}
+.tfb-note{font-size:12px;color:var(--tfb-mut);margin:-6px 0 16px;line-height:1.4}
+.tfb-acts{display:flex;gap:10px}
+.tfb-acts button{flex:1;min-height:48px;border-radius:12px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.tfb-cancel{background:none;border:1.5px solid var(--tfb-line);color:var(--tfb-ink)}
+.tfb-send{background:var(--tfb-acc);border:1.5px solid var(--tfb-acc);color:#fff}
+.tfb-send:disabled{opacity:.45;cursor:default}
+.tfb-toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:10000;background:#0f1729;color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.3);max-width:88vw;text-align:center}
+.tfb-open-btn{display:flex;align-items:center;justify-content:center;gap:8px}
+.tfb-open-btn svg{width:1.1em;height:1.1em;flex-shrink:0}
+</style>
+<script>
+/* Filled in once Austin's Google Form exists (from its pre-filled link). */
+var TRAC_FB_FORM = {
+  formId: '1FAIpQLSe7du5Eo89vwUlAYZhduzmmTWs7zJuXd7lQUVFW69cRErsrrg',   // "TRAC Apps Feedback" (Austin's Google Form)
+  entries: { app:'entry.545461804', type:'entry.1708425814', message:'entry.125136454', name:'entry.585571049', device:'entry.1390939330' }
+};
+var TRACFeedback = (function(){
+  var QKEY='trac_fb_queue', NKEY='trac_fb_name', APP='TRAC', BUILD='';
+  function ls(k,d){ try{ var v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } }
+  function lset(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+  function ready(){ var f=TRAC_FB_FORM; return !!(f.formId && f.entries.message); }
+  function device(){
+    var ua=navigator.userAgent||'', os=/iPhone|iPad|iPod/.test(ua)?'iOS':/Android/.test(ua)?'Android':/Mac/.test(ua)?'Mac':/Windows/.test(ua)?'Windows':'Other';
+    var inst=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone?'home-screen app':'browser';
+    return os+' · '+inst+' · '+screen.width+'×'+screen.height+' · '+APP+(BUILD?' build '+BUILD:'');
+  }
+  function post(item){
+    var f=TRAC_FB_FORM, e=f.entries, body=new URLSearchParams();
+    if(e.app) body.append(e.app,item.app);
+    if(e.type) body.append(e.type,item.type);
+    body.append(e.message,item.message);
+    if(e.name) body.append(e.name,item.name||'');
+    if(e.device) body.append(e.device,item.device+' · written '+item.at);
+    // Google Forms has no CORS headers, so the reply is opaque. A resolved fetch = it reached Google.
+    return fetch('https://docs.google.com/forms/d/e/'+encodeURIComponent(f.formId)+'/formResponse',
+      {method:'POST',mode:'no-cors',body:body});
+  }
+  var busy=null;
+  function flush(){
+    if(busy) return busy;
+    if(!ready()||navigator.onLine===false) return Promise.resolve(0);
+    var q=ls(QKEY,[]); if(!q.length) return Promise.resolve(0);
+    var sent=0;
+    return busy=q.reduce(function(p,item){ return p.then(function(){ return post(item).then(function(){ sent++; }); }); },Promise.resolve())
+      .catch(function(){})
+      .then(function(){ lset(QKEY,ls(QKEY,[]).slice(sent)); busy=null; return sent; });
+  }
+  function toast(msg){
+    var t=document.createElement('div'); t.className='tfb-toast'; t.setAttribute('role','status'); t.textContent=msg;
+    document.body.appendChild(t); setTimeout(function(){ t.remove(); },3200);
+  }
+  function isDark(){
+    var m=getComputedStyle(document.body).backgroundColor.match(/\d+/g); if(!m) return false;
+    return (0.299*m[0]+0.587*m[1]+0.114*m[2])<110;
+  }
+  function open(){
+    if(document.querySelector('.tfb-ov')) return;
+    if(document.activeElement&&document.activeElement.blur) document.activeElement.blur();
+    var type='Problem';
+    var ov=document.createElement('div'); ov.className='tfb-ov';
+    ov.innerHTML='<div class="tfb-sh'+(isDark()?' tfb-dark':'')+'" role="dialog" aria-modal="true" aria-labelledby="tfb-t">'+
+      '<h3 id="tfb-t">Send feedback</h3>'+
+      '<p class="tfb-sub">Goes straight to the developer. Tell us what broke, what slowed you down, or what you wish '+APP+' did.</p>'+
+      '<span class="tfb-lbl">What kind?</span>'+
+      '<div class="tfb-seg"><button type="button" data-t="Problem" aria-pressed="true">Problem</button>'+
+      '<button type="button" data-t="Idea" aria-pressed="false">Idea</button><button type="button" data-t="Other" aria-pressed="false">Other</button></div>'+
+      '<label class="tfb-lbl" for="tfb-msg">Your feedback</label>'+
+      '<textarea id="tfb-msg" maxlength="3000" placeholder="e.g. On the Signal reading, the keyboard covers the Next button…"></textarea>'+
+      '<label class="tfb-lbl" for="tfb-name">Your name <span style="text-transform:none;font-weight:500">(optional)</span></label>'+
+      '<input id="tfb-name" type="text" autocomplete="name" maxlength="80">'+
+      '<div class="tfb-note">App name and phone type are included automatically. Works offline — it sends once you have signal.</div>'+
+      '<div class="tfb-acts"><button type="button" class="tfb-cancel">Cancel</button><button type="button" class="tfb-send" disabled>Send</button></div></div>';
+    document.body.appendChild(ov);
+    var msg=ov.querySelector('#tfb-msg'), nm=ov.querySelector('#tfb-name'), send=ov.querySelector('.tfb-send');
+    nm.value=ls(NKEY,'')||'';
+    function close(){ ov.remove(); }
+    ov.addEventListener('click',function(e){ if(e.target===ov) close(); });
+    ov.querySelector('.tfb-cancel').onclick=close;
+    ov.querySelectorAll('.tfb-seg button').forEach(function(b){ b.onclick=function(){
+      type=b.getAttribute('data-t'); ov.querySelectorAll('.tfb-seg button').forEach(function(x){ x.setAttribute('aria-pressed',String(x===b)); });
+    }; });
+    msg.addEventListener('input',function(){ send.disabled=!msg.value.trim(); });
+    send.onclick=function(){
+      var text=msg.value.trim(); if(!text) return;
+      var name=nm.value.trim(); lset(NKEY,name);
+      var q=ls(QKEY,[]);
+      q.push({app:APP,type:type,message:text,name:name,device:device(),at:new Date().toLocaleString()});
+      lset(QKEY,q); close();
+      if(!ready()){ toast('Saved on this phone. It will send once feedback is switched on.'); return; }
+      if(navigator.onLine===false){ toast('No signal — saved. It will send automatically when you’re back online.'); return; }
+      flush().then(function(n){ toast(n?'Thanks — feedback sent.':'Couldn’t reach the server — saved, will retry automatically.'); });
+    };
+    setTimeout(function(){ msg.focus(); },120);
+  }
+  function init(o){
+    APP=(o&&o.app)||APP; BUILD=(o&&o.build)||'';
+    window.addEventListener('online',flush);
+    setTimeout(flush,1500);
+  }
+  return { open:open, init:init, flush:flush, _pending:function(){ return ls(QKEY,[]).length; } };
+})();
+</script>
+<!-- ═══ /TRAC FEEDBACK ═══ -->
+<script>TRACFeedback.init({app:'TRAC Cell',build:"2026-09-28"});</script>
 </body>
 </html>

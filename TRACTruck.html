@@ -313,7 +313,7 @@ function renderHome(){
     return `<div class="wrap"><div class="empty-state"><div class="big"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 6.5h11v9h-11zM13.5 10h3.6l3.4 3.2v2.3h-7z"/><circle cx="7" cy="17.8" r="1.9"/><circle cx="17" cy="17.8" r="1.9"/></svg></div>
       <h2>No scales yet</h2><p>Add your first truck scale.</p></div>
       <button class="btn primary wide" onclick="newScale()">＋ Add truck scale</button>
-      <div class="btnrow"><button class="btn ghost" onclick="importJSON()">Import backup</button></div></div>`;
+      <div class="btnrow"><button class="btn ghost" onclick="importJSON()">Import backup</button></div><div class="btnrow"><button class="btn ghost tfb-open-btn" onclick="TRACFeedback.open()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M8 9.5h8M8 12.5h5"/></svg> Send feedback</button></div></div>`;
   }
   const sites={};DB.scales.forEach(s=>{(sites[s.site||'Unassigned']=sites[s.site||'Unassigned']||[]).push(s);});
   let h='<div class="wrap">';
@@ -332,7 +332,7 @@ function renderHome(){
   });
   h+=`<div class="divider"></div><div class="btnrow">
     <button class="btn ghost" onclick="exportJSON()">Export backup</button>
-    <button class="btn ghost" onclick="importJSON()">Import backup</button></div></div>`;
+    <button class="btn ghost" onclick="importJSON()">Import backup</button></div><div class="btnrow"><button class="btn ghost tfb-open-btn" onclick="TRACFeedback.open()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M8 9.5h8M8 12.5h5"/></svg> Send feedback</button></div></div>`;
   return h;
 }
 function lastVisit(sid){const v=DB.visits.filter(x=>x.scaleId===sid).sort((a,b)=>(b.date||'').localeCompare(a.date||''));return v[0]||null;}
@@ -722,7 +722,8 @@ function stepReview(s){
      <label>Include customer sign-off line?</label>${segBtns('seg_so',[{v:'no',l:'No'},{v:'yes',l:'Yes'}],d.signOff?'yes':'no')}
      ${overall!=='PASS'?`<label>Note (if certifying out of your tolerance)</label><input id="v_overrideNote" value="${esc(d.overrideNote)}" placeholder="e.g. left within 80 lb after extended adjustment">`:''}
    </div>
-   <button class="btn primary wide" onclick="openReport()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M8.5 12.5h7M8.5 16h5"/></svg> Generate customer report</button>`;
+   <button class="btn primary wide" onclick="openReport()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M8.5 12.5h7M8.5 16h5"/></svg> Generate customer report</button>
+   <button class="btn ghost wide tfb-open-btn noprint" style="margin-top:8px" onclick="TRACFeedback.open()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M8 9.5h8M8 12.5h5"/></svg> Feedback on this visit</button>`;
 }
 
 /* ============================ REPORT (PDF) ============================ */
@@ -872,5 +873,129 @@ load();net();
 try{const th=localStorage.getItem('tractruck_theme');if(th)setTheme(th);}catch(e){}
 go('home');
 </script>
+<!-- ═══ TRAC FEEDBACK (shared — identical in Cell / Belt / Truck) ═══
+     Sends to Austin's Google Form → Google Sheet. No account or email app needed.
+     Offline: saved on the phone and sent automatically once signal is back.
+     To wire up: fill TRAC_FB_FORM below (form id + entry ids from a pre-filled link). -->
+<style>
+.tfb-ov{position:fixed;inset:0;z-index:9999;background:rgba(8,15,30,.55);display:flex;align-items:flex-end;justify-content:center;-webkit-tap-highlight-color:transparent}
+.tfb-sh{--tfb-card:#fff;--tfb-ink:#0f1729;--tfb-mut:#5b6472;--tfb-line:#e2e8f0;--tfb-bg:#eef2f7;--tfb-acc:#235AA7;--tfb-acc-lt:#e9f0f9;
+  width:100%;max-width:500px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--tfb-card);color:var(--tfb-ink);
+  border-radius:18px 18px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px));font-family:inherit;box-shadow:0 -8px 30px rgba(0,0,0,.25);animation:tfb-up .2s ease}
+.tfb-sh.tfb-dark{--tfb-card:#0e1f3a;--tfb-ink:#eef3fa;--tfb-mut:#8094b3;--tfb-line:#19305a;--tfb-bg:#071221;--tfb-acc:#2d6fc4;--tfb-acc-lt:#10243f}
+@keyframes tfb-up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.tfb-sh h3{margin:0 0 4px;font-size:20px;font-weight:800}
+.tfb-sh p.tfb-sub{margin:0 0 16px;font-size:13.5px;color:var(--tfb-mut);line-height:1.45}
+.tfb-lbl{display:block;font-size:12px;font-weight:700;color:var(--tfb-mut);text-transform:uppercase;letter-spacing:.5px;margin:0 0 7px}
+.tfb-seg{display:flex;gap:8px;margin-bottom:16px}
+.tfb-seg button{flex:1;min-height:44px;border-radius:10px;border:1.5px solid var(--tfb-line);background:var(--tfb-bg);color:var(--tfb-ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.tfb-seg button[aria-pressed="true"]{border-color:var(--tfb-acc);background:var(--tfb-acc-lt);color:var(--tfb-acc)}
+.tfb-sh textarea,.tfb-sh input{display:block;width:100%;box-sizing:border-box;padding:12px 13px;border-radius:10px;border:1.5px solid var(--tfb-line);background:var(--tfb-bg);color:var(--tfb-ink);font:inherit;font-size:16px;outline:none;-webkit-appearance:none;margin-bottom:14px}
+.tfb-sh textarea{min-height:120px;resize:vertical;line-height:1.45}
+.tfb-sh textarea:focus,.tfb-sh input:focus{border-color:var(--tfb-acc)}
+.tfb-note{font-size:12px;color:var(--tfb-mut);margin:-6px 0 16px;line-height:1.4}
+.tfb-acts{display:flex;gap:10px}
+.tfb-acts button{flex:1;min-height:48px;border-radius:12px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.tfb-cancel{background:none;border:1.5px solid var(--tfb-line);color:var(--tfb-ink)}
+.tfb-send{background:var(--tfb-acc);border:1.5px solid var(--tfb-acc);color:#fff}
+.tfb-send:disabled{opacity:.45;cursor:default}
+.tfb-toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:10000;background:#0f1729;color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.3);max-width:88vw;text-align:center}
+.tfb-open-btn{display:flex;align-items:center;justify-content:center;gap:8px}
+.tfb-open-btn svg{width:1.1em;height:1.1em;flex-shrink:0}
+</style>
+<script>
+/* Filled in once Austin's Google Form exists (from its pre-filled link). */
+var TRAC_FB_FORM = {
+  formId: '1FAIpQLSe7du5Eo89vwUlAYZhduzmmTWs7zJuXd7lQUVFW69cRErsrrg',   // "TRAC Apps Feedback" (Austin's Google Form)
+  entries: { app:'entry.545461804', type:'entry.1708425814', message:'entry.125136454', name:'entry.585571049', device:'entry.1390939330' }
+};
+var TRACFeedback = (function(){
+  var QKEY='trac_fb_queue', NKEY='trac_fb_name', APP='TRAC', BUILD='';
+  function ls(k,d){ try{ var v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } }
+  function lset(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+  function ready(){ var f=TRAC_FB_FORM; return !!(f.formId && f.entries.message); }
+  function device(){
+    var ua=navigator.userAgent||'', os=/iPhone|iPad|iPod/.test(ua)?'iOS':/Android/.test(ua)?'Android':/Mac/.test(ua)?'Mac':/Windows/.test(ua)?'Windows':'Other';
+    var inst=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone?'home-screen app':'browser';
+    return os+' · '+inst+' · '+screen.width+'×'+screen.height+' · '+APP+(BUILD?' build '+BUILD:'');
+  }
+  function post(item){
+    var f=TRAC_FB_FORM, e=f.entries, body=new URLSearchParams();
+    if(e.app) body.append(e.app,item.app);
+    if(e.type) body.append(e.type,item.type);
+    body.append(e.message,item.message);
+    if(e.name) body.append(e.name,item.name||'');
+    if(e.device) body.append(e.device,item.device+' · written '+item.at);
+    // Google Forms has no CORS headers, so the reply is opaque. A resolved fetch = it reached Google.
+    return fetch('https://docs.google.com/forms/d/e/'+encodeURIComponent(f.formId)+'/formResponse',
+      {method:'POST',mode:'no-cors',body:body});
+  }
+  var busy=null;
+  function flush(){
+    if(busy) return busy;
+    if(!ready()||navigator.onLine===false) return Promise.resolve(0);
+    var q=ls(QKEY,[]); if(!q.length) return Promise.resolve(0);
+    var sent=0;
+    return busy=q.reduce(function(p,item){ return p.then(function(){ return post(item).then(function(){ sent++; }); }); },Promise.resolve())
+      .catch(function(){})
+      .then(function(){ lset(QKEY,ls(QKEY,[]).slice(sent)); busy=null; return sent; });
+  }
+  function toast(msg){
+    var t=document.createElement('div'); t.className='tfb-toast'; t.setAttribute('role','status'); t.textContent=msg;
+    document.body.appendChild(t); setTimeout(function(){ t.remove(); },3200);
+  }
+  function isDark(){
+    var m=getComputedStyle(document.body).backgroundColor.match(/\d+/g); if(!m) return false;
+    return (0.299*m[0]+0.587*m[1]+0.114*m[2])<110;
+  }
+  function open(){
+    if(document.querySelector('.tfb-ov')) return;
+    if(document.activeElement&&document.activeElement.blur) document.activeElement.blur();
+    var type='Problem';
+    var ov=document.createElement('div'); ov.className='tfb-ov';
+    ov.innerHTML='<div class="tfb-sh'+(isDark()?' tfb-dark':'')+'" role="dialog" aria-modal="true" aria-labelledby="tfb-t">'+
+      '<h3 id="tfb-t">Send feedback</h3>'+
+      '<p class="tfb-sub">Goes straight to the developer. Tell us what broke, what slowed you down, or what you wish '+APP+' did.</p>'+
+      '<span class="tfb-lbl">What kind?</span>'+
+      '<div class="tfb-seg"><button type="button" data-t="Problem" aria-pressed="true">Problem</button>'+
+      '<button type="button" data-t="Idea" aria-pressed="false">Idea</button><button type="button" data-t="Other" aria-pressed="false">Other</button></div>'+
+      '<label class="tfb-lbl" for="tfb-msg">Your feedback</label>'+
+      '<textarea id="tfb-msg" maxlength="3000" placeholder="e.g. On the Signal reading, the keyboard covers the Next button…"></textarea>'+
+      '<label class="tfb-lbl" for="tfb-name">Your name <span style="text-transform:none;font-weight:500">(optional)</span></label>'+
+      '<input id="tfb-name" type="text" autocomplete="name" maxlength="80">'+
+      '<div class="tfb-note">App name and phone type are included automatically. Works offline — it sends once you have signal.</div>'+
+      '<div class="tfb-acts"><button type="button" class="tfb-cancel">Cancel</button><button type="button" class="tfb-send" disabled>Send</button></div></div>';
+    document.body.appendChild(ov);
+    var msg=ov.querySelector('#tfb-msg'), nm=ov.querySelector('#tfb-name'), send=ov.querySelector('.tfb-send');
+    nm.value=ls(NKEY,'')||'';
+    function close(){ ov.remove(); }
+    ov.addEventListener('click',function(e){ if(e.target===ov) close(); });
+    ov.querySelector('.tfb-cancel').onclick=close;
+    ov.querySelectorAll('.tfb-seg button').forEach(function(b){ b.onclick=function(){
+      type=b.getAttribute('data-t'); ov.querySelectorAll('.tfb-seg button').forEach(function(x){ x.setAttribute('aria-pressed',String(x===b)); });
+    }; });
+    msg.addEventListener('input',function(){ send.disabled=!msg.value.trim(); });
+    send.onclick=function(){
+      var text=msg.value.trim(); if(!text) return;
+      var name=nm.value.trim(); lset(NKEY,name);
+      var q=ls(QKEY,[]);
+      q.push({app:APP,type:type,message:text,name:name,device:device(),at:new Date().toLocaleString()});
+      lset(QKEY,q); close();
+      if(!ready()){ toast('Saved on this phone. It will send once feedback is switched on.'); return; }
+      if(navigator.onLine===false){ toast('No signal — saved. It will send automatically when you’re back online.'); return; }
+      flush().then(function(n){ toast(n?'Thanks — feedback sent.':'Couldn’t reach the server — saved, will retry automatically.'); });
+    };
+    setTimeout(function(){ msg.focus(); },120);
+  }
+  function init(o){
+    APP=(o&&o.app)||APP; BUILD=(o&&o.build)||'';
+    window.addEventListener('online',flush);
+    setTimeout(flush,1500);
+  }
+  return { open:open, init:init, flush:flush, _pending:function(){ return ls(QKEY,[]).length; } };
+})();
+</script>
+<!-- ═══ /TRAC FEEDBACK ═══ -->
+<script>TRACFeedback.init({app:'TRAC Truck',build:"2026-09-28"});</script>
 </body>
 </html>

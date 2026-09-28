@@ -108,6 +108,8 @@
   .info-box strong{display:block;font-weight:700;margin-bottom:3px;}
   .warn-box{background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:13px 14px;margin:10px 0 18px;font-size:13.5px;color:#92400e;}
   .warn-box strong{display:block;font-weight:700;margin-bottom:3px;}
+  /* only a box's title is a block — bold words inside a sentence stay inline */
+  .step-body p strong,.step-body span strong,.feature-body p strong,.pdf-card p strong,.info-box > strong ~ strong,.warn-box > strong ~ strong{display:inline;font-size:inherit;margin:0;}
 
   /* DIVIDER */
   hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
@@ -340,6 +342,7 @@
       <div class="step-body">
         <strong>Excitation Resistance (Ω)</strong>
         <p>Resistance across the excitation wires. Must be positive — negative auto-fails.</p>
+        <span class="step-warn">Open circuit? Tap <strong>OL (open)</strong> — the cell auto-FAILS.</span>
       </div>
     </div>
     <div class="step-item">
@@ -347,6 +350,7 @@
       <div class="step-body">
         <strong>Signal Resistance (Ω)</strong>
         <p>Resistance across the signal wires. Must be positive.</p>
+        <span class="step-warn">Open circuit? Tap <strong>OL (open)</strong> — the cell auto-FAILS.</span>
       </div>
     </div>
     <div class="step-item">
@@ -355,6 +359,7 @@
         <strong>Cross-Bridge Readings (pp / pn / nn / np)</strong>
         <p>Four bridge readings. If any deviate &gt;1% from their average, all four are flagged purple — cell status becomes REVIEW.</p>
         <span class="step-tip">Purple flag = cross-bridge imbalance. Not a hard fail, but document it.</span>
+        <span class="step-warn">Any bridge reading open? Tap <strong>OL (open)</strong> — the cell auto-FAILS.</span>
       </div>
     </div>
     <div class="step-item">
@@ -392,6 +397,13 @@
   <div class="section-title"><div class="dot" style="background:var(--navy)"></div>Useful Shortcuts</div>
   <div class="feature-list">
     <div class="feature-item">
+      <div class="feature-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="17.5" r="1.2" fill="currentColor" stroke="none"/></svg></div>
+      <div class="feature-body">
+        <strong>Jump to Any Test</strong>
+        <p>Below every reading is the full list of 13 tests for that cell. Tap any one to go straight to it — your current reading is saved first. Green = entered, red = failing, blue = where you are.</p>
+      </div>
+    </div>
+    <div class="feature-item">
       <div class="feature-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v2.5H9z"/><path d="M8.5 11h7M8.5 15h4.5"/></svg></div>
       <div class="feature-body">
         <strong>Copy Cell 1</strong>
@@ -419,10 +431,20 @@
   <div class="info-box">
     <strong>Text report — send it to your customer</strong>
     From the finished-job screen, tap <strong>Text report</strong>. The app builds a clean inspection certificate and opens your share sheet — send it straight to the customer by text or email. It arrives as an image, so it works on any phone, and it's drawn on your device so it works with no signal in the field.
+    If any cell fails or needs review, a <strong>Findings</strong> list prints under the results in plain English (e.g. "Cell 3 — Excitation open (OL)"), so the customer sees <em>why</em> without calling you.
   </div>
   <div class="info-box">
     <strong>Full report — the detailed PDF for records</strong>
     Tap <strong>Full report</strong> for the complete diagnostic version (every reading per cell, QR code, PASS / FAIL / REVIEW banner, bridge-deviation callouts, and ROC comparison). You'll be asked whether to include a signature block. Use your phone's share sheet to save it as a PDF or email it for your records.
+  </div>
+
+  <div class="info-box">
+    <strong>Excel export — the job as a spreadsheet</strong>
+    Tap <strong>Excel export</strong> on the finished-job screen. You get one row per cell with every reading in its own column, plus status, findings and time spent — it opens straight in Excel or Google Sheets. Handy for records, the office, or anyone still working off the old spreadsheet.
+  </div>
+  <div class="info-box">
+    <strong>Your numbers — time on the job</strong>
+    The app quietly tracks working time between readings (a gap of more than 15 minutes counts as a break and isn't added). The finished-job screen shows <strong>time on job</strong> and <strong>minutes per cell</strong>, and the home screen shows your totals under <strong>Your numbers</strong>.
   </div>
 
   <div class="section-title"><div class="dot" style="background:var(--navy)"></div>Deleting a Job</div>
@@ -618,6 +640,11 @@
   <div class="info-box">
     <strong>Office / Field Mode</strong>
     All three apps have a mode toggle in the header. <strong>Office mode</strong> = light theme for indoor use. <strong>Field mode</strong> = dark navy high-contrast theme for reading in direct sunlight. Your preference is saved per device.
+  </div>
+
+  <div class="info-box">
+    <strong><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M8 9.5h8M8 12.5h5"/></svg> Send Feedback</strong>
+    Every app has a <strong>Send feedback</strong> button at the bottom of its home screen, and again when you finish a job or visit. Pick Problem, Idea or Other, type what happened, and tap Send — it goes straight to the developer. No email or login needed, and it works with no signal (it sends automatically once you're back online). The app name and phone type are attached for you.
   </div>
 
 </div><!-- end data page -->
