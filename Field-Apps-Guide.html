@@ -341,7 +341,7 @@
       <div class="step-num" style="background:var(--navy);">2</div>
       <div class="step-body">
         <strong>Excitation Resistance (Ω)</strong>
-        <p>Resistance across the excitation wires. Must be positive — negative auto-fails.</p>
+        <p>Resistance across the excitation wires. Must be positive — negative auto-fails. Anything <strong>under 100 Ω</strong> means a shorted cell or cable and auto-FAILS.</p>
         <span class="step-warn">Open circuit? Tap <strong>OL (open)</strong> — the cell auto-FAILS.</span>
       </div>
     </div>
@@ -349,7 +349,7 @@
       <div class="step-num" style="background:var(--navy);">3</div>
       <div class="step-body">
         <strong>Signal Resistance (Ω)</strong>
-        <p>Resistance across the signal wires. Must be positive.</p>
+        <p>Resistance across the signal wires. Must be positive. Anything <strong>under 100 Ω</strong> = shorted → auto-FAIL.</p>
         <span class="step-warn">Open circuit? Tap <strong>OL (open)</strong> — the cell auto-FAILS.</span>
       </div>
     </div>
@@ -429,18 +429,16 @@
   <!-- PDF -->
   <div class="section-title"><div class="dot" style="background:var(--green)"></div>Sending the Report</div>
   <div class="info-box">
-    <strong>Text report — send it to your customer</strong>
-    From the finished-job screen, tap <strong>Text report</strong>. The app builds a clean inspection certificate and opens your share sheet — send it straight to the customer by text or email. It arrives as an image, so it works on any phone, and it's drawn on your device so it works with no signal in the field.
-    If any cell fails or needs review, a <strong>Findings</strong> list prints under the results in plain English (e.g. "Cell 3 — Excitation open (OL)"), so the customer sees <em>why</em> without calling you.
+    <strong>One button: Send report</strong>
+    When the job is finished, tap the big <strong>Send report</strong> button at the bottom of the summary. Pick one of three:
+    <br>• <strong>PDF certificate</strong> — the full report for the customer's records: every reading per cell, Michelli logo, PASS / FAIL / REVIEW banner, findings, and ROC comparison. Fits on one letter page. You'll be asked if you want sign-off lines. Use your phone's share sheet to save it as a PDF or email it.
+    <br>• <strong>Picture</strong> — a clean certificate image you can text straight to the customer. It's drawn on your phone, so it works with no signal.
+    <br>• <strong>Excel</strong> — one row per cell with every reading in its own column, plus status, findings and time spent. For the office.
+    <br>If any cell fails or needs review, a <strong>Findings</strong> list shows up in plain English (e.g. "Cell 3 — Excitation open (OL)"), so the customer sees <em>why</em> without calling you.
   </div>
   <div class="info-box">
-    <strong>Full report — the detailed PDF for records</strong>
-    Tap <strong>Full report</strong> for the complete diagnostic version (every reading per cell, QR code, PASS / FAIL / REVIEW banner, bridge-deviation callouts, and ROC comparison). You'll be asked whether to include a signature block. Use your phone's share sheet to save it as a PDF or email it for your records.
-  </div>
-
-  <div class="info-box">
-    <strong>Excel export — the job as a spreadsheet</strong>
-    Tap <strong>Excel export</strong> on the finished-job screen. You get one row per cell with every reading in its own column, plus status, findings and time spent — it opens straight in Excel or Google Sheets. Handy for records, the office, or anyone still working off the old spreadsheet.
+    <strong>Other options</strong>
+    Under the Send report button: <strong>Edit job info</strong>, <strong>Feedback</strong> and <strong>Delete job</strong>. To go back, tap <strong>Home</strong> at the top left.
   </div>
   <div class="info-box">
     <strong>Your numbers — time on the job</strong>

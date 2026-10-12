@@ -356,6 +356,19 @@ body {
 }
 .edit-cell-btn:hover { background: var(--acc-lt); border-color: var(--acc); color: var(--acc); }
 .sum-actions { padding: 8px 16px 16px; display: flex; gap: 10px; }
+.send-btn { flex: 1; font-size: 17px; padding: 17px 20px; }
+.sum-links { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 4px; padding: 0 16px 28px; }
+.sum-link { background: none; border: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); padding: 10px 8px; cursor: pointer; border-radius: 8px; -webkit-tap-highlight-color: transparent; }
+.sum-link:active { background: var(--border); }
+.sum-link-bad { color: var(--bad); }
+.sum-dot { color: var(--border); font-weight: 700; }
+.send-sheet { padding: 20px 16px 16px; }
+.send-sheet h3 { margin-bottom: 4px; }
+.send-opt { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 10px; font: inherit; color: var(--text); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.send-opt:active { transform: scale(.98); border-color: var(--acc); }
+.send-ic { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 22px; color: #fff; }
+.send-opt b { display: block; font-size: 16px; }
+.send-opt small { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; line-height: 1.35; }
 
 /* HISTORY */
 .hist-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
@@ -407,8 +420,8 @@ body {
 // ─── READINGS ────────────────────────────────────────────
 const R = [
   { k:'dead_load',  lbl:'Dead Load',   unit:'mV DC', desc:'Deck loaded, no test weight — read first while wires still connected', mode:'decimal', val:'deadLoad', wires:['plusSIG','minusSIG'] },
-  { k:'excitation', lbl:'Excitation',  unit:'Ω',     desc:'+ Exc → − Exc  (OL = open → FAIL)',        mode:'decimal', val:'ohmOL', showOL:true, olFail:true, wires:['plusEX','minusEX'] },
-  { k:'signal',     lbl:'Signal',      unit:'Ω',     desc:'+ Sig → − Sig  (OL = open → FAIL)',        mode:'decimal', val:'ohmOL', showOL:true, olFail:true, wires:['plusSIG','minusSIG'] },
+  { k:'excitation', lbl:'Excitation',  unit:'Ω',     desc:'+ Exc → − Exc  (OL = open, under 100 Ω = shorted → FAIL)', mode:'decimal', val:'armOhm', showOL:true, olFail:true, wires:['plusEX','minusEX'] },
+  { k:'signal',     lbl:'Signal',      unit:'Ω',     desc:'+ Sig → − Sig  (OL = open, under 100 Ω = shorted → FAIL)', mode:'decimal', val:'armOhm', showOL:true, olFail:true, wires:['plusSIG','minusSIG'] },
   { k:'pp',         lbl:'+ex / +sig',  unit:'Ω',     desc:'+ Exc → + Sig  (cross-bridge · OL = open → FAIL)',           mode:'decimal', val:'ohmOL', showOL:true, olFail:true, bridge:true, wires:['plusEX','plusSIG'] },
   { k:'pn',         lbl:'+ex / −sig',  unit:'Ω',     desc:'+ Exc → − Sig  (cross-bridge · OL = open → FAIL)',           mode:'decimal', val:'ohmOL', showOL:true, olFail:true, bridge:true, wires:['plusEX','minusSIG'] },
   { k:'nn',         lbl:'−ex / −sig',  unit:'Ω',     desc:'− Exc → − Sig  (cross-bridge · OL = open → FAIL)',           mode:'decimal', val:'ohmOL', showOL:true, olFail:true, bridge:true, wires:['minusEX','minusSIG'] },
@@ -473,6 +486,7 @@ function wireDotsForReading(r, profile){
 }
 
 // ─── VALIDATORS ─────────────────────────────────────────
+const ARM_MIN_OHM = 100;   // Excitation / Signal below this = shorted → FAIL (set 2026-10-12)
 function isOL(v){ return String(v==null?'':v).trim().toUpperCase()==='OL'; }
 const V = {
   shortsOhm(v) {
@@ -497,6 +511,14 @@ const V = {
   ohmOL(v) {
     if (isOL(v)) return { ok:false, lbl:'FAIL — OPEN (OL)', cls:'bad' };
     return V.ohm(v);
+  },
+  // Excitation / Signal only: also FAIL a reading that is too low — a real
+  // bridge arm is hundreds of ohms, so near-zero means a shorted cell or cable.
+  armOhm(v) {
+    const r=V.ohmOL(v); if(r) return r;
+    const n=parseFloat(v); if(isNaN(n)) return null;
+    if(n<ARM_MIN_OHM) return { ok:false, lbl:'FAIL — SHORTED (< '+ARM_MIN_OHM+' Ω)', cls:'bad' };
+    return null;
   },
   ohm(v) {
     const n=parseFloat(v); if(isNaN(n)) return null;
@@ -539,6 +561,7 @@ function cellFindings(cell){
     if(isOL(v))                 txt=r.lbl+' open (OL)';
     else if(r.k==='shrt_ohm')   txt='Short to shield / cell body ('+v+' Ω)';
     else if(r.k==='shrt_ns')    txt='Insulation leakage '+v+' nS — '+(res.cls==='bad'?'bad (over 1 nS)':'suspect (over 0.5 nS)');
+    else if(res.lbl.indexOf('SHORTED')>=0) txt=r.lbl+' shorted ('+v+' Ω, min '+ARM_MIN_OHM+')';
     else if(r.k==='zero_load')  txt=n<0?'Zero load negative ('+v+' mV)':'Zero load out of range ('+v+' mV, max 0.5)';
     else                        txt=r.lbl+' reads negative ('+v+' '+r.unit+')';
     out.push({txt, cls:res.cls});
@@ -1271,7 +1294,7 @@ function rSummary(){
   <div class="hdr no-print">
     <button class="hdr-btn" id="b-back">${CUR?'← Entry':'<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9.2V20.5h13V9.2"/><path d="M9.8 20.5v-6h4.4v6"/></svg> Home'}</button>
     <h1>Summary</h1>
-    <button class="hdr-btn right" id="b-print"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8.5V3.5h10v5M7 18.5H5a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 5 10.5h14a1.5 1.5 0 0 1 1.5 1.5v5a1.5 1.5 0 0 1-1.5 1.5h-2"/><path d="M7 14.5h10v6H7z"/></svg> PDF</button>
+    <span class="hdr-btn right" aria-hidden="true" style="visibility:hidden">Home</span>
   </div>
 
   <div class="meta-grid">
@@ -1332,28 +1355,21 @@ function rSummary(){
     <button class="btn btn-primary" id="b-done">✓ Finish Job</button>
   </div>`:`
   <div class="sum-actions no-print">
-    <button class="btn btn-outline" id="b-del" style="color:var(--bad);border-color:var(--bad-lt)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l1 13.5h9l1-13.5M10 10v6.5M14 10v6.5"/></svg> Delete</button>
-    <button class="btn btn-primary" id="b-home">← Home</button>
+    <button class="btn btn-primary send-btn" id="b-send"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15.5V3.5M7.5 8 12 3.5 16.5 8"/><path d="M5 12.5v6.5A1.5 1.5 0 0 0 6.5 20.5h11a1.5 1.5 0 0 0 1.5-1.5v-6.5"/></svg> Send report</button>
   </div>
-  <div style="padding:0 16px 8px;display:flex;gap:10px;" class="no-print">
-    <button class="btn" id="b-textreport" style="background:#235aa7;color:#fff;flex:1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg> Text report</button>
-    <button class="btn btn-outline" id="b-report" style="flex:1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M8.5 12.5h7M8.5 16h5"/></svg> Full report</button>
-  </div>
-  <div style="padding:0 16px 8px;display:flex;gap:10px;" class="no-print">
-    <button class="btn btn-outline" id="b-csv" style="flex:1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15"/></svg> Excel export</button>
-    <button class="btn btn-outline tfb-open-btn" style="flex:1" onclick="TRACFeedback.open()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M8 9.5h8M8 12.5h5"/></svg> Feedback</button>
-  </div>
-  <div style="padding:0 16px 8px;display:flex;gap:10px;" class="no-print">
-    <button class="btn btn-outline" id="b-editinfo" style="flex:1;font-size:14px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20.5h16"/><path d="M5.5 16.2 15.8 5.9a2.1 2.1 0 0 1 3 3L8.5 19.2l-4 1z"/></svg> Edit job info</button>
-  </div>
-  <div style="padding:4px 16px 20px;font-size:12px;color:var(--muted);text-align:center" class="no-print"><b>Text Report</b> sends a clean image to your customer · <b>Full Report</b> is the printable PDF for records</div>`}
+  <div class="sum-links no-print">
+    <button class="sum-link" id="b-editinfo">Edit job info</button>
+    <span class="sum-dot" aria-hidden="true">·</span>
+    <button class="sum-link" onclick="TRACFeedback.open()">Feedback</button>
+    <span class="sum-dot" aria-hidden="true">·</span>
+    <button class="sum-link sum-link-bad" id="b-del">Delete job</button>
+  </div>`}
   </div>`;
 }
 function bSummary(){
   const job=CUR?CUR.job:jobs.find(j=>j.id===DID);
   const backBtn=document.getElementById('b-back');
   if(backBtn) backBtn.onclick=()=>{ if(CUR)go('entry'); else go('home'); };
-  document.getElementById('b-print').onclick=()=>window.print();
 
   // Edit cell buttons — jump to that cell's entry, returning to summary after
   document.querySelectorAll('.edit-cell-btn').forEach(btn=>{
@@ -1370,16 +1386,7 @@ function bSummary(){
       CUR=null; go('home');
     };
   } else {
-    document.getElementById('b-home').onclick=()=>go('home');
-    const csvBtn=document.getElementById('b-csv');
-    if(csvBtn) csvBtn.onclick=()=>exportJobCSV(DID);
-    const textBtn=document.getElementById('b-textreport');
-    if(textBtn) textBtn.onclick=()=>shareReportImage(DID);
-    const rptBtn=document.getElementById('b-report');
-    if(rptBtn) rptBtn.onclick=()=>{
-      const sig=confirm('Include signature / sign-off block?');
-      printCustomerReport(DID,sig);
-    };
+    document.getElementById('b-send').onclick=()=>showSendSheet(DID);
     const editInfoBtn=document.getElementById('b-editinfo');
     if(editInfoBtn) editInfoBtn.onclick=()=>showEditJobInfoSheet(job);
     document.getElementById('b-del').onclick=()=>{
@@ -1438,6 +1445,37 @@ function bHistory(){
 
 // ─── DIALOG ──────────────────────────────────────────────
 let dlgEl=null;
+// ─── SEND REPORT SHEET ───────────────────────────────────
+// One button on the summary → three clear choices. Keeps the finished-job
+// screen down to a single decision for the tech.
+function showSendSheet(jobId){
+  hideDlg();
+  const ic=(bg,path)=>`<span class="send-ic" style="background:${bg}"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg></span>`;
+  const ov=document.createElement('div'); ov.className='overlay';
+  ov.innerHTML=`<div class="dlg send-sheet" role="dialog" aria-label="Send report">
+    <h3>Send report</h3>
+    <p>Pick how you want to send it.</p>
+    <button class="send-opt" id="so-pdf">${ic('#235aa7','<path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M8.5 12.5h7M8.5 16h5"/>')}<span><b>PDF certificate</b><small>Full report for the customer's records — print or save as PDF</small></span></button>
+    <button class="send-opt" id="so-img">${ic('#029f49','<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>')}<span><b>Picture</b><small>Quick image to text the customer — works with weak signal</small></span></button>
+    <button class="send-opt" id="so-csv">${ic('#5b6472','<rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15"/>')}<span><b>Excel</b><small>Spreadsheet of every reading — for the office</small></span></button>
+    <div class="dlg-acts" style="margin-top:14px"><button class="btn btn-outline" id="so-x">Cancel</button></div>
+  </div>`;
+  document.body.appendChild(ov); dlgEl=ov;
+  ov.addEventListener('click',e=>{ if(e.target===ov) hideDlg(); });
+  document.getElementById('so-x').onclick=hideDlg;
+  document.getElementById('so-img').onclick=()=>{ hideDlg(); shareReportImage(jobId); };
+  document.getElementById('so-csv').onclick=()=>{ hideDlg(); exportJobCSV(jobId); };
+  document.getElementById('so-pdf').onclick=()=>{
+    showDlg({
+      title:'Add sign-off lines?',
+      msg:'Adds signature and date lines at the bottom for you and the customer.',
+      acts:[
+        {lbl:'Yes, add them',cls:'btn-primary',fn:()=>{ hideDlg(); printCustomerReport(jobId,true); }},
+        {lbl:'No thanks',cls:'btn-outline',fn:()=>{ hideDlg(); printCustomerReport(jobId,false); }}
+      ]
+    });
+  };
+}
 function showDlg({title,msg,acts}){
   hideDlg();
   const ov=document.createElement('div'); ov.className='overlay';
@@ -1591,8 +1629,11 @@ function printCustomerReport(jobId, includeSig) {
   tableRows += tsec('Resistance (&#x2126;)');
   function ohmOLCell(v){ return !v ? '' : isOL(v) ? '<span style="color:#dc2626;font-weight:700;">OL — OPEN</span>' : v+' &#x2126;'; }
   function ohmOLStyle(v){ return isOL(v) ? 'background:#fde8e8;' : ''; }
-  tableRows += trow('Excitation', function(d){ return ohmOLCell(d.cell.excitation); }, function(d){ return ohmOLStyle(d.cell.excitation); });
-  tableRows += trow('Signal',     function(d){ return ohmOLCell(d.cell.signal); },     function(d){ return ohmOLStyle(d.cell.signal); });
+  function armBad(v){ var r=v?V.armOhm(v):null; return !!(r&&!r.ok); }
+  function armCell(v){ return !v ? '' : isOL(v) ? ohmOLCell(v) : armBad(v) ? '<span style="color:#dc2626;font-weight:700;">'+v+' &#x2126; — SHORTED</span>' : v+' &#x2126;'; }
+  function armStyle(v){ return armBad(v) ? 'background:#fde8e8;' : ''; }
+  tableRows += trow('Excitation', function(d){ return armCell(d.cell.excitation); }, function(d){ return armStyle(d.cell.excitation); });
+  tableRows += trow('Signal',     function(d){ return armCell(d.cell.signal); },     function(d){ return armStyle(d.cell.signal); });
   tableRows += trow('&minus;Comp',function(d){ return d.cell.cmp_n      ? d.cell.cmp_n     +' &#x2126;' : ''; });
   tableRows += trow('+Comp',      function(d){ return d.cell.cmp_p      ? d.cell.cmp_p     +' &#x2126;' : ''; });
 
